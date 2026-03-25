@@ -2,25 +2,62 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Camera, Clock } from 'lucide-react';
+import { Upload, Camera, Clock, CheckCircle } from 'lucide-react';
 
-export default function PrescriptionScanner() {
+interface PrescriptionScannerProps {
+  onScanComplete?: (drugs: string[]) => void;
+}
+
+export default function PrescriptionScanner({ onScanComplete }: PrescriptionScannerProps) {
   const [prescriptionText, setPrescriptionText] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleOCR = async () => {
-    setIsScanning(true);
-    // Simulate OCR processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setPrescriptionText(`Patient: John Doe | DOB: 01/15/1985
-Medications:
-1. Metformin 500mg - 2x daily
-2. Lisinopril 10mg - 1x daily
-3. Atorvastatin 20mg - 1x daily
-4. Aspirin 81mg - 1x daily`);
-    setIsScanning(false);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      setPrescriptionText(''); // reset
+    }
   };
 
+  const handleOCR = async () => {
+    if (!selectedFile) return;
+    setIsScanning(true);
+    setPrescriptionText('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run Vision OCR');
+      }
+
+      const data = await response.json();
+      const extractedDrugs: string[] = data.extracted_drugs || [];
+      
+      setPrescriptionText(
+        `EXTRACTED ENTITIES:\n--------------------------\n` + 
+        (extractedDrugs.length > 0 
+          ? extractedDrugs.map((d, i) => `${i + 1}. ${d}`).join('\n')
+          : "No medications detected.")
+      );
+
+      if (extractedDrugs.length > 0 && onScanComplete) {
+        onScanComplete(extractedDrugs);
+      }
+    } catch (error) {
+      console.error(error);
+      setPrescriptionText('Error: Failed to process prescription image via Vision API.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -43,18 +80,28 @@ Medications:
               whileHover={{ borderColor: '#14b8a6' }}
               className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:bg-teal-50/30 transition shadow-sm"
             >
-              <Camera className="w-12 h-12 text-teal-500 mx-auto mb-3" />
-              <p className="font-semibold text-slate-700">Drag and drop or click to upload</p>
-              <p className="text-sm text-slate-500 mt-1">Supports: JPG, PNG, PDF</p>
-              <input type="file" className="hidden" />
+              {selectedFile ? (
+                <>
+                  <CheckCircle className="w-12 h-12 text-teal-500 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-700">{selectedFile.name}</p>
+                  <p className="text-sm text-slate-500 mt-1">Ready to scan</p>
+                </>
+              ) : (
+                <>
+                  <Camera className="w-12 h-12 text-teal-500 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-700">Drag and drop or click to upload</p>
+                  <p className="text-sm text-slate-500 mt-1">Supports: JPG, PNG, PDF</p>
+                </>
+              )}
+              <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
             </motion.div>
           </label>
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={selectedFile ? { scale: 1.02 } : {}}
+            whileTap={selectedFile ? { scale: 0.98 } : {}}
             onClick={handleOCR}
-            disabled={isScanning}
+            disabled={isScanning || !selectedFile}
             className="w-full bg-gradient-teal text-white font-semibold py-3 rounded-lg hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isScanning ? (

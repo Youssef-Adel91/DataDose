@@ -19,37 +19,6 @@ const SAMPLE_QUESTIONS = [
   "Alternative to Metformin for diabetic patients?",
 ];
 
-const MOCK_RESPONSES: Record<string, { content: string; type: "deterministic" | "ai_augmented" }> = {
-  warfarin: {
-    type: "deterministic",
-    content: "⬛ **FATAL interactions with Warfarin:** Metronidazole (CYP2C9 inhibitor — INR can triple), Amiodarone (CYP2C9/3A4 inhibitor — reduce dose 30-50%).\n\n🔴 **SEVERE:** Aspirin (additive bleeding risk — avoid unless clinically necessary), Ibuprofen (displaces protein binding).\n\n🟠 **MAJOR:** Clarithromycin, Fluconazole (CYP2C9 inhibitors).\n\n_Source: Neo4j DDI Knowledge Graph — deterministic rule lookup_",
-  },
-  aspirin: {
-    type: "deterministic",
-    content: "🔴 **Aspirin + Warfarin:** SEVERE — Anticoagulant + antiplatelet synergy. Major bleeding risk.\n\n🟠 **Aspirin + Clopidogrel:** MAJOR — Dual antiplatelet therapy. Indicated post-ACS but increases GI bleeding.\n\n🟠 **Aspirin + Ibuprofen:** MAJOR — Ibuprofen may block aspirin's antiplatelet effect on COX-1.\n\n🟢 **Aspirin + Lisinopril:** Generally safe. Monitor blood pressure.\n\n_Source: Neo4j DDI Knowledge Graph — deterministic_",
-  },
-  serotonin: {
-    type: "deterministic",
-    content: "**Serotonin Syndrome** is caused by excess serotonergic activity in the CNS.\n\n🔴 **High-risk drug combinations:**\n- SSRIs + MAOIs (CONTRAINDICATED — potentially fatal)\n- SSRIs + Tramadol (Tramadol has serotonin-reuptake inhibition)\n- SSRIs + Triptans (mild risk)\n- Linezolid + SSRI (MAO-inhibiting antibiotic)\n\n**Symptoms:** Agitation, tremor, hyperthermia, clonus, diaphoresis.\n\n**Emergency Action:** Discontinue all serotonergic agents. Cyproheptadine 4-12mg. ICU for severe cases.\n\n_Source: Reverse Symptom Tracer — Knowledge Graph_",
-  },
-  metformin: {
-    type: "ai_augmented",
-    content: "🤖 **AI Augmented Response** — Based on Knowledge Graph + clinical guidelines:\n\n**Safer alternatives to Metformin:**\n1. **SGLT-2 Inhibitors** (Empagliflozin, Dapagliflozin) — cardiovascular/renal benefits\n2. **GLP-1 Agonists** (Semaglutide, Liraglutide) — weight loss + glucose control\n3. **DPP-4 Inhibitors** (Sitagliptin) — well tolerated, weight-neutral\n\n**When to switch:** Severe renal impairment (eGFR <30), contrast procedures, lactic acidosis history.\n\n⚡ **Deterministic override:** Metformin contraindicated if eGFR < 30 ml/min. (Source: Knowledge Graph rule)\n\n_Hybrid: Neo4j graph rule + AI clinical context_",
-  },
-};
-
-function getResponseForQuery(query: string): { content: string; type: "deterministic" | "ai_augmented" } {
-  const q = query.toLowerCase();
-  if (q.includes("warfarin")) return MOCK_RESPONSES.warfarin;
-  if (q.includes("aspirin") || q.includes("blood thin")) return MOCK_RESPONSES.aspirin;
-  if (q.includes("serotonin")) return MOCK_RESPONSES.serotonin;
-  if (q.includes("metformin") || q.includes("diabetic") || q.includes("alternative")) return MOCK_RESPONSES.metformin;
-  return {
-    type: "ai_augmented",
-    content: `🤖 **AI Augmented Response:**\n\nI searched the DataDose Knowledge Graph for "${query}" and found related clinical patterns. For precise DDI results, please use the N-Degree Scanner with specific drug names.\n\n⚡ Tip: Ask about specific drugs like "Warfarin interactions" or "Metformin alternatives" to trigger deterministic Knowledge Graph rules.\n\n_Type: AI Augmented (graph context not matched)_`,
-  };
-}
-
 export default function GraphRAGChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -80,21 +49,51 @@ export default function GraphRAGChatbot() {
       type: "user",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
-    setMessages(prev => [...prev, userMsg]);
+    
+    const currentHistory = [...messages, userMsg];
+    setMessages(currentHistory);
     setIsThinking(true);
 
-    await new Promise(r => setTimeout(r, 1000 + Math.random() * 800));
-
-    const response = getResponseForQuery(query);
-    const assistantMsg: Message = {
-      id: Date.now() + 1,
-      role: "assistant",
-      content: response.content,
-      type: response.type,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-    setMessages(prev => [...prev, assistantMsg]);
-    setIsThinking(false);
+    try {
+      const formattedHistory = messages.filter(m => m.role !== "user" || m.type === "user").map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+      
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          message: query,
+          history: formattedHistory
+        }),
+      });
+      
+      if (!res.ok) throw new Error("Failed to connect to backend");
+      
+      const data = await res.json();
+      
+      const assistantMsg: Message = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content: data.response,
+        type: data.is_deterministic ? "deterministic" : "ai_augmented",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+    } catch (error) {
+      console.error(error);
+      const errorMsg: Message = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content: "I'm having trouble connecting to the DataDose clinical backend. Please check my connection status.",
+        type: "ai_augmented",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   const formatContent = (content: string) => {

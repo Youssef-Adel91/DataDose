@@ -194,7 +194,7 @@ export default function PharmacistDashboard() {
 
         {/* Main Components */}
         <motion.div variants={itemVariants} className="space-y-6">
-          <PrescriptionScanner />
+          <PrescriptionScanner onScanComplete={setScannedDrugs} />
           <PolypharmacyScan onScanComplete={setScannedDrugs} />
           <DrugInteractionChecker />
           <DrugAlerts />
