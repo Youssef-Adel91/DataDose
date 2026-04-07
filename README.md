@@ -2,7 +2,7 @@
 
 ![Data Dose Cover](https://via.placeholder.com/1200x400?text=Data+Dose+CDSS+-+AI+Powered+Care)
 
-Data Dose is a production-ready **Clinical Decision Support System (CDSS)** specifically engineered for physicians and pharmacists. It combines an ultra-modern Next.js frontend with a powerful FastAPI + Neo4j Graph Database backend. The core objective of Data Dose is to analyze complex polypharmacy prescriptions in real-time, instantly traverse thousands of medical interactions, and visually prevent adverse drug events (ADEs).
+Data Dose is a production-ready **Clinical Decision Support System (CDSS)** specifically engineered for physicians and pharmacists. It combines an ultra-modern Next.js frontend with a powerful Python FastAPI + Neo4j Graph Database backend. The core objective of Data Dose is to analyze complex polypharmacy prescriptions in real-time, instantly traverse thousands of medical interactions, and visually prevent adverse drug events (ADEs).
 
 ## 🚀 Key Features
 
@@ -32,8 +32,6 @@ Data Dose utilizes a strict microservice architecture splitting the UI from the 
 
 ### 1. Backend Setup
 
-Note: The FastAPI backend belongs in the adjacent `/backend` directory.
-
 ```bash
 cd backend
 python -m venv venv
@@ -55,9 +53,10 @@ Start the FastAPI server (Runs on port 8000):
 python -m uvicorn main:app --reload
 ```
 
-### 2. Frontend Setup (This Repository)
+### 2. Frontend Setup
 
 ```bash
+cd DataDose_website-main
 npm install
 ```
 
