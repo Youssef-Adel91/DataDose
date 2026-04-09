@@ -432,9 +432,13 @@ async def chat_interaction(req: ChatRequest, session=Depends(get_db)):
             max_completion_tokens=400,
         )
         final_answer = synth_completion.choices[0].message.content
+        # is_deterministic is True ONLY when the answer is grounded in actual
+        # graph data. If neo4j_data is empty (e.g. unknown drug / no path found)
+        # the LLM is generating a "no data found" statement — not a deterministic
+        # graph result — so we flag it False to signal the frontend accordingly.
         return ChatResponse(
             response=final_answer,
-            is_deterministic=True,
+            is_deterministic=len(neo4j_data) > 0,
             raw_data=neo4j_data
         )
     except Exception as e:
