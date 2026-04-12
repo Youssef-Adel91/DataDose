@@ -28,13 +28,13 @@ async def lifespan(app: FastAPI):
     try:
         driver = AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
         await driver.verify_connectivity()
-        print("✅ Successfully connected to Neo4j Knowledge Graph")
+        print("[OK] Successfully connected to Neo4j Knowledge Graph")
     except Exception as e:
-        print(f"❌ Failed to connect to Neo4j: {e}")
+        print(f"[ERROR] Failed to connect to Neo4j: {e}")
     yield
     if driver:
         await driver.close()
-        print("Cosed Neo4j connection")
+        print("Closed Neo4j connection")
 
 app = FastAPI(title="DataDose Neo4j API", version="1.0.0", lifespan=lifespan)
 
@@ -73,6 +73,9 @@ class ChatResponse(BaseModel):
 
 class ScanRequest(BaseModel):
     drugs: List[str]
+    ehr: Optional[Dict[str, Any]] = None
+    conditions: Optional[List[str]] = None
+    analysisInstruction: Optional[str] = None
 
 class InteractionResponse(BaseModel):
     drug1: str
@@ -114,9 +117,10 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
     query = """
     WITH [x IN $drugs | toLower(x)] AS lower_drugs
     MATCH (d1:Drug)-[r:INTERACTS_WITH]-(d2:Drug)
-    WHERE toLower(d1.name) IN lower_drugs AND toLower(d2.name) IN lower_drugs
+    WHERE toLower(d1.name) IN lower_drugs
+      AND toLower(d2.name) IN lower_drugs
       AND elementId(d1) < elementId(d2)
-    RETURN d1.name AS drug1, d2.name AS drug2, r.severity AS severity, 
+    RETURN d1.name AS drug1, d2.name AS drug2, r.severity AS severity,
            r.effect AS effect, r.mechanism AS mechanism
     """
     
@@ -126,12 +130,19 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
         result = await session.run(query, drugs=req.drugs)
         records = await result.data()
         
-        interactions = []
+        interactions: List[InteractionResponse] = []
         for rec in records:
+            severity_raw = str(rec.get("severity", "Unknown")).strip().lower()
+            severity = {
+                "fatal": "FATAL",
+                "severe": "SEVERE",
+                "major": "MAJOR",
+                "minor": "MINOR"
+            }.get(severity_raw, "UNKNOWN")
             interactions.append(InteractionResponse(
                 drug1=rec["drug1"],
                 drug2=rec["drug2"],
-                severity=rec.get("severity", "Unknown"),
+                severity=severity,
                 effect=rec.get("effect"),
                 mechanism=rec.get("mechanism")
             ))
