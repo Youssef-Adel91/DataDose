@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  PATIENT
+  PHYSICIAN
+  PHARMACIST
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id                           String                @id @default(uuid())
+  email                        String                @unique
+  password                     String
+  name                         String
+  role                         Role                  @default(PATIENT)
+  // Approval workflow — new users are PENDING until an ADMIN approves them.
+  // SUPER_ADMIN and seeded system accounts are pre-set to APPROVED.
+  status                       ApprovalStatus        @default(PENDING)
+  // Optional license number or document URL submitted during registration
+  verificationDocument         String?
+  // Quota Management System
+  dailyScansCount              Int                   @default(0)
+  lastScanDate                 DateTime              @default(now())
+  subscriptionTier             String                @default("FREE")
+  
+  createdAt                    DateTime              @default(now())
+  PatientEHR                   PatientEHR?
+  PrescriptionHistoryAsPatient PrescriptionHistory[] @relation("PatientPrescriptions")
+  PrescriptionHistoryAsDoctor  PrescriptionHistory[] @relation("DoctorPrescriptions")
+}
+
+model PatientEHR {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth       DateTime?
+  gender            String?
+  chronicConditions String[]
+  allergies         String[]
+  priorSurgeries    String[]
+}
+
+model PrescriptionHistory {
+  id        String   @id @default(uuid())
+  patientId String
+  doctorId  String
+  drugs     String[]
+  diagnosis String?
+  createdAt DateTime @default(now())
+
+  patient User @relation("PatientPrescriptions", fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  User @relation("DoctorPrescriptions", fields: [doctorId], references: [id], onDelete: Cascade)
+}

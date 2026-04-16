@@ -16,9 +16,15 @@ if exist "venv\Scripts\activate.bat" (
 ) else if exist "env\Scripts\activate.bat" (
     echo [SYSTEM] Found 'env' in the current folder. Activating...
     call env\Scripts\activate
+) else if exist "venv\bin\activate.bat" (
+    echo [SYSTEM] Found 'venv\bin' in the current folder. Activating...
+    call venv\bin\activate.bat
+) else if exist "venv\bin\Activate.ps1" (
+    echo [SYSTEM] Found 'venv\bin\Activate.ps1' in the current folder, running Python directly.
+    rem We cant call ps1 directly from bat easily so we just continue
 ) else (
     echo [ERROR] Virtual environment not found! 
-    echo Please make sure you have created it (python -m venv venv)
+    echo Please make sure you have created it with python -m venv venv
     echo and installed the requirements.
     pause
     exit /b
@@ -26,7 +32,11 @@ if exist "venv\Scripts\activate.bat" (
 
 :: 3. Start the Server
 echo [SYSTEM] Booting Uvicorn Server...
-python -m uvicorn main:app --reload --port 8000
+if exist "venv\bin\python.exe" (
+    venv\bin\python.exe -m uvicorn main:app --reload --port 8000
+) else (
+    python -m uvicorn main:app --reload --port 8000
+)
 
 :: Keep the window open if the server crashes
 pause
