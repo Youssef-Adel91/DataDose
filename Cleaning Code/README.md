@@ -1,4 +1,4 @@
-# Cleaning & Pipeline Notebooks
+# Cleaning & Pipeline Notebooks 
 
 This directory documents the data cleaning and enrichment notebooks used to transform raw DataDose inputs into cleaned, validated, and reference-enriched ingredient and tradename datasets.
 
