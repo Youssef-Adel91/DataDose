@@ -140,10 +140,3 @@ This section lists the main filenames and variables as used exactly in the noteb
 
 ---
 
-If you want, I can (choose one):
-
-- Update the notebooks to use workspace-local paths (for example `Data/`),
-- Run the notebooks (or core cells) here to produce the outputs, or
-- Add a small script that orchestrates the recommended sequence and sets local paths.
-
-Which would you like next?
