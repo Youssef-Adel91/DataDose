@@ -22,26 +22,37 @@ except ImportError:
     print("kafka-python not installed. Run: pip install kafka-python")
 
 
+def get_env(name: str, default: str | None = None, required: bool = False) -> str:
+    value = os.getenv(name)
+    if value not in (None, ""):
+        return value
+    if default is not None:
+        return default
+    if required:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return ""
+
+
 # Kafka connection details.
-BOOTSTRAP_SERVERS = os.getenv(
+BOOTSTRAP_SERVERS = get_env(
     "KAFKA_BOOTSTRAP_SERVERS",
     "datadosekafka-901-datadosedepiproject001.l.aivencloud.com:15816",
 )
 
 # Kafka credentials.
-SASL_USERNAME = os.getenv("KAFKA_USERNAME")
-SASL_PASSWORD = os.getenv("KAFKA_PASSWORD")
+SASL_USERNAME = get_env("KAFKA_USERNAME", required=True)
+SASL_PASSWORD = get_env("KAFKA_PASSWORD", required=True)
 
-SASL_MECHANISM = "SCRAM-SHA-256"
+SASL_MECHANISM = get_env("KAFKA_SASL_MECHANISM", "SCRAM-SHA-256")
 
 # PEM certificate downloaded from Aiven.
-CA_PEM = Path(os.getenv("KAFKA_CA_FILE", r"C:\Users\Arasc\Desktop\Kafka\Kafka\certs\ca.pem"))
+CA_PEM = Path(get_env("KAFKA_CA_PEM_PATH", str(Path(__file__).resolve().parent / "certs" / "ca.pem")))
 
 # Kafka topic.
-TOPIC = "DataDose.in"
+TOPIC = get_env("KAFKA_TOPIC", "DataDose.in")
 
 # Verified ingredient dataset.
-DATASET_PATH = Path(r"C:\Users\Arasc\Desktop\Kafka\Kafka\output_FINAL.csv")
+DATASET_PATH = Path(get_env("DATASET_PATH", str(Path(__file__).resolve().parent / "output_FINAL.csv")))
 
 # Simulation settings.
 RATE_PER_SECOND = 1
@@ -176,11 +187,6 @@ def build_producer() -> "KafkaProducer":
     if not KAFKA_AVAILABLE:
         raise ImportError("Run: pip install kafka-python")
 
-    if not SASL_USERNAME or not SASL_PASSWORD:
-        raise EnvironmentError(
-            "Set KAFKA_USERNAME and KAFKA_PASSWORD in your environment before running the producer."
-        )
-
     if not CA_PEM.exists():
         raise FileNotFoundError(
             f"\nca.pem not found: {CA_PEM.absolute()}\n"
@@ -192,11 +198,11 @@ def build_producer() -> "KafkaProducer":
     print("Connecting to Aiven Kafka ...")
     print(f"Bootstrap: {BOOTSTRAP_SERVERS}")
     print(f"Topic: {TOPIC}")
-    print("Authentication: configured via environment variables")
     print(f"Mechanism: {SASL_MECHANISM}")
     print(f"ca.pem: {CA_PEM}")
 
     ssl_context = ssl.create_default_context(cafile=str(CA_PEM))
+    ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
 
     producer = KafkaProducer(
         bootstrap_servers=BOOTSTRAP_SERVERS,

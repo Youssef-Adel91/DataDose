@@ -1,4 +1,5 @@
 import os
+import ssl
 from pathlib import Path
 
 from kafka import KafkaConsumer
@@ -16,7 +17,6 @@ def get_env(name: str, default: str | None = None, required: bool = False) -> st
 
 
 TOPIC_NAME = get_env("KAFKA_TOPIC", "events.in")
-# Choose an appropriate SASL mechanism, for instance:
 SASL_MECHANISM = get_env("KAFKA_SASL_MECHANISM", "SCRAM-SHA-256")
 BOOTSTRAP_SERVERS = get_env(
     "KAFKA_BOOTSTRAP_SERVERS",
@@ -26,10 +26,12 @@ CLIENT_ID = get_env("KAFKA_CLIENT_ID", "CONSUMER_CLIENT_ID")
 GROUP_ID = get_env("KAFKA_GROUP_ID", "CONSUMER_GROUP_ID")
 SASL_USERNAME = get_env("KAFKA_USERNAME", required=True)
 SASL_PASSWORD = get_env("KAFKA_PASSWORD", required=True)
-SSL_CAFILE = Path(get_env("KAFKA_CA_PEM_PATH", r"F:\VS_WorkSpace\DataDose\Kafka\certs\ca.pem"))
+CA_PEM = Path(get_env("KAFKA_CA_PEM_PATH", str(Path(__file__).resolve().parent / "certs" / "ca.pem")))
 
-if not SSL_CAFILE.exists():
-    raise FileNotFoundError(f"Kafka CA certificate not found: {SSL_CAFILE}")
+if not CA_PEM.exists():
+    raise FileNotFoundError(f"Kafka CA certificate not found: {CA_PEM}")
+
+ssl_context = ssl.create_default_context(cafile=str(CA_PEM))
 
 consumer = KafkaConsumer(
     TOPIC_NAME,
@@ -41,9 +43,11 @@ consumer = KafkaConsumer(
     sasl_plain_username=SASL_USERNAME,
     sasl_plain_password=SASL_PASSWORD,
     security_protocol="SASL_SSL",
-    ssl_cafile=str(SSL_CAFILE),
+    ssl_context=ssl_context,
+    value_deserializer=lambda value: value.decode("utf-8"),
 )
 
 while True:
-    for message in consumer.poll().values():
-        print("Got message using SASL: " + message[0].value.decode("utf-8"))
+    for messages in consumer.poll(timeout_ms=1000).values():
+        for message in messages:
+            print(f"Got message using SASL: {message.value}")
