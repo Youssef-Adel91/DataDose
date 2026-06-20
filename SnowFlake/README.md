@@ -1,4 +1,4 @@
-# Snowflake Schema & Databricks-Snowflake Integration
+#  Snowflake Schema & Databricks-Snowflake Integration
 
 This folder contains Snowflake schema DDL and a Databricks notebook helper for connecting Databricks to Snowflake. The artifacts define the database schema used by the DataDose analytics pipelines and provide example code for reading and writing Snowflake tables from Databricks.
 
