@@ -1,4 +1,4 @@
-#  Kafka Simulators
+#   Kafka Simulators
 
 This folder contains a Kafka producer simulator that streams synthetic prescription messages to an Aiven Kafka topic, a simple consumer example, and certificate files required for TLS connections.
 
