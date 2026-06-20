@@ -1,0 +1,12 @@
+# Data wrangling and notebook processing
+numpy
+pandas
+requests
+
+# Kafka simulation and streaming
+kafka-python
+pyspark
+
+# Graph and warehouse integrations
+neo4j
+snowflake-connector-python
