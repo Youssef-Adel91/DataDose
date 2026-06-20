@@ -1,4 +1,4 @@
-# Databricks PySpark Streaming Pipeline
+#  Databricks PySpark Streaming Pipeline
 
 This folder contains a Databricks notebook that implements a streaming pipeline from Aiven Kafka into Spark Structured Streaming, enriches incoming prescription-like messages via a Neo4j graph lookup, and writes enriched rows into Snowflake.
 
