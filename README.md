@@ -44,9 +44,9 @@
 
 ## Features
 
-<p align="center">
+<!-- <p align="center">
   <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnEzZGZmOTQxZXZpc2I1bjFsbnhkazJ6dm0xcjg2aWQxMnExNGMwdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/NsDgJPXkk5CK7pPYkJ/giphy.gif" alt="Polypharmacy / pill interaction visual" width="60%" />
-</p>
+</p> -->
 
 **Clinical decision support (frontend + backend)**
 - N-degree polypharmacy scanner that checks all pairwise `INTERACTS_WITH` relationships among a patient's drug list
