@@ -1,192 +1,303 @@
+<div align="center">
 
-
-
-# DataDose Pipeline: Pharmaceutical Data Cleaning & FDA Enrichment
-
-An automated Python-based data engineering pipeline designed to clean, canonicalize, and enrich raw, messy pharmaceutical datasets using a hybrid approach of deterministic parsing (Regex/NLP), Large Language Models (LLMs), and external federal APIs.
-
-![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-Data_Manipulation-150458?logo=pandas)
-![Jupyter](https://img.shields.io/badge/Jupyter-Notebooks-F37626?logo=jupyter)
-![Groq](https://img.shields.io/badge/Groq-LLM_Inference-f55036)
-![OpenFDA](https://img.shields.io/badge/OpenFDA-Federal_API-005EA2)
-
----
-
-## Table of Contents
-1. [Executive Summary](#executive-summary)
-2. [Business Problem](#business-problem)
-3. [Architecture & Workflow](#architecture--workflow)
-4. [Deep Dive: Pipeline Stages](#deep-dive-pipeline-stages)
-   - [Stage 1: Ingestion & Text Normalization](#stage-1-ingestion--text-normalization)
-   - [Stage 2: Active Ingredient Validation](#stage-2-active-ingredient-validation)
-   - [Stage 3: LLM & OpenFDA Enrichment](#stage-3-llm--openfda-enrichment)
-   - [Stage 4: Tradename Sanitization](#stage-4-tradename-sanitization)
-   - [Stage 5: Batch File Operations](#stage-5-batch-file-operations)
-5. [Data Transformation Examples](#data-transformation-examples)
-6. [Setup & Local Execution](#setup--local-execution)
-
----
-
-## Executive Summary
-
-The **DataDose Pipeline** is a sequential batch-processing system built across five dedicated Jupyter Notebooks. It ingests raw healthcare product inventory and outputs standardized, medically accurate master records. 
-
-By combining fast, deterministic natural language processing (regex, tokenization, fuzzy matching) with state-of-the-art LLMs (`llama-3.1-8b-instant` via Groq) and the official OpenFDA API, this pipeline achieves production-grade canonicalization of active ingredients, standardized dosage forms, and pure brand names stripped of inventory noise.
-
-* **Business Value:** Automates the massive manual curation overhead required to map disparate e-commerce or pharmacy point-of-sale data to standard clinical databases.
-* **Technical Value:** Demonstrates a highly resilient text-processing architecture that utilizes cost-effective regex for 80% of the cleaning, falling back to semantic LLM evaluation only for complex, ambiguous pharmaceutical nomenclature.
-
----
-
-## Business Problem
-
-Healthcare and pharmacy datasets are notoriously dirty. Data sourced from point-of-sale systems, scraping, or disparate hospital databases typically suffer from:
-* **Concatenated Inventory Noise:** Tradenames are heavily polluted with package sizes, volume counts, and dosage forms (e.g., *"Aspirin 500mg Tablet 20 tabs"* instead of just *"Aspirin"*).
-* **Non-Standard Ingredients:** Active pharmaceutical ingredients (APIs) contain misspellings (e.g., *"nitrofurantion"*), local synonyms, or system-encoded tokens (e.g., *"__ING0024__"*).
-* **Unstructured Formats:** Dosage forms exist as dozens of free-text variations (*"f.c.tabs"*, *"caps"*, *"cre"*) making aggregations impossible.
-* **Lack of Master Data:** It is difficult to separate non-pharmaceutical items (cosmetics, supplements) from regulated prescription and OTC drugs without manual clinical review.
-
----
-
-## Architecture & Workflow
-
-The pipeline operates as a sequential Directed Acyclic Graph (DAG) executed via notebook environments, processing CSV files sequentially.
-
-
-
-```mermaid
-flowchart TD
-    subgraph Data Sources
-        A[Raw DataDose Dataset \n CSV]
-    end
-
-    subgraph Phase 1: Local Pre-Processing
-        B(01: Initial Cleaning \n Standardize Forms & Normalize Text)
-        C(02: Ingredient Parsing \n Regex, Typo Fixes, Tokenization)
-    end
-
-    subgraph Phase 2: Remote Enrichment & Validation
-        D(03: FDA Enrichment \n Groq LLM + OpenFDA API)
-        E(04: Tradename Cleaning \n Pack Volume Stripping + LLM Auth)
-    end
-
-    subgraph Phase 3: Finalization
-        F(05: Merge Utilities \n Batch Consolidation)
-    end
-
-    subgraph Storage
-        G[(Cleaned Ingredient CSV)]
-        H[(Enriched FDA JSON/CSV)]
-        I[(Validated Tradenames)]
-    end
-
-    A --> B
-    B --> C
-    C --> G
-    G --> D
-    D --> H
-    A --> E
-    E --> I
-    H -.-> F
-    I -.-> F
-    F --> J[(Final Unified Dataset)]
 ```
----
+  ____ _                  _              ____  _            _ _              
+ / ___| | ___  __ _ _ __ (_)_ __   __ _  |  _ \(_)_ __   ___| (_)_ __   ___   
+| |   | |/ _ \/ _` | '_ \| | '_ \ / _` | | |_) | | '_ \ / _ \ | | '_ \ / _ \  
+| |___| |  __/ (_| | | | | | | | | (_| | |  _ <| | |_) |  __/ | | | | |  __/  
+ \____|_|\___|\__,_|_| |_|_|_| |_|\__, | |_| \_\_| .__/ \___|_|_|_| |_|\___|  
+                                  |___/          |_|                          
+        Raw CSV → Standardize → Verify → FDA-Enrich → Merge
+```
 
-## Deep Dive: Pipeline Stages
+# 🔥 Pharma Data Cleaning & Enrichment Pipeline
 
-### Stage 1: Ingestion & Text Normalization
-**File:** `01_DataDose_Initial_Cleaning.ipynb`
+![Language](https://img.shields.io/badge/python-3.x-3776AB?logo=python&logoColor=white)
+![Library](https://img.shields.io/badge/pandas-data%20wrangling-150458?logo=pandas&logoColor=white)
+![Runtime](https://img.shields.io/badge/Google%20Colab-ready-F9AB00?logo=googlecolab&logoColor=white)
+![LLM](https://img.shields.io/badge/Groq-LLM%20validation-F55036)
+![API](https://img.shields.io/badge/OpenFDA-drug%20label%20lookup-005EA2)
+![License](https://img.shields.io/badge/license-unspecified-lightgrey)
 
-This stage acts as the ingestion layer, standardizing the base schema of the CSV.
-* **Feature Engineering:** Drops unused operational columns (`updated`, `created`, `new_price`, `id`, `Therapeutic_Group`) to reduce memory footprint.
-* **String Normalization:** Applies vectorized `.astype(str).str.lower().str.strip()` to textual columns: `activeingredient`, `company`, `form`, `group`, `route`, and `tradename`.
-* **Dosage Form Consolidation:** Uses a curated dictionary (`form_consolidation`) to collapse free-text into standardized medical categories. 
-  * Fixes typos: `cre` $\rightarrow$ `cream`, `tabs.` $\rightarrow$ `tablet`, `power` $\rightarrow$ `powder`.
-  * Categorizes: `ampoule/vial/syringe/pen` $\rightarrow$ `injection`.
-  * Categorizes: `tablet/lozenges/film/effervescent` $\rightarrow$ `oral_solid`.
-  * Categorizes: `syrup/suspension/solution/mouth wash` $\rightarrow$ `oral_liquid`.
+> Five notebooks that turn a raw pharmaceutical product CSV into cleaned, FDA-verified active ingredients and validated trade names — ready for downstream analytics or graph-loading.
 
-### Stage 2: Active Ingredient Validation
-**File:** `02_Active_Ingredient_Cleaning_and_Verification.ipynb`
-
-Performs deep deterministic cleaning of complex chemical strings.
-* **Token Decoding:** Function `decode_encoded_tokens()` replaces database artifact tokens (`__ING0024__` $\rightarrow$ `vita`, `__ING0055__` $\rightarrow$ `iron`).
-* **Spell Correction:** Function `apply_spell_fix()` employs a custom dictionary correcting known systemic misspellings (e.g., `cholorohexidine` $\rightarrow$ `chlorhexidine`, `nitrofurantion` $\rightarrow$ `nitrofurantoin`).
-* **Medical Expansion:** `PLAIN_REPLACEMENTS` and `BVITAMIN_REGEX` expand grouped terms into their chemical components. For example, `vitamin b complex` is translated via regex into `thiamine + riboflavin + niacin + pantothenic acid + pyridoxine + biotin + folic acid + cobalamin`.
-* **Garbage & Unit Filtering:** Uses `DOSE_UNIT_PATTERN` regex to strip numeric weights and forms (`mg`, `mcg`, `iu`, `ml`, `%`). Filters out cosmetic terms (`shampoo`, `cream`, `lotion`) and non-drug tokens (`aloe vera`, `honey`, `royal jelly`).
-* **Combination Sorting:** Splits multi-ingredient compounds by `+`, trims whitespace, removes duplicates, and sorts alphabetically to ensure canonical combination representation. 
-* **Fuzzy Matching:** Includes a `fuzzy_match_ingredient()` fallback using `difflib.SequenceMatcher` (threshold `0.85`) against local reference lists.
-
-### Stage 3: LLM & OpenFDA Enrichment
-**File:** `03_FDA_Enrichment.ipynb`
-
-Leverages API-driven data enrichment to determine true pharmaceutical validity.
-* **LLM Inference (Groq):** Uses `llama-3.1-8b-instant` with a `0.1` temperature. The system prompt instructs the model to act as a "senior pharmaceutical scientist" to evaluate the cleaned ingredients. 
-  * Rejects food, spices, and vague marketing terms.
-  * Outputs strict JSON: `{"is_drug": true/false, "canonical_name": "WHO INN Standard"}`.
-* **OpenFDA API Integration:** Function `query_openfda()` executes `GET` requests to `https://api.fda.gov/drug/label.json` using the LLM-provided canonical name (`active_ingredients.name:"{search_term}"`).
-* **Metadata Extraction:** Parses the FDA JSON response to extract `brand_names`, `generic_names`, `manufacturers`, `dosage_forms`, and `warnings`. Generates `ingredients_fda_results.json`.
-
-### Stage 4: Tradename Sanitization
-**File:** `04_Tradename_Cleaning_and_Validation.ipynb`
-
-Isolates pure product branding from messy inventory text.
-* **Multi-Pass Regex Stripping (`clean_tradename_text`):**
-  * `_DOSAGE_FORM_RE`: A highly verbose regex pattern that hunts and removes exhaustive string variations of forms (e.g., `f.c.tabs`, `film-coated-tabs`, `suppositories`, `pessaries`).
-  * `_PACK_VOLUME_RE`: Strips physical counts and volumes (e.g., `\d+ ml`, `\d+ tabs`, `ampoules`, `sachets`).
-  * `_LEADING_NUMBER_RE` & `_NUMBER_WORD_RE`: Clears leading catalog numbers and spelled-out quantities ("one", "two").
-* **LLM Brand Authentication:** Validates the stripped string with Groq to confirm if it represents a recognized pharmaceutical brand, actively discarding generic names or medical devices. Only outputs records meeting `CONFIDENCE_THRESHOLD = 0.85`.
-
-### Stage 5: Batch File Operations
-**File:** `05_Merge_Utilities.ipynb`
-
-Provides a helper library (`merge_csv_files`, `batch_merge_folders`) for handling distributed CSV outputs across pipeline stages.
-* **Consolidation:** Uses Python's `glob` to detect all `*.csv` files in a target directory, bypassing files that match a `skip_pattern`. It leverages `pandas.concat(dfs, ignore_index=True)` to safely bind the DataFrames, logging skipped files and handling schema alignment, before exporting a unified master file.
+</div>
 
 ---
 
-## Data Transformation Examples
-
-Here is how the pipeline transforms raw data across its stages:
-
-| Feature | Raw Input (Dirty Data) | Pipeline Output (Clean Data) | Transformation Stage |
-| :--- | :--- | :--- | :--- |
-| **Tradename** | `Aspirin 500mg Tablet 20 tabs` | `Aspirin` | Notebook 04 (Regex Stripping) |
-| **Tradename** | `Amoxicillin Capsule 250mg 30 caps` | `Amoxicillin` | Notebook 04 (Regex Stripping) |
-| **Ingredient** | `__ING0024__ b complex + iron 350m` | `iron + thiamine + riboflavin + niacin + pantothenic acid + pyridoxine + biotin + folic acid + cobalamin` | Notebook 02 (Token Decode + Med Expansion + Alpha Sort) |
-| **Ingredient** | `cholorohexidine 2% solution` | `chlorhexidine` | Notebook 02 (Typo Fix + Regex Unit Strip) |
-| **Dosage Form** | `f.c. effervescent tabs.` | `oral_solid` | Notebook 01 (Categorical Mapping) |
+## 📋 Table of Contents
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Folder Structure](#-folder-structure)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Configuration](#-configuration)
+- [Module Details](#-module-details)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Acknowledgments](#-acknowledgments)
+- [Contact](#-contact)
 
 ---
 
-## Setup & Local Execution
+## ✨ Features
 
-### Prerequisites
-* Python 3.8+
-* `pandas`, `numpy`, `requests`
-* Jupyter Notebook or Google Colab environment.
-* Valid API Keys configured at the top of notebooks `02`, `03`, and `04`:
-  * `GROQ_API_KEYS` (Required for LLM validation)
-  * `OPENFDA_API_KEY` (Optional, prevents rate-limiting on OpenFDA)
+**Initial standardization**
+- Drops unused columns (`updated`, `created`, `new_price`, `id`, `Therapeutic_Group`) and lowercases/strips key text fields
+- Collapses messy free-text dosage forms (typo fixes + consolidation map) into a clean `form_standardized` category
 
-### Environment Configuration
-All file I/O operations utilize a base directory variable. By default, this is configured for Google Colab. **You must update these path definitions** at the top of each script to match your local environment before running.
+**Active ingredient cleaning**
+- Decodes encoded placeholder tokens, fixes known spelling errors, expands B-vitamin shorthand (`b12` → `cobalamin`, etc.) and omega notation (`omega-3-6-9` → `omega 3 + omega 6 + omega 9`)
+- Filters out garbage entries, cosmetic-only products, and non-drug supplement tokens
+- Splits multi-ingredient combination products into sorted, `+`-joined canonical strings
+
+**Reference verification**
+- Fuzzy-matches cleaned ingredients against an optional reference list using `difflib` sequence matching
+- LLM system prompt scaffolding for INN (International Nonproprietary Name) canonicalization
+
+**FDA enrichment**
+- Extracts the full unique-ingredient vocabulary from the cleaned dataset
+- Validates each ingredient with a Groq-hosted LLM, then cross-checks confirmed drugs against the OpenFDA drug label API for brand names, manufacturers, and dosage forms
+- Filters to ingredients confirmed as both `is_drug` and `fda_found` before export
+
+**Trade name cleaning & validation**
+- Regex-strips dosage-form words and pack/volume counts (`"Aspirin 500mg Tablet 20 tabs"` → `"Aspirin 500mg"`) from raw brand names
+- Optionally validates cleaned trade names via an LLM, filtering by a configurable confidence threshold
+
+**Merge utilities**
+- Consolidates any folder of CSVs into one merged file, with batch support across multiple folders
+
+---
+
+## 🛠 Tech Stack
+
+| Category | Technology | Purpose |
+|---|---|---|
+| Language | Python 3 | All notebooks |
+| Data wrangling | `pandas`, `numpy` | Loading, cleaning, transforming tabular data |
+| Text matching | `difflib`, `re` | Fuzzy reference matching, regex-based text cleaning |
+| HTTP | `requests` | Calls to Groq and OpenFDA APIs |
+| Serialization | `json`, `csv` | Reading/writing intermediate and final outputs |
+| File ops | `glob`, `pathlib`, `os` | Discovering and merging CSV files |
+| Runtime | Google Colab | `BASE_DIR` paths and commented `drive.mount()` calls assume Colab |
+| LLM | Groq (`llama-3.1-8b-instant`) | Ingredient/trade-name validation and canonicalization |
+| Reference data | OpenFDA `drug/label.json` | Brand names, manufacturers, dosage forms for confirmed drugs |
+
+---
+
+## 🏗 Architecture
+
+```
+DataDoseDataset.csv (raw)
+        │
+        ▼
+01_DataDose_Initial_Cleaning
+  drop columns → lowercase/strip text → standardize dosage form
+        │
+        ▼
+02_Active_Ingredient_Cleaning_and_Verification
+  Part 1: clean_active_ingredient() → activeingredient_clean
+  Part 2: fuzzy_match_ingredient() against optional reference list
+        │
+        ▼
+03_FDA_Enrichment
+  extract_unique_ingredients() → Groq validation → OpenFDA lookup
+  → filter_confirmed_drugs()
+        │
+        ▼ (independent branch, needs a manually-curated "FinalV" CSV)
+04_Tradename_Cleaning_and_Validation
+  clean_tradename_text() → optional LLM validation → confidence filter
+
+        ⋮ (used anywhere in the flow)
+05_Merge_Utilities
+  merge_csv_files() / batch_merge_folders() — consolidate CSV outputs
+```
+
+Notebooks 01 → 02 → 03 form the main linear path. Notebook 04 operates on a separately curated `DataDoseDataset_FinalV.csv` rather than an automatic output of 01–03, and notebook 05 is a general-purpose helper usable at any stage.
+
+---
+
+## 📁 Folder Structure
+
+```
+.
+├── 01_DataDose_Initial_Cleaning.ipynb               # Drop columns, normalize text, standardize dosage form
+├── 02_Active_Ingredient_Cleaning_and_Verification.ipynb  # Clean ingredient strings + fuzzy/LLM verification
+├── 03_FDA_Enrichment.ipynb                          # Groq validation + OpenFDA lookup
+├── 04_Tradename_Cleaning_and_Validation.ipynb       # Regex + LLM trade-name cleaning
+├── 05_Merge_Utilities.ipynb                         # Generic CSV merge helpers
+└── README.md                                        # This file
+```
+
+---
+
+## ⚠ Prerequisites
+
+1. **Python 3** with `pandas`, `numpy`, `requests` installed (`pip install pandas numpy requests`)
+2. **Google Colab** (recommended) or any environment where you can adjust the hard-coded `BASE_DIR` paths
+3. Raw input dataset: `DataDoseDataset.csv`, containing at least an active-ingredient column (`activeingredient`, `ActiveIngredient`, `active_ingredient`, `ingredients`, or `Ingredients`) and a `form` column
+4. *(Optional, for full enrichment)* A **Groq API key** for LLM-based ingredient/trade-name validation
+5. *(Optional)* An **OpenFDA API key** — queries work without one, but a key raises rate limits
+6. *(Optional)* A curated `DataDoseDataset_FinalV.csv` if you intend to run notebook 04
+
+---
+
+## 🚀 Installation
+
+1. **Open the notebooks in Google Colab** (or your local Jupyter environment):
+   ```text
+   Upload 01_DataDose_Initial_Cleaning.ipynb ... 05_Merge_Utilities.ipynb
+   ```
+
+2. **Mount Google Drive** (if using Colab) by uncommenting the setup cell in each notebook:
+   ```python
+   from google.colab import drive
+   drive.mount('/content/drive')
+   ```
+
+3. **Update the path variables** near the top of each notebook to match your data location:
+   ```python
+   BASE_DIR = '/content/drive/MyDrive/DataDoseDepi'   # adjust as needed
+   ```
+
+4. **Install dependencies** if running outside Colab:
+   ```bash
+   pip install pandas numpy requests
+   ```
+
+5. **Add API keys** where enrichment/validation is needed (notebooks 02, 03, 04):
+   ```python
+   GROQ_API_KEYS = ["your-groq-api-key"]
+   OPENFDA_API_KEY = "your-openfda-key"   # optional
+   ```
+
+---
+
+## 📖 Usage
+
+### Basic Usage — run the pipeline in order
+
+```text
+1. Run 01_DataDose_Initial_Cleaning.ipynb       → DataDoseDataset_Cleaned.csv
+2. Run 02_Active_Ingredient_Cleaning_and_Verification.ipynb → DataDoseDataset_ActiveIngredient_Cleaned.csv
+3. Run 03_FDA_Enrichment.ipynb                  → ingredients_fda_results.csv / .json
+```
+
+### Advanced Usage — cleaning a single ingredient string
 
 ```python
-# Example: Change this in notebooks to match your local setup
-BASE_DIR = './data_payloads/' 
-INPUT_FILE = os.path.join(BASE_DIR, 'DataDoseDataset.csv')
+clean_active_ingredient("Vit. B Complex + Vitamin C 500mg Tablet")
+# → normalizes B-complex shorthand, strips dose units, splits on '+'
 ```
 
-### Recommended Execution Order
-To process a raw dataset from start to finish, execute the notebooks in the following order:
-1. `01_DataDose_Initial_Cleaning.ipynb`
-2. `02_Active_Ingredient_Cleaning_and_Verification.ipynb`
-3. `03_FDA_Enrichment.ipynb`
-4. `04_Tradename_Cleaning_and_Validation.ipynb` *(Run independently on post-cleaned data)*
-5. `05_Merge_Utilities.ipynb` *(Use to combine batched outputs if processing in chunks)*
+```python
+clean_tradename_text("Amoxicillin Capsule 250mg 30 caps")
+# → 'Amoxicillin 250mg'
+```
+
+### Common Scenario — running the FDA enrichment pipeline on a sample
+
+```python
+results = run_full_pipeline(sample_size=20)
+```
+
+### Common Scenario — merging CSV outputs from a folder
+
+```python
+result = merge_csv_files(
+    folder_path="/content/drive/MyDrive/DataDoseDepi/DataSets",
+    output_file="merged_output.csv",
+    skip_pattern="merged",
+)
+```
 
 ---
 
+## ⚙ Configuration
+
+| Variable | Notebook(s) | Default | Description |
+|---|---|---|---|
+| `BASE_DIR` | 01, 02, 03 | `/content/drive/MyDrive/DataDoseDepi` | Root folder for inputs/outputs |
+| `BASE_DIR` | 04 | `/content/drive/MyDrive/DataDoseClean/Tradename Clean` | Separate root used only by notebook 04 |
+| `INPUT_FILE` | 01, 02 | `DataDoseDataset.csv` | Raw source dataset |
+| `OUTPUT_FILE` | 01 | `DataDoseDataset_Cleaned.csv` | Output of initial cleaning |
+| `CLEANED_CSV` | 02, 03 | `DataDoseDataset_ActiveIngredient_Cleaned.csv` | Cleaned-ingredient dataset |
+| `INPUT_CSV` | 04 | `DataDoseDataset_FinalV.csv` | Dataset to validate trade names on (not auto-produced by 01–03) |
+| `OUTPUT_CSV` / `OUTPUT_JSON` | 03 | `ingredients_fda_results.csv` / `.json` | FDA enrichment results |
+| `OUTPUT_CSV` / `OUTPUT_JSON` | 04 | `dataset_with_validated_tradenames.csv` / `tradenames_validated.json` | Validated trade names |
+| `GROQ_API_KEYS` | 02, 03, 04 | `[]` (empty) | Groq API key list — LLM steps no-op until populated |
+| `OPENROUTER_API_KEYS` | 02 | `[]` (empty) | Optional alternate LLM provider, defined but unused in shown cells |
+| `GROQ_MODEL` | 02, 03, 04 | `llama-3.1-8b-instant` | Model used for validation calls |
+| `OPENFDA_API_KEY` | 03 | `""` (empty) | Optional key for higher OpenFDA rate limits |
+| `CONFIDENCE_THRESHOLD` | 04 | `0.85` | Minimum LLM confidence to keep a validated trade name |
+| `fuzzy_match_ingredient` threshold | 02 | `0.85` | Minimum `difflib` ratio to accept a reference match |
+
+> **Note:** All `GROQ_API_KEYS` lists default to empty. Without a key, the cleaning/regex logic still runs, but LLM validation calls in notebooks 02–04 simply return `None`/`False` rather than failing.
+
+---
+
+## 📦 Module Details
+
+### `01_DataDose_Initial_Cleaning.ipynb`
+> Loads the raw dataset and applies first-pass standardization.
+- **Key Components:** column-drop step, text lowercasing/stripping, dosage-form typo-fix + consolidation mapping → `form_standardized`
+- **Dependencies:** `pandas`, `numpy`
+- **Notes:** Rows with a null/`"nan"` `form` value are dropped before standardization.
+
+### `02_Active_Ingredient_Cleaning_and_Verification.ipynb`
+> Two-part notebook: cleans raw ingredient text into canonical `+`-joined strings, then offers fuzzy/LLM verification helpers.
+- **Key Components:** `decode_encoded_tokens()`, `apply_spell_fix()`, `normalize_text()`, `normalize_omega()`, `is_cosmetic_entry()`, `clean_active_ingredient()`, `fuzzy_match_ingredient()`, `verify_ingredients()`
+- **Dependencies:** `pandas`, `numpy`, `re`, `difflib`, `requests`
+- **Notes:** `verify_ingredients()` only processes the first 100 unique ingredients (`unique_ingredients[:100]`) as a demo limit; the LLM verification call itself is not wired into `verify_ingredients()` in the current cells.
+
+### `03_FDA_Enrichment.ipynb`
+> Validates ingredients via a Groq LLM and cross-references OpenFDA drug labels.
+- **Key Components:** `extract_unique_ingredients()`, `call_groq_api()`, `query_openfda()`, `filter_confirmed_drugs()`, `run_full_pipeline()`
+- **Dependencies:** `requests`, `pandas`, `json`
+- **Notes:** `run_full_pipeline()` defaults to a `sample_size=10` demo run and is left commented out at the end of the notebook; a drug is only "confirmed" if both `groq.is_drug` and `fda.found` are true.
+
+### `04_Tradename_Cleaning_and_Validation.ipynb`
+> Strips dosage-form and pack-count text from brand names, then optionally validates them via an LLM.
+- **Key Components:** `_DOSAGE_FORM_RE`, `_PACK_VOLUME_RE` regex patterns, `clean_tradename_text()`, `validate_tradename_with_llm()`, `run_tradename_pipeline()`, `export_validated_tradenames()`
+- **Dependencies:** `re`, `pandas`, `requests`
+- **Notes:** Uses its own `BASE_DIR` (`Tradename Clean` subfolder), separate from notebooks 01–03; `run_tradename_pipeline()` defaults to processing only `df.head(sample_size)` rows.
+
+### `05_Merge_Utilities.ipynb`
+> General-purpose CSV consolidation helpers, independent of the rest of the pipeline.
+- **Key Components:** `merge_csv_files(folder_path, output_file, skip_pattern=None)`, `batch_merge_folders(folder_specs)`
+- **Dependencies:** `pandas`, `glob`, `os`
+- **Notes:** `merge_csv_files` concatenates rows via `pd.concat` without aligning differing column sets across files.
+
+---
+
+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-change`)
+3. Commit your changes with a clear message
+4. Push the branch and open a Pull Request describing what changed and why
+
+---
+
+## 📄 License
+
+No `LICENSE` file is included in this repository. Add one (e.g. MIT, Apache 2.0) before distributing this project publicly.
+
+---
+
+## 🙏 Acknowledgments
+
+- [pandas](https://pandas.pydata.org/) and [NumPy](https://numpy.org/) for data wrangling
+- [Groq](https://groq.com/) for LLM-hosted ingredient/trade-name validation
+- [OpenFDA](https://open.fda.gov/) for drug label reference data
+- Python's built-in [`difflib`](https://docs.python.org/3/library/difflib.html) for fuzzy matching
+
+---
+
+## 📬 Contact
+
+No contact information was found in the provided files. Add a maintainer name, email, or issue-tracker link here before publishing.
