@@ -1,463 +1,286 @@
+<div align="center">
+
 ```
-██████╗ ██╗  ██╗ █████╗ ██████╗ ███╗   ███╗ █████╗ ██████╗  ██████╗ ███████╗
-██╔══██╗██║  ██║██╔══██╗██╔══██╗████╗ ████║██╔══██╗██╔══██╗██╔═══██╗██╔════╝
-██████╔╝███████║███████║██████╔╝██╔████╔██║███████║██║  ██║██║   ██║███████╗
-██╔═══╝ ██╔══██║██╔══██║██╔══██╗██║╚██╔╝██║██╔══██║██║  ██║██║   ██║╚════██║
-██║     ██║  ██║██║  ██║██║  ██║██║ ╚═╝ ██║██║  ██║██████╔╝╚██████╔╝███████║
-╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚══════╝
-                  Databricks PySpark Streaming Pipeline
+ ____        ____                  _    
+|  _ \ _   _/ ___| _ __   __ _ _ __| | __
+| |_) | | | \___ \| '_ \ / _` | '__| |/ /
+|  _ <| |_| |___) | |_) | (_| | |  |   < 
+|_| \_\\__, |____/| .__/ \__,_|_|  |_|\_\
+       |___/      |_|                    
+        Kafka → PySpark → Neo4j → Snowflake
 ```
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=flat-square&logo=python)
-![PySpark](https://img.shields.io/badge/PySpark-Structured%20Streaming-orange?style=flat-square&logo=apachespark)
-![Databricks](https://img.shields.io/badge/Databricks-Runtime-red?style=flat-square&logo=databricks)
-![Kafka](https://img.shields.io/badge/Aiven-Kafka-231F20?style=flat-square&logo=apachekafka)
-![Neo4j](https://img.shields.io/badge/Neo4j-AuraDB-008CC1?style=flat-square&logo=neo4j)
-![Snowflake](https://img.shields.io/badge/Snowflake-Data%20Warehouse-29B5E8?style=flat-square&logo=snowflake)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+# 🔥 PySpark Streaming Pipeline
 
-> A real-time pharmaceutical prescription risk pipeline that streams JSON events from Aiven Kafka, enriches them with drug-drug interaction data from a Neo4j knowledge graph, computes patient risk scores, and lands enriched records into Snowflake — all orchestrated in a single Databricks notebook.
+![Platform](https://img.shields.io/badge/platform-Databricks-FF3621?logo=databricks&logoColor=white)
+![Language](https://img.shields.io/badge/python-3.x-3776AB?logo=python&logoColor=white)
+![Framework](https://img.shields.io/badge/PySpark-Structured%20Streaming-E25A1C?logo=apachespark&logoColor=white)
+![Kafka](https://img.shields.io/badge/Aiven-Kafka-1B1E2E?logo=apachekafka&logoColor=white)
+![Graph](https://img.shields.io/badge/Neo4j-AuraDB-008CC1?logo=neo4j&logoColor=white)
+![Warehouse](https://img.shields.io/badge/Snowflake-Staging-29B5E8?logo=snowflake&logoColor=white)
+![License](https://img.shields.io/badge/license-unspecified-lightgrey)
+
+> Streams prescription events off Aiven Kafka, enriches each one against a Neo4j drug-interaction graph, scores patient risk in real time, and lands the result in Snowflake — all from a single Databricks notebook.
+
+</div>
 
 ---
 
 ## 📋 Table of Contents
-
-- [✨ Features](#-features)
-- [🛠 Tech Stack](#-tech-stack)
-- [🏗 Architecture](#-architecture)
-- [📁 Folder Structure](#-folder-structure)
-- [⚠ Prerequisites](#-prerequisites)
-- [🚀 Installation](#-installation)
-- [📖 Usage](#-usage)
-- [⚙ Configuration](#-configuration)
-- [📦 Module Details](#-module-details)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
-- [📬 Contact](#-contact)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Folder Structure](#-folder-structure)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Configuration](#-configuration)
+- [Module Details](#-module-details)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Acknowledgments](#-acknowledgments)
+- [Contact](#-contact)
 
 ---
 
 ## ✨ Features
 
-### Streaming Ingestion
-- Consumes real-time JSON prescription events from an **Aiven Kafka** topic using Spark Structured Streaming
-- Supports **SASL/SCRAM-256** authentication and **TLS/SSL** with a CA PEM certificate
-- Configurable starting offsets, fault-tolerant checkpoint recovery, and `failOnDataLoss=false` for resilience
+**Streaming ingestion**
+- Consumes JSON prescription events from an Aiven Kafka topic over `SASL_SSL` with `SCRAM-SHA-256` auth and a PEM-based SSL truststore
+- Structured Streaming reader with a 10-second micro-batch trigger and a durable DBFS checkpoint
 
-### Drug Interaction Enrichment
-- Queries a **Neo4j AuraDB** knowledge graph for `Drug → INTERACTS_WITH → Drug` relationships per micro-batch
-- Detects **shared active ingredients** via `HAS_INGREDIENT` traversal
-- Returns severity ranking (Major / Moderate / Minor), interaction type, and interacting drug pairs
+**Graph-based drug safety checks**
+- Looks up `Drug` nodes and `INTERACTS_WITH` relationships in Neo4j AuraDB to flag drug-drug interactions, with severity ranked `Major` → `Moderate` → `Minor`
+- Cross-references `HAS_INGREDIENT` relationships to catch shared active ingredients between a new prescription and a patient's current medications
 
-### Risk Scoring
-- Computes a **drug risk score** (0–100) based on severity weight, interaction count, and ingredient overlap
-- Computes a **patient risk score** adjusted by age multiplier (`1.0 + (age - 40) × 0.005`)
-- Flags **high-risk patients** (score ≥ 60) and **polypharmacy cases** (≥ 5 concurrent medications)
+**Real-time risk scoring**
+- Computes a `DRUG_RISK_SCORE` from interaction severity, interaction count, ingredient overlap, and a polypharmacy flag (≥5 concurrent medications)
+- Applies an age-based multiplier to produce a `PATIENT_RISK_SCORE`, with a `HIGH_RISK_PATIENT` flag at a score ≥ 60
 
-### Snowflake Output
-- Writes enriched rows to `STAGING.STG_TRANSACTION` in append mode via the **Snowflake Spark Connector**
-- Each row carries `BATCH_ID`, `SOURCE_SYSTEM`, interaction fields, risk scores, and the full raw JSON
-- Supports write verification queries and a pipeline health summary dashboard
+**Snowflake staging**
+- Writes enriched, flattened rows into `STAGING.STG_TRANSACTION` via the Snowflake Spark connector in append mode
 
-### Developer Experience
-- Structured as **9 numbered steps** with matching debug cells for incremental testing
-- Includes masked credential printing, graph content checks, and dry-run batch writes
-- Live monitoring loop tracks batch IDs, input rows/sec, and Snowflake record counts
+**Built-in operational tooling**
+- 17 numbered debug cells (masked-credential printouts, connectivity pings, schema checks, dry-runs, live stream monitoring) so each stage of the pipeline can be verified before moving to the next
 
 ---
 
 ## 🛠 Tech Stack
 
-| Category | Technology | Version | Purpose |
-|---|---|---|---|
-| **Runtime** | Databricks | Latest LTS | Managed Spark environment |
-| **Stream Processing** | Apache Spark Structured Streaming | 3.x | Micro-batch streaming engine |
-| **Message Broker** | Aiven Kafka | Managed | Source of prescription events |
-| **Graph Database** | Neo4j AuraDB | Cloud | Drug interaction knowledge graph |
-| **Data Warehouse** | Snowflake | Cloud | Enriched record storage |
-| **Language** | Python | 3.9+ | Pipeline logic |
-| **Spark Connector** | spark-sql-kafka | Cluster JAR | Kafka ↔ Spark integration |
-| **Spark Connector** | snowflake-spark-connector | Cluster JAR | Snowflake ↔ Spark writes |
-| **Python Driver** | neo4j | Latest | Neo4j Cypher query client |
+| Category | Technology | Notes |
+|---|---|---|
+| Compute | Databricks notebook | Assumes a pre-existing `spark` session on the cluster |
+| Streaming engine | PySpark Structured Streaming | `foreachBatch` micro-batch processing |
+| Message broker | Aiven Kafka | `spark-sql-kafka` connector, SASL_SCRAM-SHA-256 over SSL |
+| Graph database | Neo4j AuraDB | Accessed via the official `neo4j` Python driver |
+| Data warehouse | Snowflake | `net.snowflake.spark.snowflake` Spark connector |
+| Secrets | Databricks Secrets / env vars | `get_env` / `get_secret_or_env` helpers in Step 1 |
+| Language | Python 3 | Runs inside the Databricks notebook runtime |
 
 ---
 
 ## 🏗 Architecture
 
 ```
-┌─────────────────┐     JSON      ┌───────────────────────────────────────────────────┐
-│   simulator.py  │ ─────────────▶│              Aiven Kafka (SASL/SSL)               │
-│  (Event Source) │               │            Topic: DataDose.in                     │
-└─────────────────┘               └──────────────────────┬────────────────────────────┘
-                                                         │  Spark readStream
-                                                         ▼
-                                  ┌───────────────────────────────────────────────────┐
-                                  │          Databricks / PySpark Notebook            │
-                                  │                                                   │
-                                  │  Step 6: Parse JSON → prescription_schema         │
-                                  │  Step 7: foreachBatch → process_batch()           │
-                                  │    ├─ collect() micro-batch rows                  │
-                                  │    ├─ check_interactions() → Neo4j AuraDB ──────▶ │
-                                  │    │     MATCH Drug → INTERACTS_WITH → Drug        │
-                                  │    │     MATCH Drug → HAS_INGREDIENT → Ingredient  │
-                                  │    ├─ Compute drug_risk_score (0–100)             │
-                                  │    ├─ Compute patient_risk_score (age-adjusted)   │
-                                  │    └─ Write enriched rows → Snowflake ──────────▶ │
-                                  └───────────────────────────────────────────────────┘
-                                                         │
-                                                         ▼
-                                  ┌───────────────────────────────────────────────────┐
-                                  │  Snowflake: PHARMA_ANALYTICS_DB                   │
-                                  │  Schema: STAGING                                  │
-                                  │  Table:  STG_TRANSACTION                          │
-                                  └───────────────────────────────────────────────────┘
+Aiven Kafka topic (DataDose.in)
+        │  JSON prescription events
+        ▼
+Spark Structured Streaming reader  ──►  from_json (prescription_schema)
+        │
+        ▼
+foreachBatch(process_batch)
+        │
+        ├──► Neo4j AuraDB  (check_interactions: INTERACTS_WITH, HAS_INGREDIENT)
+        │
+        ├──► Risk scoring  (drug_risk_score, patient_risk_score, polypharmacy/high-risk flags)
+        │
+        ▼
+Snowflake STAGING.STG_TRANSACTION  (append)
 ```
 
-**Data flow summary:**
-1. A Kafka producer (simulator) publishes prescription-like JSON to the `DataDose.in` topic
-2. Spark reads the stream via `readStream.format('kafka')`
-3. Each micro-batch is handed to `process_batch()` via `foreachBatch`
-4. `check_interactions()` queries Neo4j for interactions and shared ingredients
-5. Risk scores are computed and the enriched row dict is written to Snowflake via the Spark connector
-6. Checkpoints in DBFS ensure exactly-once delivery semantics on restart
+Each Kafka micro-batch is collected to the driver, enriched row-by-row against Neo4j, scored, and written as a single Snowflake append. The streaming query checkpoints to DBFS so it can resume after a restart.
 
 ---
 
 ## 📁 Folder Structure
 
 ```
-project-root/
-├── DataBricks_Pyspark.ipynb   # End-to-end pipeline notebook (Steps 0–9 + debug cells)
+.
+├── DataBricks_Pyspark.ipynb   # End-to-end notebook: config, Kafka reader, Neo4j enrichment,
+│                               # process_batch, Snowflake writes, debug/monitoring cells
 └── README.md                  # This file
 ```
 
-> **Note:** The notebook is self-contained. All pipeline logic — configuration, streaming reader, Neo4j helpers, enrichment function, and Snowflake writes — lives in a single `.ipynb` file designed to run on Databricks.
+> The notebook is self-contained — there is no separate `src/` package. All configuration, helper functions, and the streaming job live in one `.ipynb`.
 
 ---
 
 ## ⚠ Prerequisites
 
-1. **Databricks Workspace** with an active cluster (Spark 3.x runtime)
-2. **Cluster libraries** installed:
-   - `spark-sql-kafka` assembly JAR (matching Kafka/Spark version)
-   - `net.snowflake:snowflake-spark-connector` JAR
-3. **Python package** available on the driver: `neo4j` (installed via `%pip install neo4j` in Step 0)
-4. **Aiven Kafka** service with:
-   - A topic named `DataDose.in` (or configured via `KAFKA_TOPIC`)
-   - SASL/SCRAM credentials (username & password)
-   - CA certificate (`ca.pem`) downloaded from the Aiven Dashboard
-5. **Neo4j AuraDB** instance with:
-   - `Drug` nodes (with `name` property)
-   - `INTERACTS_WITH` relationships (with `severity` and `type` properties)
-   - `Ingredient` nodes and `HAS_INGREDIENT` relationships
-6. **Snowflake** account with:
-   - Database `PHARMA_ANALYTICS_DB`, schema `STAGING`, table `STG_TRANSACTION`
-   - Role `PYSPARK_ROLE` with `INSERT` privileges on the staging table
-   - Warehouse `PHARMA_WH`
-7. **Outbound network access** from the Databricks cluster to:
-   - Aiven Kafka bootstrap server (TCP port varies)
-   - Neo4j AuraDB (TCP port 7687)
-   - Snowflake account URL (HTTPS 443)
+1. **Databricks workspace** with a cluster that has Spark available and the following JARs installed:
+   - `spark-sql-kafka` (matching your Spark/Scala version)
+   - `snowflake-spark-connector`
+2. **Aiven Kafka** instance with a topic (default `DataDose.in`), SCRAM-SHA-256 credentials, and the cluster's **CA certificate** (`ca.pem`) uploaded to a Databricks Workspace path
+3. **Neo4j AuraDB** instance pre-loaded with `Drug` and `Ingredient` nodes plus `INTERACTS_WITH` and `HAS_INGREDIENT` relationships
+4. **Snowflake** account with a `STAGING.STG_TRANSACTION` table, and a role/warehouse with write access to it
+5. Credentials available either as environment variables or as entries in a Databricks **secret scope** named `datadose`
+6. *(Optional, for testing)* A local message simulator (referred to in the notebook's debug cells as `simulator.py`) producing JSON messages onto the Kafka topic — this script is **not** included in this repository
 
 ---
 
 ## 🚀 Installation
 
-### 1. Clone or import the notebook
+1. **Upload the notebook to your Databricks workspace**
+   ```text
+   Workspace → Import → DataBricks_Pyspark.ipynb
+   ```
 
-```bash
-# Option A: Clone this repo and import the .ipynb into Databricks
-git clone https://github.com/your-org/pharma-streaming-pipeline.git
-```
+2. **Attach the required JARs to your cluster** (Cluster → Libraries → Install New):
+   ```text
+   spark-sql-kafka (matching your Spark version)
+   snowflake-spark-connector
+   ```
 
-Or upload `DataBricks_Pyspark.ipynb` directly via **Databricks Workspace → Import**.
+3. **Upload your Aiven Kafka CA certificate** to a Workspace path and note the path — it's required by `KAFKA_CA_PEM_PATH`.
 
-### 2. Install cluster JARs
+4. **Set credentials**, either as cluster environment variables or in a Databricks secret scope called `datadose`:
+   ```text
+   KAFKA_USERNAME / kafka-username
+   KAFKA_PASSWORD / kafka-password
+   NEO4J_USER     / neo4j-user
+   NEO4J_PASSWORD / neo4j-password
+   SNOWFLAKE_USER     / snowflake-user
+   SNOWFLAKE_PASSWORD / snowflake-password
+   ```
 
-In your cluster's **Libraries** tab, add:
-
-```
-Maven: org.apache.spark:spark-sql-kafka-0-10_2.12:<spark-version>
-Maven: net.snowflake:snowflake-spark-connector_2.12:<connector-version>
-```
-
-### 3. Upload the Kafka CA certificate
-
-```
-1. Download ca.pem from Aiven Dashboard → Your Kafka Service → Overview → CA Certificate
-2. Upload to Databricks Workspace: Workspace → your-user-folder → Upload
-3. Note the workspace path (e.g. /Users/you@org.com/ca.pem)
-```
-
-### 4. Configure secrets (recommended)
-
-```bash
-# Using Databricks CLI
-databricks secrets create-scope --scope datadose
-databricks secrets put --scope datadose --key kafka-username
-databricks secrets put --scope datadose --key kafka-password
-databricks secrets put --scope datadose --key neo4j-user
-databricks secrets put --scope datadose --key neo4j-password
-databricks secrets put --scope datadose --key snowflake-user
-databricks secrets put --scope datadose --key snowflake-password
-```
-
-### 5. Set environment variables on the cluster
-
-```
-KAFKA_BOOTSTRAP_SERVERS = <aiven-host>:<port>
-KAFKA_TOPIC             = DataDose.in
-KAFKA_CA_PEM_PATH       = /Users/you@org.com/ca.pem
-NEO4J_URI               = neo4j+s://<your-instance>.databases.neo4j.io
-SNOWFLAKE_URL           = https://<account>.snowflakecomputing.com
-SNOWFLAKE_DATABASE      = PHARMA_ANALYTICS_DB
-SNOWFLAKE_SCHEMA        = STAGING
-SNOWFLAKE_WAREHOUSE     = PHARMA_WH
-SNOWFLAKE_ROLE          = PYSPARK_ROLE
-```
+5. **Run the notebook top to bottom**, executing each Step cell followed by its corresponding Debug cell(s) — see [Usage](#-usage).
 
 ---
 
 ## 📖 Usage
 
-### Basic Usage — Run the Pipeline Step by Step
+### Basic Usage — run the pipeline step by step
 
-Run each numbered cell in order, executing the matching debug cell before proceeding:
-
-```
-Step 0 → Install neo4j driver       → Debug 0: confirm import
-Step 1 → Load credentials           → Debug 1: print masked config
-Step 2 → Verify ca.pem              → Debug 2: inspect certificate
-Step 3 → Neo4j helpers              → Debug 3a/3b/3c: ping + graph check + interaction test
-Step 4 → Snowflake connection       → Debug 4a/4b: identity + schema check
-Step 5 → Kafka reader               → Debug 5a/5b: schema + 5 live messages
-Step 6 → Parse JSON stream          → Debug 6a/6b: schema shape + end-to-end parse
-Step 7 → Define process_batch       → Debug 7: dry-run write to Snowflake
-Step 8 → Start live stream          → (stream is now active)
-Step 9 → Monitor / stop stream      → Debug 8a/8b/8c/8d: status, watch, rows, health
+```text
+Step 0 → Install neo4j Python driver (%pip install neo4j)
+Step 1 → Load credentials/config; run Debug 1 to confirm masked values
+Step 2 → Verify ca.pem and copy to /tmp/ca.pem; run Debug 2
+Step 3 → Define Neo4j driver + check_interactions(); run Debug 3a/3b/3c
+Step 4 → Test Snowflake connection + verify STG_TRANSACTION schema; run Debug 4a/4b
+Step 5 → Define kafka_stream_df; run Debug 5a/5b
+Step 6 → Define prescription_schema and parsed_df; run Debug 6a/6b
+Step 7 → Define process_batch(); run Debug 7 (dry-run write to Snowflake)
+Step 8 → Start the live streaming query (writeStream.foreachBatch(process_batch))
+Step 9 → Monitor with Debug 8a–8d, then query.stop() when done
 ```
 
-### Advanced Usage — Start Streaming
-
-After all debug cells pass, run Step 8 to launch the live pipeline:
+### Advanced Usage — inspecting an enrichment result directly
 
 ```python
-CHECKPOINT_PATH = 'dbfs:/tmp/pharma_pipeline/checkpoints/kafka_to_snowflake'
-
-query = (
-    parsed_df.writeStream
-    .foreachBatch(process_batch)
-    .option('checkpointLocation', CHECKPOINT_PATH)
-    .trigger(processingTime='10 seconds')
-    .start()
+result = check_interactions(
+    new_drug="warfarin",
+    current_drugs=["aspirin", "ibuprofen", "metformin"],
 )
+# result -> dict with interaction_found, interaction_count,
+#           interacting_drugs, interaction_severity,
+#           interaction_type, shared_ingredient, ingredient_overlap_count
 ```
 
-### Monitoring
+### Common Scenario — monitoring a running stream
 
 ```python
-# Check stream status (Debug 8a)
 print(query.isActive)
-print(query.status)
-print(query.lastProgress)
-
-# Watch live for 60 seconds (Debug 8b)
-# Polls every 10 seconds x 6 iterations
-
-# Stop the stream
-query.stop()
+print(query.lastProgress)   # rows/sec, batch duration, etc.
 ```
 
-### Verifying Output in Snowflake
-
-```sql
--- Latest enriched records
-SELECT TX_ID, DRUG, CITY, INTERACTION_FOUND,
-       INTERACTION_SEVERITY, HIGH_RISK_PATIENT,
-       PATIENT_RISK_SCORE, BATCH_ID, LOAD_TIMESTAMP
-FROM   STAGING.STG_TRANSACTION
-ORDER  BY LOAD_TIMESTAMP DESC
-LIMIT  20;
-
--- Pipeline health summary
-SELECT
-    COUNT(*)                                                     AS TOTAL_RECORDS,
-    SUM(CASE WHEN INTERACTION_FOUND = 'TRUE' THEN 1 ELSE 0 END) AS INTERACTIONS_DETECTED,
-    SUM(CASE WHEN HIGH_RISK_PATIENT = 'TRUE' THEN 1 ELSE 0 END) AS HIGH_RISK_PATIENTS,
-    ROUND(AVG(PATIENT_RISK_SCORE::FLOAT), 2)                    AS AVG_RISK_SCORE
-FROM STAGING.STG_TRANSACTION;
+```python
+query.stop()
 ```
 
 ---
 
 ## ⚙ Configuration
 
-All configuration is resolved in **Step 1** via `get_env()` and `get_secret_or_env()`. The functions check environment variables first, then fall back to Databricks Secrets, then to hard-coded defaults.
+All configuration is resolved through `get_env()` (plain env var, with optional default) or `get_secret_or_env()` (env var first, falling back to a Databricks secret scope named `datadose`).
 
-### Environment Variables
-
-| Variable | Type | Default | Description |
+| Variable | Required | Default | Description |
 |---|---|---|---|
-| `KAFKA_BOOTSTRAP_SERVERS` | string | *(Aiven host:port)* | Kafka bootstrap server address |
-| `KAFKA_TOPIC` | string | `DataDose.in` | Kafka topic to consume |
-| `KAFKA_CA_PEM_PATH` | string | **required** | Workspace path to Aiven CA certificate |
-| `NEO4J_URI` | string | **required** | Neo4j AuraDB URI (`neo4j+s://...`) |
-| `SNOWFLAKE_URL` | string | **required** | Snowflake account URL |
-| `SNOWFLAKE_DATABASE` | string | `PHARMA_ANALYTICS_DB` | Target Snowflake database |
-| `SNOWFLAKE_SCHEMA` | string | `STAGING` | Target Snowflake schema |
-| `SNOWFLAKE_WAREHOUSE` | string | `PHARMA_WH` | Snowflake virtual warehouse |
-| `SNOWFLAKE_ROLE` | string | `PYSPARK_ROLE` | Snowflake role for writes |
+| `KAFKA_BOOTSTRAP_SERVERS` | No | `datadosekafka-901-datadosedepiproject001.l.aivencloud.com:15816` | Aiven Kafka bootstrap host:port |
+| `KAFKA_TOPIC` | No | `DataDose.in` | Kafka topic to subscribe to |
+| `KAFKA_USERNAME` | Yes (secret: `kafka-username`) | — | SCRAM-SHA-256 username |
+| `KAFKA_PASSWORD` | Yes (secret: `kafka-password`) | — | SCRAM-SHA-256 password |
+| `KAFKA_CA_PEM_PATH` | Yes | — | Workspace path to the Aiven CA certificate |
+| `NEO4J_URI` | Yes | — | Neo4j AuraDB connection URI (`neo4j+s://...`) |
+| `NEO4J_USER` | Yes (secret: `neo4j-user`) | — | Neo4j username |
+| `NEO4J_PASSWORD` | Yes (secret: `neo4j-password`) | — | Neo4j password |
+| `SNOWFLAKE_URL` | Yes | — | Snowflake account URL |
+| `SNOWFLAKE_USER` | Yes (secret: `snowflake-user`) | — | Snowflake username |
+| `SNOWFLAKE_PASSWORD` | Yes (secret: `snowflake-password`) | — | Snowflake password |
+| `SNOWFLAKE_DATABASE` | No | `PHARMA_ANALYTICS_DB` | Target database |
+| `SNOWFLAKE_SCHEMA` | No | `STAGING` | Target schema |
+| `SNOWFLAKE_WAREHOUSE` | No | `PHARMA_WH` | Snowflake warehouse |
+| `SNOWFLAKE_ROLE` | No | `PYSPARK_ROLE` | Snowflake role used for writes |
 
-### Databricks Secret Scope Keys (`scope = datadose`)
+> **Note:** the notebook's Step 1 cell currently has these variables wired with literal fallback values for local testing. For production use, rely on the Databricks secret scope path and avoid leaving real credentials in the notebook itself.
 
-| Secret Key | Maps To | Description |
+**Risk-scoring constants** (hard-coded in `process_batch`, Step 7):
+
+| Constant | Value | Used for |
 |---|---|---|
-| `kafka-username` | `KAFKA_USERNAME` | Aiven Kafka SASL username |
-| `kafka-password` | `KAFKA_PASSWORD` | Aiven Kafka SASL password |
-| `neo4j-user` | `NEO4J_USER` | Neo4j database user |
-| `neo4j-password` | `NEO4J_PASSWORD` | Neo4j database password |
-| `snowflake-user` | `SNOWFLAKE_USER` | Snowflake login user |
-| `snowflake-password` | `SNOWFLAKE_PASSWORD` | Snowflake login password |
-
-### Streaming Parameters
-
-| Parameter | Value | Description |
-|---|---|---|
-| `startingOffsets` | `latest` | Consume only new messages |
-| `failOnDataLoss` | `false` | Continue on offset gaps |
-| `processingTime` | `10 seconds` | Micro-batch trigger interval |
-| `CHECKPOINT_PATH` | `dbfs:/tmp/pharma_pipeline/checkpoints/kafka_to_snowflake` | DBFS checkpoint directory |
-
-### Risk Scoring Weights
-
-| Factor | Weight | Notes |
-|---|---|---|
-| Major interaction | +40 | Highest severity |
-| Moderate interaction | +20 | Mid severity |
-| Minor interaction | +10 | Low severity |
-| Per additional interaction | +5 | Multiplied by count |
-| Per shared ingredient | +3 | Multiplied by overlap count |
-| Polypharmacy (≥ 5 drugs) | +5 | Flat bonus |
-| Age multiplier | `1.0 + (age − 40) × 0.005` | Applied to drug risk score |
-| High-risk threshold | ≥ 60 | `HIGH_RISK_PATIENT = TRUE` |
+| Severity weight — Major | `40` | Base of `drug_risk_score` |
+| Severity weight — Moderate | `20` | Base of `drug_risk_score` |
+| Severity weight — Minor | `10` | Base of `drug_risk_score` |
+| Polypharmacy threshold | `≥ 5` current meds | Adds `+5` to `drug_risk_score`; sets `POLYPHARMACY_FLAG` |
+| Age multiplier | `1.0 + (age - 40) * 0.005` | Scales `drug_risk_score` → `patient_risk_score` |
+| High-risk threshold | `patient_risk_score ≥ 60` | Sets `HIGH_RISK_PATIENT` |
 
 ---
 
 ## 📦 Module Details
 
 ### `DataBricks_Pyspark.ipynb`
+> Single notebook implementing the full Kafka → Neo4j → Snowflake streaming pipeline.
 
-> End-to-end Databricks notebook implementing the Kafka → Neo4j → Snowflake streaming pipeline across 9 logical steps with corresponding debug cells.
-
-**Key Components:**
-
-| Function / Variable | Description |
-|---|---|
-| `get_env(name, default, required)` | Reads an environment variable with optional default and required enforcement |
-| `get_secret_or_env(env_name, scope, key, ...)` | Reads from env var first, falls back to Databricks Secrets (`dbutils.secrets.get`) |
-| `get_neo4j_driver()` | Lazy singleton factory for the Neo4j `GraphDatabase.driver`; connection pool size = 10 |
-| `_empty_interaction()` | Returns a zero-value dict for when no current drugs exist |
-| `_worst_severity(severities)` | Ranks a list of severities (Major > Moderate > Minor) and returns the worst |
-| `check_interactions(new_drug, current_drugs)` | Main Neo4j enrichment function; runs two Cypher queries (interactions + shared ingredients) |
-| `kafka_stream_df` | Spark Structured Streaming DataFrame reading from Aiven Kafka with SASL/SSL |
-| `prescription_schema` | `StructType` defining the expected JSON shape: 11 fields covering patient, pharmacy, drug, and timestamp |
-| `parsed_df` | Streaming DataFrame with `from_json`-parsed prescription fields plus `raw_json` and `kafka_timestamp` |
-| `process_batch(batch_df, batch_id)` | `foreachBatch` handler: collects rows, calls Neo4j, computes risk scores, writes to Snowflake |
-| `query` | The active `StreamingQuery` object returned by `writeStream.start()` |
-
-**Cypher Queries Used:**
-
-```cypher
--- Drug-drug interaction lookup
-MATCH (d1:Drug)-[r:INTERACTS_WITH]-(d2:Drug)
-WHERE toLower(d1.name) = toLower($new_drug)
-  AND ANY(med IN $current_drugs WHERE toLower(d2.name) = toLower(med))
-RETURN d1.name AS drug_a, d2.name AS drug_b,
-       r.severity AS severity, r.type AS interaction_type
-ORDER BY CASE r.severity
-    WHEN 'Major'    THEN 1
-    WHEN 'Moderate' THEN 2
-    WHEN 'Minor'    THEN 3
-    ELSE 4 END
-
--- Shared ingredient lookup
-MATCH (d1:Drug)-[:HAS_INGREDIENT]->(i:Ingredient)<-[:HAS_INGREDIENT]-(d2:Drug)
-WHERE toLower(d1.name) = toLower($new_drug)
-  AND ANY(med IN $current_drugs WHERE toLower(d2.name) = toLower(med))
-RETURN DISTINCT i.name AS ingredient
-```
-
-**Output Schema (`STG_TRANSACTION` columns written per row):**
-
-| Column | Description |
-|---|---|
-| `BATCH_ID` | Unique batch identifier (`KAFKA-{batch_id}-{uuid}`) |
-| `SOURCE_SYSTEM` | Always `AIVEN_KAFKA` |
-| `TX_ID` | Prescription transaction ID |
-| `PHARMACY` | Pharmacy ID |
-| `CITY` | Pharmacy city |
-| `DRUG` | New drug name |
-| `CURRENT_MEDS` | Pipe-delimited list of current medications |
-| `INTERACTION_FOUND` | `TRUE` / `FALSE` |
-| `INTERACTION_COUNT` | Number of interactions detected |
-| `INTERACTING_DRUGS` | Pipe-delimited `DrugA↔DrugB` pairs |
-| `INTERACTION_SEVERITY` | Worst severity among detected interactions |
-| `INTERACTION_TYPE` | Pipe-delimited interaction types |
-| `ACTIVE_INGREDIENT_MATCH` | `TRUE` if shared ingredients found |
-| `SHARED_INGREDIENT` | Pipe-delimited shared ingredient names |
-| `INGREDIENT_OVERLAP_COUNT` | Number of shared ingredients |
-| `DRUG_RISK_SCORE` | Computed score 0–100 |
-| `PATIENT_RISK_SCORE` | Age-adjusted score 0–100 |
-| `HIGH_RISK_PATIENT` | `TRUE` if score ≥ 60 |
-| `POLYPHARMACY_FLAG` | `TRUE` if ≥ 5 concurrent medications |
-| `RAW_RECORD` | Full original JSON string from Kafka |
-
-**Dependencies:**
-
-- `neo4j` Python package (installed in Step 0)
-- `pyspark.sql.functions`, `pyspark.sql.types` (provided by Databricks runtime)
-- `spark-sql-kafka` JAR (cluster-level)
-- `net.snowflake.spark.snowflake` JAR (cluster-level)
-- `dbutils` (Databricks-provided global for secrets and file ops)
+- **Key Components:**
+  - `get_env()`, `get_secret_or_env()` — config/secret resolution (Step 1)
+  - `get_neo4j_driver()`, `check_interactions()` — Neo4j enrichment (Step 3)
+  - `kafka_stream_df` — Structured Streaming Kafka reader (Step 5)
+  - `prescription_schema`, `parsed_df` — JSON schema and parsed stream (Step 6)
+  - `process_batch(batch_df, batch_id)` — per-micro-batch enrichment, scoring, and Snowflake write (Step 7)
+  - `query` — the live `writeStream` handle started in Step 8
+  - 17 `Debug` cells (0, 1, 2, 3a–3c, 4a–4b, 5a–5b, 6a–6b, 7, 8a–8d) for verifying each stage
+- **Dependencies:** `pyspark` (provided by the Databricks runtime), `neo4j` (installed via `%pip install neo4j`), Spark `spark-sql-kafka` and `snowflake-spark-connector` JARs on the cluster
+- **Notes:** `process_batch` calls `batch_df.collect()`, pulling each micro-batch fully onto the driver before enrichment — see [Known Limitations](#-known-limitations).
 
 ---
 
+
+
 ## 🤝 Contributing
 
-Contributions are welcome. Please follow these steps:
-
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes with a clear message: `git commit -m "feat: describe your change"`
-4. Push the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request with a description of the change and any relevant test results
-
-> Before submitting, ensure all debug cells in the notebook pass against real services, and that no credentials are committed to version control.
+2. Create a feature branch (`git checkout -b feature/your-change`)
+3. Commit your changes with a clear message
+4. Push the branch and open a Pull Request describing what changed and why
 
 ---
 
 ## 📄 License
 
-See [LICENSE](LICENSE) file for details.
+No `LICENSE` file is included in this repository. Add one (e.g. MIT, Apache 2.0) before distributing this project publicly.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- [Apache Spark Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) — micro-batch stream processing engine
-- [Aiven](https://aiven.io/) — managed Kafka with TLS/SASL support
-- [Neo4j AuraDB](https://neo4j.com/cloud/platform/aura-graph-database/) — fully managed graph database for drug interaction modeling
-- [Snowflake](https://www.snowflake.com/) — cloud data warehouse for enriched analytical storage
-- [Snowflake Spark Connector](https://docs.snowflake.com/en/user-guide/spark-connector) — Spark-native write integration
-- [neo4j Python Driver](https://neo4j.com/docs/api/python-driver/current/) — Cypher query client
+- [Apache Spark](https://spark.apache.org/) Structured Streaming
+- [Aiven](https://aiven.io/) for managed Kafka
+- [Neo4j AuraDB](https://neo4j.com/cloud/aura/) for the drug-interaction graph
+- [Snowflake](https://www.snowflake.com/) and its Spark connector
+- The [`neo4j` Python driver](https://pypi.org/project/neo4j/)
 
 ---
 
 ## 📬 Contact
 
-For questions about this pipeline, open an issue in the repository or reach out through your organization's internal channels.
-
----
-
-*Built for real-time pharmaceutical analytics on Databricks.*
+No contact information was found in the provided files. Add a maintainer name, email, or issue-tracker link here before publishing.
