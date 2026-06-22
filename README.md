@@ -18,44 +18,29 @@
 <br/>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=next.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Neo4j-AuraDB-008CC1?style=for-the-badge&logo=neo4j&logoColor=white" />
-  <img src="https://img.shields.io/badge/Snowflake-Analytics-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white" />
+  <img src="https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Neo4j_AuraDB-008CC1?style=for-the-badge&logo=neo4j&logoColor=white" />
+  <img src="https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Apache_Kafka-Aiven-231F20?style=for-the-badge&logo=apachekafka&logoColor=white" />
-  <img src="https://img.shields.io/badge/Databricks-PySpark-FF3621?style=for-the-badge&logo=databricks&logoColor=white" />
-  <img src="https://img.shields.io/badge/Power_BI-Reporting-F2C811?style=for-the-badge&logo=powerbi&logoColor=black" />
-  <img src="https://img.shields.io/badge/Groq-LLaMA_3-8B5CF6?style=for-the-badge&logo=meta&logoColor=white" />
+  <img src="https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white" />
+  <img src="https://img.shields.io/badge/Aiven-FF4F00?style=for-the-badge&logo=aiven&logoColor=white" />
+  <img src="https://img.shields.io/badge/Databricks-FF3621?style=for-the-badge&logo=databricks&logoColor=white" />
+  <img src="https://img.shields.io/badge/PySpark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" />
+  <img src="https://img.shields.io/badge/Power_BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black" />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/PostgreSQL-Prisma-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
-  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Playwright-E2E_Tests-45BA4B?style=for-the-badge&logo=playwright&logoColor=white" />
+  <img src="https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logo=groq&logoColor=white" />
+  <img src="https://img.shields.io/badge/LLaMA_3-0668E1?style=for-the-badge&logo=meta&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript_5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white" />
   <img src="https://img.shields.io/badge/License-Demo_/_Education-lightgrey?style=for-the-badge" />
-</p>
-
-<br/>
-
-<p align="center">
-  <img src="https://img.shields.io/github/stars/mohammed-salah/DataDose?style=social" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/github/forks/mohammed-salah/DataDose?style=social" />
-  &nbsp;&nbsp;
-  <img src="https://img.shields.io/github/watchers/mohammed-salah/DataDose?style=social" />
-</p>
-
-<p align="center">
-  <a href="#-installation"><img src="https://img.shields.io/badge/⚡_Quick_Start-00D4FF?style=for-the-badge&logoColor=white" /></a>
-  &nbsp;
-  <a href="#-architecture-overview"><img src="https://img.shields.io/badge/🏗_Architecture-7C3AED?style=for-the-badge&logoColor=white" /></a>
-  &nbsp;
-  <a href="#-api-reference"><img src="https://img.shields.io/badge/📡_API_Docs-059669?style=for-the-badge&logoColor=white" /></a>
-  &nbsp;
-  <a href="#-analytics--reporting"><img src="https://img.shields.io/badge/📊_BI_Report-F2C811?style=for-the-badge&logoColor=black" /></a>
 </p>
 
 </div>
@@ -106,7 +91,7 @@
 | 📁 [Folder Structure](#folder-structure) | 🖼 [Screenshots](#screenshots) |
 | 📈 [Project Metrics](#project-metrics) | 🗺 [Roadmap](#roadmap) |
 | 🤝 [Contributing](#contributing) | 🙏 [Acknowledgments](#acknowledgments) |
-| 📄 [License](#license) | 🎨 [Design System](#design-system) |
+| 📄 [License](#license) | |
 
 </td></tr>
 </table>
@@ -1207,27 +1192,6 @@ No `LICENSE` file is currently included in this repository. The project is built
 
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
-
-<a id="design-system"></a>
-
-<div align="center">
-
-### 🎨 Design System
-
-This README uses a small, reusable **animated SVG header system** instead of plain Markdown headers — every section banner is generated from one template, so the visual language stays identical across docs as the project grows.
-
-| Token | Value |
-|---|---|
-| Background | `#060912 → #0b0f19 → #0a0f1c` diagonal gradient |
-| Primary accent | `#00D4FF` cyan |
-| Secondary accent | `#7C3AED` violet |
-| Supporting accents | `#29B5E8` blue · `#10B981` green · `#F2C811` gold |
-| Typography | `JetBrains Mono` (monospace, uppercase, wide letter-spacing) |
-| Motion | SMIL `<animate>` — border pulse, scan-beam sweep, underline tracer |
-
-Full anatomy, customization guide, and how to add a new section banner: see [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
-
-</div>
 
 <br/>
 
