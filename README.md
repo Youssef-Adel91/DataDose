@@ -49,22 +49,7 @@
 
 <div align="center">
 
-### 📊 Platform at a Glance
 
-<table>
-<tr>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/9-API_Endpoints-00D4FF?style=flat-square&labelColor=0D1117" /><br/><sub><b>REST Endpoints</b></sub></td>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/5-User_Roles-7C3AED?style=flat-square&labelColor=0D1117" /><br/><sub><b>RBAC Roles</b></sub></td>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/2-Databases-059669?style=flat-square&labelColor=0D1117" /><br/><sub><b>Neo4j + PostgreSQL</b></sub></td>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/1-Knowledge_Graph-FF3621?style=flat-square&labelColor=0D1117" /><br/><sub><b>3,656+ Nodes</b></sub></td>
-</tr>
-<tr>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/6+-AI_Features-8B5CF6?style=flat-square&labelColor=0D1117" /><br/><sub><b>Intelligent Features</b></sub></td>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/4-BI_Report_Pages-F2C811?style=flat-square&labelColor=0D1117&color=F2C811" /><br/><sub><b>Power BI Pages</b></sub></td>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/5-Pipeline_Stages-29B5E8?style=flat-square&labelColor=0D1117" /><br/><sub><b>Cleaning Notebooks</b></sub></td>
-  <td align="center" width="160"><img src="https://img.shields.io/badge/10+-Technologies-FF6B6B?style=flat-square&labelColor=0D1117" /><br/><sub><b>Modern Stack</b></sub></td>
-</tr>
-</table>
 
 </div>
 
