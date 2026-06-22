@@ -6,7 +6,6 @@
 
 <br/>
 
-<!-- Typing SVG -->
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=32&duration=3000&pause=800&color=00D4FF&center=true&vCenter=true&multiline=false&repeat=true&width=900&height=60&lines=DataDose+%E2%80%94+Clinical+Decision+Intelligence;AI-Powered+Polypharmacy+Safety+Platform;Real-Time+Drug+Interaction+Detection;Graph+Intelligence+%C3%97+Healthcare+Analytics" alt="Typing SVG" /></a>
 
 <br/><br/>
@@ -18,7 +17,6 @@
 
 <br/>
 
-<!-- Badges Row 1 -->
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=next.js&logoColor=white" />
   <img src="https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
@@ -26,7 +24,6 @@
   <img src="https://img.shields.io/badge/Snowflake-Analytics-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white" />
 </p>
 
-<!-- Badges Row 2 -->
 <p align="center">
   <img src="https://img.shields.io/badge/Apache_Kafka-Aiven-231F20?style=for-the-badge&logo=apachekafka&logoColor=white" />
   <img src="https://img.shields.io/badge/Databricks-PySpark-FF3621?style=for-the-badge&logo=databricks&logoColor=white" />
@@ -34,7 +31,6 @@
   <img src="https://img.shields.io/badge/Groq-LLaMA_3-8B5CF6?style=for-the-badge&logo=meta&logoColor=white" />
 </p>
 
-<!-- Badges Row 3 -->
 <p align="center">
   <img src="https://img.shields.io/badge/PostgreSQL-Prisma-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
@@ -44,7 +40,6 @@
 
 <br/>
 
-<!-- GitHub Stats Widgets -->
 <p align="center">
   <img src="https://img.shields.io/github/stars/mohammed-salah/DataDose?style=social" />
   &nbsp;&nbsp;
@@ -53,66 +48,36 @@
   <img src="https://img.shields.io/github/watchers/mohammed-salah/DataDose?style=social" />
 </p>
 
-<!-- Quick Action Buttons -->
 <p align="center">
-  <a href="#installation"><img src="https://img.shields.io/badge/⚡_Quick_Start-00D4FF?style=for-the-badge&logoColor=white" /></a>
+  <a href="#-installation"><img src="https://img.shields.io/badge/⚡_Quick_Start-00D4FF?style=for-the-badge&logoColor=white" /></a>
   &nbsp;
-  <a href="#architecture-overview"><img src="https://img.shields.io/badge/🏗_Architecture-7C3AED?style=for-the-badge&logoColor=white" /></a>
+  <a href="#-architecture-overview"><img src="https://img.shields.io/badge/🏗_Architecture-7C3AED?style=for-the-badge&logoColor=white" /></a>
   &nbsp;
-  <a href="#api-reference"><img src="https://img.shields.io/badge/📡_API_Docs-059669?style=for-the-badge&logoColor=white" /></a>
+  <a href="#-api-reference"><img src="https://img.shields.io/badge/📡_API_Docs-059669?style=for-the-badge&logoColor=white" /></a>
   &nbsp;
-  <a href="#power-bi-report"><img src="https://img.shields.io/badge/📊_BI_Report-F2C811?style=for-the-badge&logoColor=black" /></a>
+  <a href="#-analytics--reporting"><img src="https://img.shields.io/badge/📊_BI_Report-F2C811?style=for-the-badge&logoColor=black" /></a>
 </p>
 
 </div>
 
-<br/>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-<!-- Metrics Dashboard -->
 <div align="center">
 
-## 📊 Platform at a Glance
-
-<br/>
+### 📊 Platform at a Glance
 
 <table>
 <tr>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/9-API_Endpoints-00D4FF?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>REST Endpoints</b></sub>
-  </td>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/5-User_Roles-7C3AED?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>RBAC Roles</b></sub>
-  </td>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/2-Databases-059669?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>Neo4j + PostgreSQL</b></sub>
-  </td>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/1-Knowledge_Graph-FF3621?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>3,656+ Nodes</b></sub>
-  </td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/9-API_Endpoints-00D4FF?style=flat-square&labelColor=0D1117" /><br/><sub><b>REST Endpoints</b></sub></td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/5-User_Roles-7C3AED?style=flat-square&labelColor=0D1117" /><br/><sub><b>RBAC Roles</b></sub></td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/2-Databases-059669?style=flat-square&labelColor=0D1117" /><br/><sub><b>Neo4j + PostgreSQL</b></sub></td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/1-Knowledge_Graph-FF3621?style=flat-square&labelColor=0D1117" /><br/><sub><b>3,656+ Nodes</b></sub></td>
 </tr>
 <tr>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/6+-AI_Features-8B5CF6?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>Intelligent Features</b></sub>
-  </td>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/4-BI_Report_Pages-F2C811?style=flat-square&labelColor=0D1117&color=F2C811" /><br/>
-    <sub><b>Power BI Pages</b></sub>
-  </td>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/5-Pipeline_Stages-29B5E8?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>Cleaning Notebooks</b></sub>
-  </td>
-  <td align="center" width="160">
-    <img src="https://img.shields.io/badge/10+-Technologies-FF6B6B?style=flat-square&labelColor=0D1117" /><br/>
-    <sub><b>Modern Stack</b></sub>
-  </td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/6+-AI_Features-8B5CF6?style=flat-square&labelColor=0D1117" /><br/><sub><b>Intelligent Features</b></sub></td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/4-BI_Report_Pages-F2C811?style=flat-square&labelColor=0D1117&color=F2C811" /><br/><sub><b>Power BI Pages</b></sub></td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/5-Pipeline_Stages-29B5E8?style=flat-square&labelColor=0D1117" /><br/><sub><b>Cleaning Notebooks</b></sub></td>
+  <td align="center" width="160"><img src="https://img.shields.io/badge/10+-Technologies-FF6B6B?style=flat-square&labelColor=0D1117" /><br/><sub><b>Modern Stack</b></sub></td>
 </tr>
 </table>
 
@@ -122,42 +87,34 @@
 
 ---
 
-## 📋 Table of Contents
+<a id="toc"></a>
+<p align="center"><img src="assets/headers/toc.svg" width="100%" alt="Table of Contents"/></p>
 
-<details>
-<summary><b>Expand Navigation</b></summary>
+<table>
+<tr><td>
 
-| Section | Link |
+| Section | Section |
 |---|---|
-| 🎯 Project Overview | [Overview](#project-overview) |
-| 💡 Why DataDose | [Why DataDose](#why-datadose) |
-| ⚡ Key Capabilities | [Capabilities](#key-capabilities) |
-| 🏗 Architecture | [Architecture](#architecture-overview) |
-| 🔄 Data Pipeline | [Pipeline](#data-engineering-pipeline) |
-| 📡 Real-Time Streaming | [Streaming](#real-time-streaming-architecture) |
-| 🧠 Clinical Intelligence | [Intelligence Engine](#clinical-intelligence-engine) |
-| 🤖 AI Features | [AI Features](#ai-features) |
-| 🕸 Knowledge Graph | [Graph](#knowledge-graph) |
-| 📊 Analytics & Reporting | [Analytics](#analytics--reporting) |
-| 🛠 Tech Stack | [Tech Stack](#technology-stack) |
-| 🗂 System Components | [Components](#system-components) |
-| ⚙️ Installation | [Install](#installation) |
-| 🚀 Usage | [Usage](#usage) |
-| ⚙️ Configuration | [Config](#configuration) |
-| 📡 API Reference | [API](#api-reference) |
-| 📁 Folder Structure | [Folders](#folder-structure) |
-| 🖼 Screenshots | [Screenshots](#screenshots) |
-| 🗺 Roadmap | [Roadmap](#roadmap) |
-| 👥 Contributors | [Contributors](#contributors) |
-| 📄 License | [License](#license) |
+| 🎯 [Project Overview](#project-overview) | 🧠 [Clinical Intelligence Engine](#clinical-intelligence-engine) |
+| 💡 [Why DataDose](#why-datadose) | 🤖 [AI Features](#ai-features) |
+| ⚡ [Key Capabilities](#key-capabilities) | 🕸 [Knowledge Graph](#knowledge-graph) |
+| 🏗 [Architecture Overview](#architecture-overview) | 📊 [Analytics & Reporting](#analytics--reporting) |
+| 🔄 [Data Engineering Pipeline](#data-engineering-pipeline) | 🛠 [Technology Stack](#technology-stack) |
+| 📡 [Real-Time Streaming](#real-time-streaming-architecture) | 🗂 [System Components](#system-components) |
+| ⚙️ [Installation](#installation) | 🚀 [Usage](#usage) |
+| 🔧 [Configuration](#configuration) | 📡 [API Reference](#api-reference) |
+| 📁 [Folder Structure](#folder-structure) | 🖼 [Screenshots](#screenshots) |
+| 📈 [Project Metrics](#project-metrics) | 🗺 [Roadmap](#roadmap) |
+| 🤝 [Contributing](#contributing) | 🙏 [Acknowledgments](#acknowledgments) |
+| 📄 [License](#license) | 🎨 [Design System](#design-system) |
 
-</details>
+</td></tr>
+</table>
 
-<br/>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 🎯 Project Overview
+<a id="project-overview"></a>
+<p align="center"><img src="assets/headers/overview.svg" width="100%" alt="Project Overview"/></p>
 
 <div align="center">
 
@@ -174,27 +131,23 @@ The platform operates across **two deeply integrated layers**:
 
 Both layers model the same pharmaceutical knowledge base — `Drug`, `Disease`, and `Symptom` nodes with `INTERACTS_WITH`, `TREATS`, and `CAUSES_REACTION` relationships — ensuring clinical intelligence and analytics remain conceptually unified.
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 💡 Why DataDose
-
-<br/>
+<a id="why-datadose"></a>
+<p align="center"><img src="assets/headers/why.svg" width="100%" alt="Why DataDose"/></p>
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### 🏥 The Clinical Problem
-
+#### 🏥 The Clinical Problem
 Polypharmacy — patients taking five or more concurrent medications — affects over **40% of elderly patients** and is a leading cause of preventable adverse drug events. Clinicians lack real-time, context-aware tools to check interactions across a patient's full medication list during a clinical encounter.
 
 </td>
 <td width="50%" valign="top">
 
-### ⚡ The DataDose Solution
-
+#### ⚡ The DataDose Solution
 DataDose embeds a **Neo4j drug-interaction knowledge graph** directly into the clinical workflow, delivering sub-second polypharmacy checks, AI-powered safe alternatives, and multilingual symptom tracing — all surfaced through role-specific dashboards for Physicians, Pharmacists, Patients, and Administrators.
 
 </td>
@@ -202,46 +155,42 @@ DataDose embeds a **Neo4j drug-interaction knowledge graph** directly into the c
 <tr>
 <td width="50%" valign="top">
 
-### 📊 The Analytics Gap
-
+#### 📊 The Analytics Gap
 Healthcare organizations need to aggregate and analyze prescription patterns across populations, but raw EHR data is fragmented, unvalidated, and siloed from analytics infrastructure.
 
 </td>
 <td width="50%" valign="top">
 
-### 🔄 The Pipeline Answer
-
+#### 🔄 The Pipeline Answer
 DataDose delivers a **five-stage validation pipeline** (pandas → OpenFDA → Groq verification → Kafka → Databricks) that produces clean, enriched, risk-scored prescription events landing in a governed Snowflake star schema — ready for executive Power BI dashboards.
 
 </td>
 </tr>
 </table>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## ⚡ Key Capabilities
-
-<br/>
+<a id="key-capabilities"></a>
+<p align="center"><img src="assets/headers/features.svg" width="100%" alt="Key Capabilities"/></p>
 
 <table>
 <tr>
 <td align="center" width="33%" valign="top">
 
-### ⚡ Real-Time DDI Scanning
+#### ⚡ Real-Time DDI Scanning
 N-degree polypharmacy scanner that checks all pairwise `INTERACTS_WITH` relationships among a patient's complete drug list, sorted by severity in milliseconds via Neo4j Cypher traversal.
 
 </td>
 <td align="center" width="33%" valign="top">
 
-### 🧠 GraphRAG Intelligence
+#### 🧠 GraphRAG Intelligence
 A hybrid chatbot that routes clinician queries through Neo4j first for deterministic graph retrieval, then falls back to LLaMA-3 synthesis — grounding LLM responses in verified pharmaceutical knowledge.
 
 </td>
 <td align="center" width="33%" valign="top">
 
-### 💊 Smart Safe Alternatives
+#### 💊 Smart Safe Alternatives
 Cypher-powered alternative drug finder: given a drug to replace, a disease to treat, and symptoms to avoid, traverses the graph to surface safe substitutes, with a Groq LLM fallback when the graph returns zero results.
 
 </td>
@@ -249,19 +198,19 @@ Cypher-powered alternative drug finder: given a drug to replace, a disease to tr
 <tr>
 <td align="center" width="33%" valign="top">
 
-### 📷 Prescription OCR
+#### 📷 Prescription OCR
 Vision LLM (LLaMA 3.2 11B) extracts drug names from uploaded prescription images — bridging handwritten or printed prescriptions into the digital safety pipeline.
 
 </td>
 <td align="center" width="33%" valign="top">
 
-### 🔍 Reverse Symptom Tracer
+#### 🔍 Reverse Symptom Tracer
 Multilingual symptom-to-drug tracer with English + Arabic synonym expansion that traces a reported adverse symptom back to the most likely suspect medication in the patient's current regimen.
 
 </td>
 <td align="center" width="33%" valign="top">
 
-### 🗺 Visual Prescription Map
+#### 🗺 Visual Prescription Map
 React Flow canvas rendering a patient's drug list as an interactive knowledge graph — visualizing DDI edges, treated diseases, and caused symptoms in a single explorable view.
 
 </td>
@@ -269,36 +218,33 @@ React Flow canvas rendering a patient's drug list as an interactive knowledge gr
 <tr>
 <td align="center" width="33%" valign="top">
 
-### 📊 Snowflake Analytics
+#### 📊 Snowflake Analytics
 Star-schema warehouse with staging, dimension, fact, and analytics layers — capturing population-level prescription risk data from the Kafka/Databricks streaming pipeline.
 
 </td>
 <td align="center" width="33%" valign="top">
 
-### 🔥 Databricks Streaming
+#### 🔥 Databricks Streaming
 PySpark Structured Streaming job that consumes Kafka events, enriches each prescription against the Neo4j graph in real time, applies risk scoring, and writes to Snowflake — fully orchestrated on Databricks.
 
 </td>
 <td align="center" width="33%" valign="top">
 
-### 👨‍⚕️ Role-Based Dashboards
+#### 👨‍⚕️ Role-Based Dashboards
 Five purpose-built dashboards — Patient, Physician, Pharmacist, Admin, Super Admin — with an approval workflow for new accounts, quota management per subscription tier, and audit-ready RBAC.
 
 </td>
 </tr>
 </table>
 
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="architecture-overview"></a>
+<p align="center"><img src="assets/headers/architecture.svg" width="100%" alt="Architecture Overview"/></p>
+
+<div align="center"><sub><b>System Architecture — End to End</b></sub></div>
 <br/>
-
----
-
-## 🏗 Architecture Overview
-
-<div align="center">
-
-### System Architecture — End to End
-
-</div>
 
 ```mermaid
 flowchart TD
@@ -351,17 +297,14 @@ flowchart TD
     style ROLES fill:#0D1117,stroke:#30363D,color:#E6EDF3
 ```
 
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="data-engineering-pipeline"></a>
+<p align="center"><img src="assets/headers/pipeline.svg" width="100%" alt="Data Engineering Pipeline"/></p>
+
+<div align="center"><sub><b>Five-Stage Cleaning → Streaming → Warehousing</b></sub></div>
 <br/>
-
----
-
-## 🔄 Data Engineering Pipeline
-
-<div align="center">
-
-### Five-Stage Cleaning → Streaming → Warehousing
-
-</div>
 
 ```mermaid
 flowchart LR
@@ -410,11 +353,11 @@ Four-layer schema:
 
 </details>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 📡 Real-Time Streaming Architecture
+<a id="real-time-streaming-architecture"></a>
+<p align="center"><img src="assets/headers/streaming.svg" width="100%" alt="Real-Time Streaming Architecture"/></p>
 
 ```mermaid
 sequenceDiagram
@@ -435,17 +378,14 @@ sequenceDiagram
     SF-->>SF: Stage → Dimension → Fact → Analytics
 ```
 
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="clinical-intelligence-engine"></a>
+<p align="center"><img src="assets/headers/intelligence.svg" width="100%" alt="Clinical Intelligence Engine"/></p>
+
+<div align="center"><sub><b>Request Flow — Clinician to Knowledge Graph</b></sub></div>
 <br/>
-
----
-
-## 🧠 Clinical Intelligence Engine
-
-<div align="center">
-
-### Request Flow — Clinician to Knowledge Graph
-
-</div>
 
 ```mermaid
 flowchart LR
@@ -468,19 +408,17 @@ flowchart LR
     style GROQ fill:#1C1C1E,stroke:#8B5CF6,color:#E6EDF3
 ```
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 🤖 AI Features
-
-<br/>
+<a id="ai-features"></a>
+<p align="center"><img src="assets/headers/ai.svg" width="100%" alt="AI Features"/></p>
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### 🤖 Hybrid GraphRAG Chatbot (`/api/graphrag`)
+#### 🤖 Hybrid GraphRAG Chatbot (`/api/graphrag`)
 Routes a clinician's natural-language question through a **two-stage pipeline**:
 1. **Entity extraction** — Groq LLM identifies drug/disease entities in the query
 2. **Graph retrieval** — Cypher query fetches relevant relationships from Neo4j
@@ -491,7 +429,7 @@ Accepts `{message, currentMedications, history}` for context-aware, multi-turn c
 </td>
 <td width="50%" valign="top">
 
-### 📷 Prescription OCR Scanner (`/api/ocr`)
+#### 📷 Prescription OCR Scanner (`/api/ocr`)
 Accepts a **multipart prescription image upload** and sends it to Groq's `llama-3.2-11b-vision-preview` model, which extracts drug names from handwritten or printed prescriptions and returns them as a structured list ready for the DDI scanner.
 
 Integrates with the `PrescriptionScanner` component via an `onScanComplete` callback — extracted drugs flow directly into the polypharmacy check.
@@ -501,30 +439,27 @@ Integrates with the `PrescriptionScanner` component via an `onScanComplete` call
 <tr>
 <td width="50%" valign="top">
 
-### 🔍 Multilingual Symptom Tracer (`/api/trace-symptom`)
+#### 🔍 Multilingual Symptom Tracer (`/api/trace-symptom`)
 Wide-net symptom-to-drug tracer with a built-in **`SYMPTOM_SYNONYMS` dictionary** covering English clinical terms and Arabic equivalents. Given a reported symptom and the patient's current medications, the engine expands the query across synonyms and traces back to the most likely causative drug.
 
 </td>
 <td width="50%" valign="top">
 
-### 💊 Smart Safe Alternatives (`/api/alternatives`)
+#### 💊 Smart Safe Alternatives (`/api/alternatives`)
 Accepts `{drug_to_replace, disease_to_treat, symptom_to_avoid, current_meds}` and performs a **multi-constraint Cypher traversal** — finding drugs that treat the same disease without triggering known interactions with the patient's current regimen or causing the symptom to avoid. Falls back to Groq LLM synthesis when graph results are empty.
 
 </td>
 </tr>
 </table>
 
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="knowledge-graph"></a>
+<p align="center"><img src="assets/headers/graph.svg" width="100%" alt="Knowledge Graph"/></p>
+
+<div align="center"><sub><b>Neo4j AuraDB — Drug · Disease · Symptom Graph</b></sub></div>
 <br/>
-
----
-
-## 🕸 Knowledge Graph
-
-<div align="center">
-
-### Neo4j AuraDB — Drug · Disease · Symptom Graph
-
-</div>
 
 ```mermaid
 graph TD
@@ -557,13 +492,13 @@ graph TD
 | `TREATS` | Drug → Disease | efficacyLevel |
 | `CAUSES_REACTION` | Drug → Symptom | frequency, severity |
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
+<a id="analytics--reporting"></a>
+<p align="center"><img src="assets/headers/analytics.svg" width="100%" alt="Analytics and Reporting"/></p>
 
-## 📊 Analytics & Reporting
-
-### Power BI Report — `DrugData.pbix`
+#### Power BI Report — `DrugData.pbix`
 
 The report is a 4-page dashboard built on top of the Snowflake analytics layer, using the **HTML Content custom visual** bound to a DAX measure (`DataDose_HTML`) for richly styled, data-driven pages.
 
@@ -600,15 +535,15 @@ verify.png
 
 </details>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 🛠 Technology Stack
+<a id="technology-stack"></a>
+<p align="center"><img src="assets/headers/techstack.svg" width="100%" alt="Technology Stack"/></p>
 
 <div align="center">
 
-### Frontend
+**Frontend**
 
 ![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
@@ -616,62 +551,62 @@ verify.png
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 
-### Data Visualization
+**Data Visualization**
 
 ![React Flow](https://img.shields.io/badge/React_Flow-FF0072?style=for-the-badge&logoColor=white)
 ![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
 ![Recharts](https://img.shields.io/badge/Recharts-8B5CF6?style=for-the-badge&logoColor=white)
 
-### Auth & Data Layer (Frontend)
+**Auth & Data Layer (Frontend)**
 
 ![NextAuth](https://img.shields.io/badge/NextAuth-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma_ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 
-### Backend API
+**Backend API**
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python_3-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Uvicorn](https://img.shields.io/badge/Uvicorn-2C2C2C?style=for-the-badge&logoColor=white)
 
-### Artificial Intelligence
+**Artificial Intelligence**
 
 ![Groq](https://img.shields.io/badge/Groq-LLaMA_3-8B5CF6?style=for-the-badge&logo=meta&logoColor=white)
 ![LLaMA Vision](https://img.shields.io/badge/LLaMA_3.2_Vision-11B-00D4FF?style=for-the-badge&logo=meta&logoColor=black)
 
-### Graph Technology
+**Graph Technology**
 
 ![Neo4j](https://img.shields.io/badge/Neo4j_AuraDB-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)
 ![Cypher](https://img.shields.io/badge/Cypher_Query-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)
 
-### Streaming
+**Streaming**
 
 ![Apache Kafka](https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white)
 ![Aiven](https://img.shields.io/badge/Aiven_Cloud-FF4F00?style=for-the-badge&logoColor=white)
 
-### Data Engineering
+**Data Engineering**
 
 ![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
 ![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
 ![Databricks](https://img.shields.io/badge/Databricks-FF3621?style=for-the-badge&logo=databricks&logoColor=white)
 ![PySpark](https://img.shields.io/badge/PySpark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white)
 
-### Warehousing & BI
+**Warehousing & BI**
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white)
 ![Power BI](https://img.shields.io/badge/Power_BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)
 
-### Testing
+**Testing**
 
 ![Playwright](https://img.shields.io/badge/Playwright-45BA4B?style=for-the-badge&logo=playwright&logoColor=white)
 
 </div>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 🗂 System Components
+<a id="system-components"></a>
+<p align="center"><img src="assets/headers/components.svg" width="100%" alt="System Components"/></p>
 
 <details>
 <summary><b>🐍 Backend — <code>backend/main.py</code></b></summary>
@@ -791,13 +726,13 @@ See `SnowFlake/README.md` for run order and required privileges.
 
 </details>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
+<a id="installation"></a>
+<p align="center"><img src="assets/headers/installation.svg" width="100%" alt="Installation"/></p>
 
-## ⚙️ Installation
-
-### Prerequisites
+#### Prerequisites
 
 Before cloning, ensure you have:
 
@@ -811,7 +746,7 @@ Before cloning, ensure you have:
 
 ---
 
-### 1. Backend (FastAPI + Neo4j)
+#### 1. Backend (FastAPI + Neo4j)
 
 ```bash
 cd backend
@@ -838,7 +773,7 @@ python -m uvicorn main:app --reload
 
 ---
 
-### 2. Frontend (Next.js 15)
+#### 2. Frontend (Next.js 15)
 
 ```bash
 cd "DataDose_website-main"
@@ -860,7 +795,7 @@ npm run dev
 
 ---
 
-### 3. Data Pipeline *(optional — analytics side)*
+#### 3. Data Pipeline *(optional — analytics side)*
 
 ```bash
 # Install top-level deps: pandas, numpy, requests, kafka-python, pyspark, neo4j, snowflake-connector-python
@@ -874,20 +809,20 @@ Run order:
 
 ---
 
-### 4. Power BI Report *(optional)*
+#### 4. Power BI Report *(optional)*
 
 ```
 Open:   Power Bi/DrugData.pbix in Power BI Desktop
 Update: data source connection to your Snowflake credentials if refreshing live data
 ```
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
+<a id="usage"></a>
+<p align="center"><img src="assets/headers/usage.svg" width="100%" alt="Usage"/></p>
 
-## 🚀 Usage
-
-### Run the Live Application
+#### Run the Live Application
 
 ```bash
 # Terminal 1 — Backend
@@ -900,7 +835,7 @@ cd "DataDose_website-main" && npm run dev
 http://localhost:3000/login
 ```
 
-### Demo Accounts
+#### Demo Accounts
 
 All demo account passwords are `password123`.
 
@@ -915,7 +850,7 @@ Full walkthrough: `DataDose_website-main/QUICK_START.md`
 
 ---
 
-### Call the API Directly
+#### Call the API Directly
 
 ```bash
 # Polypharmacy DDI scan
@@ -933,7 +868,7 @@ curl -X POST http://localhost:8000/api/graphrag \
 
 ---
 
-### Stream Synthetic Prescriptions into the Pipeline
+#### Stream Synthetic Prescriptions into the Pipeline
 
 ```bash
 cd Kafka
@@ -941,11 +876,11 @@ export KAFKA_USERNAME=... KAFKA_PASSWORD=... KAFKA_CA_PEM_PATH=./certs/ca.pem
 python producer_simulator.py --rate 5
 ```
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## ⚙️ Configuration
+<a id="configuration"></a>
+<p align="center"><img src="assets/headers/configuration.svg" width="100%" alt="Configuration"/></p>
 
 | Variable | Component | Default | Description |
 |---|---|---|---|
@@ -965,11 +900,11 @@ python producer_simulator.py --rate 5
 
 > **Note:** Unlike sub-folder READMEs that describe hard-coded credentials, the actual `producer_simulator.py` and `consumer_Simulator.py` resolve all credentials through environment variables via a shared `get_env()` helper — the Aiven hostname is the only hard-coded fallback. The code is the source of truth.
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 📡 API Reference
+<a id="api-reference"></a>
+<p align="center"><img src="assets/headers/api.svg" width="100%" alt="API Reference"/></p>
 
 Base URL: `http://localhost:8000` — all endpoints served by `backend/main.py`
 
@@ -987,11 +922,11 @@ Base URL: `http://localhost:8000` — all endpoints served by `backend/main.py`
 
 > Several endpoint pairs (`/api/tracer` vs `/api/trace-symptom`, `/api/graph` vs `/api/visualize-graph`) implement overlapping functionality — the un-suffixed routes are legacy versions; the suffixed routes are the current "Feature N" implementations per in-code comments.
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 📁 Folder Structure
+<a id="folder-structure"></a>
+<p align="center"><img src="assets/headers/folder.svg" width="100%" alt="Folder Structure"/></p>
 
 ```
 DataDose/
@@ -1028,6 +963,9 @@ DataDose/
 ├── Proposal/
 │   └── DataDose_Proposal.pdf          # 11-page project proposal
 │
+├── assets/
+│   └── headers/                       # Animated SVG header system (this README)
+│
 ├── backend/
 │   ├── main.py                        # FastAPI app — 9 REST endpoints
 │   ├── requirements.txt               # Python deps (see Known Limitations for missing deps)
@@ -1055,11 +993,11 @@ DataDose/
     └── "#L01f4c4 Pharmacist Workflow.pdf"
 ```
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 🖼 Screenshots
+<a id="screenshots"></a>
+<p align="center"><img src="assets/headers/screenshots.svg" width="100%" alt="Screenshots"/></p>
 
 <div align="center">
 
@@ -1142,11 +1080,11 @@ GraphRAGChatbot component
 </tr>
 </table>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 📈 Project Metrics
+<a id="project-metrics"></a>
+<p align="center"><img src="assets/headers/metrics.svg" width="100%" alt="Project Metrics"/></p>
 
 <div align="center">
 
@@ -1200,16 +1138,42 @@ GraphRAGChatbot component
 
 </div>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
+<a id="roadmap"></a>
+<p align="center"><img src="assets/headers/roadmap.svg" width="100%" alt="Roadmap"/></p>
 
+| Status | Item |
+|---|---|
+| 🟡 Planned | Real screenshots/demo GIFs replacing screenshot placeholders |
+| 🟡 Planned | Automated Playwright E2E coverage across all five dashboards |
+| 🟡 Planned | `LICENSE` file and formal contribution guidelines |
+| 🟡 Planned | Consolidating legacy/duplicate endpoint pairs (`tracer` → `trace-symptom`, `graph` → `visualize-graph`) |
+| 🟡 Planned | CI pipeline for the Cleaning Code → Kafka → Databricks → Snowflake chain |
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
+<a id="contributing"></a>
+<p align="center"><img src="assets/headers/contributors.svg" width="100%" alt="Contributing"/></p>
 
-## 🙏 Acknowledgments
+<div align="center">
+
+Contributions, issues, and feature requests are welcome.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes with clear messages
+4. Open a pull request describing the change and its motivation
+
+</div>
+
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="acknowledgments"></a>
+<p align="center"><img src="assets/headers/acknowledgments.svg" width="100%" alt="Acknowledgments"/></p>
 
 <div align="center">
 
@@ -1229,30 +1193,51 @@ GraphRAGChatbot component
 
 </div>
 
-<br/>
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
 
----
-
-## 📄 License
-
-No `LICENSE` file is currently included in this repository. The project is built for demonstration, educational, and enterprise-architecture presentation purposes.
-
-<br/>
-
----
+<a id="license"></a>
+<p align="center"><img src="assets/headers/license.svg" width="100%" alt="License"/></p>
 
 <div align="center">
 
+No `LICENSE` file is currently included in this repository. The project is built for demonstration, educational, and enterprise-architecture presentation purposes.
+
+</div>
+
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="design-system"></a>
+
+<div align="center">
+
+### 🎨 Design System
+
+This README uses a small, reusable **animated SVG header system** instead of plain Markdown headers — every section banner is generated from one template, so the visual language stays identical across docs as the project grows.
+
+| Token | Value |
+|---|---|
+| Background | `#060912 → #0b0f19 → #0a0f1c` diagonal gradient |
+| Primary accent | `#00D4FF` cyan |
+| Secondary accent | `#7C3AED` violet |
+| Supporting accents | `#29B5E8` blue · `#10B981` green · `#F2C811` gold |
+| Typography | `JetBrains Mono` (monospace, uppercase, wide letter-spacing) |
+| Motion | SMIL `<animate>` — border pulse, scan-beam sweep, underline tracer |
+
+Full anatomy, customization guide, and how to add a new section banner: see [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
+
+</div>
+
 <br/>
 
-
-<br/><br/>
+<div align="center">
 
 *DataDose — Clinical Decision Intelligence Platform*<br/>
 *Combining Graph Databases · Real-Time Streaming · Healthcare AI*
 
 <br/>
 
-<a href="#"><img src="https://img.shields.io/badge/⬆_Back_to_Top-0D1117?style=for-the-badge" /></a>
+<a href="#toc"><img src="https://img.shields.io/badge/⬆_Back_to_Top-0D1117?style=for-the-badge" /></a>
 
 </div>
