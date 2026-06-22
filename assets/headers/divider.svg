@@ -1,0 +1,20 @@
+<svg viewBox="0 0 1200 10" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="divider">
+  <defs>
+    <linearGradient id="dgrad_divider" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#00D4FF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="base_divider" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.12"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="4.5" width="1200" height="1" fill="url(#base_divider)"/>
+  <circle cx="600.0" cy="5" r="3" fill="#00D4FF">
+    <animate attributeName="r" values="2.5;4;2.5" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="-320" y="3" width="320" height="3" fill="url(#dgrad_divider)">
+    <animate attributeName="x" values="-320;1220" dur="3.2s" repeatCount="indefinite"/>
+  </rect>
+</svg>
