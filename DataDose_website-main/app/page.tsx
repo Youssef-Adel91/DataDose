@@ -9,12 +9,15 @@ import Footer from "./components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Navbar />
-      </div>
+    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 relative overflow-x-hidden">
+      {/* Decorative Blur Circles */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-teal/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[20%] right-[-10%] w-[45%] h-[45%] bg-brand-teal/8 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] left-[-5%] w-[40%] h-[40%] bg-brand-teal/5 rounded-full blur-[100px] pointer-events-none z-0" />
 
-      <main className="relative z-10 w-full pt-4">
+      <Navbar />
+
+      <main className="relative z-10 w-full">
         {/* 1. Clinical System Entry */}
         <Hero />
 
