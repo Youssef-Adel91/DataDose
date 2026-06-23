@@ -1,0 +1,76 @@
+<svg viewBox="0 0 1200 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prerequisites">
+  <defs>
+    <linearGradient id="bg_prerequisites" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060912"/>
+      <stop offset="45%" stop-color="#0b0f19"/>
+      <stop offset="100%" stop-color="#0a0f1c"/>
+    </linearGradient>
+
+    <linearGradient id="scan_prerequisites" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#10B981" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="edge_prerequisites" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+
+    <pattern id="grid_prerequisites" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="26" stroke="#10B981" stroke-width="0.6" opacity="0.07"/>
+    </pattern>
+
+    <filter id="glow_prerequisites" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="clip_prerequisites">
+      <rect width="1200" height="150" rx="16"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#clip_prerequisites)">
+    <rect width="1200" height="150" fill="url(#bg_prerequisites)"/>
+    <rect width="1200" height="150" fill="url(#grid_prerequisites)"/>
+
+    <!-- animated scan beam sweep -->
+    <rect x="-260" y="0" width="220" height="150" fill="url(#scan_prerequisites)">
+      <animate attributeName="x" values="-260;1260" dur="5s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- faint base hairline -->
+    <rect x="0" y="149" width="1200" height="1" fill="#10B981" opacity="0.12"/>
+  </g>
+
+  <!-- glass panel border, pulsing -->
+  <rect x="1" y="1" width="1198" height="148" rx="16" fill="none" stroke="url(#edge_prerequisites)" stroke-width="1.4" opacity="0.5">
+    <animate attributeName="opacity" values="0.28;0.85;0.28" dur="3.4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- HUD corner brackets -->
+  <path d="M20 14 L20 34 M20 14 L40 14" stroke="#10B981" stroke-width="2" fill="none" opacity="0.85"/>
+  <path d="M1180 136 L1180 116 M1180 136 L1160 136" stroke="#00D4FF" stroke-width="2" fill="none" opacity="0.85"/>
+
+  <!-- module tag -->
+  <text x="38" y="32" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="12.5" letter-spacing="3" fill="#10B981" opacity="0.8">REQUIRED // SETUP</text>
+  <circle cx="1166" cy="27" r="4" fill="#00D4FF">
+    <animate attributeName="opacity" values="1;0.25;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- glow layer of title -->
+  <text x="38" y="106" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="34" font-weight="700" fill="#10B981" filter="url(#glow_prerequisites)" opacity="0.65">⚠️  Prerequisites</text>
+  <!-- crisp layer of title -->
+  <text x="38" y="106" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="34" font-weight="700" fill="#F2FAFF">⚠️  Prerequisites</text>
+
+  <!-- animated underline tracer -->
+  <line x1="40" y1="128" x2="40" y2="128" stroke="url(#edge_prerequisites)" stroke-width="3" stroke-linecap="round">
+    <animate attributeName="x2" values="40;260;40" dur="3.6s" repeatCount="indefinite"/>
+  </line>
+  <line x1="270" y1="128" x2="1162" y2="128" stroke="#10B981" stroke-width="1" opacity="0.15"/>
+</svg>
