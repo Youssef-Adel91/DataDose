@@ -98,7 +98,7 @@ async function run() {
     // Evaluate pending traces before terminating context
     await page.waitForTimeout(5000);
 
-  } catch (err) {
+  } catch (err: any) {
     console.error(`\n❌ FAILED: ${err.message}`);
     process.exit(1);
   } finally {

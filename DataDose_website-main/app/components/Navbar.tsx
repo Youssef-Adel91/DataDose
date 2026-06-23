@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Pill, LogOut } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 const navLinks = [
-  { label: "Product", href: "#product" },
-  { label: "Company", href: "#company" },
-  { label: "Support", href: "#support" },
-  { label: "Legal", href: "#legal" },
+  { label: "Capabilities", href: "#features" },
+  { label: "How It Works", href: "#system-workflow" },
+  { label: "Roles", href: "#workflows" },
 ];
 
 export default function Navbar() {
@@ -28,30 +27,24 @@ export default function Navbar() {
     <motion.header
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="w-full bg-transparent z-50 pt-8"
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="w-full bg-transparent z-50 pt-6"
     >
       <nav className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg gradient-teal flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-            <Pill className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-lg font-bold text-slate-800 tracking-tight">
-            Data Dose
-          </span>
+        <Link href="/" className="flex items-center group">
+          <img src="/logo.svg" className="h-10 w-auto object-contain" alt="DataDose Logo" />
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-6 xl:gap-8">
+        <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-[13px] font-bold text-slate-600 hover:text-teal-600 transition-colors relative group"
+              className="text-sm font-medium text-slate-600 hover:text-teal-700 transition-colors"
             >
               {link.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 group-hover:w-full transition-all duration-300" />
             </a>
           ))}
         </div>
@@ -61,35 +54,24 @@ export default function Navbar() {
           {user ? (
             <>
               <Link href="/dashboard">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  className="text-sm font-semibold text-white gradient-teal px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-                >
+                <button className="text-sm font-semibold text-white bg-teal-700 px-5 py-2 rounded-lg shadow-sm hover:bg-teal-800 transition-colors">
                   Dashboard
-                </motion.button>
+                </button>
               </Link>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
+              <button
                 onClick={handleLogout}
-                className="text-sm font-semibold text-red-600 hover:text-red-700 px-4 py-2 flex items-center gap-2"
+                className="text-sm font-medium text-slate-500 hover:text-red-600 px-3 py-2 flex items-center gap-1.5 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
-              </motion.button>
+                Sign Out
+              </button>
             </>
           ) : (
-            <>
-              <Link href="/login">
-                <button className="text-[13px] font-bold text-teal-900 bg-teal-50/80 px-6 py-2.5 rounded-full shadow-sm hover:bg-teal-100 transition-all duration-300">
-                  Log in
-                </button>
-              </Link>
-              <Link href="/login">
-                <button className="text-[13px] font-bold text-white bg-[#0f172a] px-6 py-2.5 rounded-full shadow-lg hover:bg-slate-800 transition-all duration-300 ml-2">
-                  Learn More
-                </button>
-              </Link>
-            </>
+            <Link href="/login">
+              <button className="text-sm font-semibold text-white bg-teal-700 px-6 py-2 rounded-lg shadow-sm hover:bg-teal-800 transition-colors">
+                Sign In
+              </button>
+            </Link>
           )}
         </div>
 
@@ -110,16 +92,16 @@ export default function Navbar() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white/95 backdrop-blur-xl border-t border-slate-100 overflow-hidden"
+            transition={{ duration: 0.25 }}
+            className="md:hidden bg-white border-t border-slate-100 overflow-hidden mt-2 rounded-lg"
           >
-            <div className="px-6 py-4 flex flex-col gap-3">
+            <div className="px-5 py-4 flex flex-col gap-2">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-sm font-medium text-slate-600 hover:text-teal-600 py-2 transition-colors"
+                  className="text-sm font-medium text-slate-600 hover:text-teal-700 py-2 transition-colors"
                 >
                   {link.label}
                 </a>
@@ -130,42 +112,31 @@ export default function Navbar() {
                   <Link href="/dashboard">
                     <button
                       onClick={() => setMobileOpen(false)}
-                      className="w-full text-sm font-semibold text-white gradient-teal px-5 py-2.5 rounded-full text-center shadow-md"
+                      className="w-full text-sm font-semibold text-white bg-teal-700 px-5 py-2.5 rounded-lg text-center"
                     >
                       Dashboard
                     </button>
                   </Link>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
+                  <button
                     onClick={() => {
                       handleLogout();
                       setMobileOpen(false);
                     }}
-                    className="text-sm font-semibold text-red-600 hover:text-red-700 py-2 flex items-center gap-2"
+                    className="text-sm font-medium text-slate-500 hover:text-red-600 py-2 flex items-center gap-1.5"
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
-                  </motion.button>
+                    Sign Out
+                  </button>
                 </>
               ) : (
-                <>
-                  <Link href="/login">
-                    <button
-                      onClick={() => setMobileOpen(false)}
-                      className="text-sm font-semibold text-slate-700 py-2 w-full text-left"
-                    >
-                      Log In
-                    </button>
-                  </Link>
-                  <Link href="/login">
-                    <button
-                      onClick={() => setMobileOpen(false)}
-                      className="w-full text-sm font-semibold text-white gradient-teal px-5 py-2.5 rounded-full text-center shadow-md"
-                    >
-                      Get Started
-                    </button>
-                  </Link>
-                </>
+                <Link href="/login">
+                  <button
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full text-sm font-semibold text-white bg-teal-700 px-5 py-2.5 rounded-lg text-center"
+                  >
+                    Sign In
+                  </button>
+                </Link>
               )}
             </div>
           </motion.div>
