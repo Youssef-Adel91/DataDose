@@ -15,7 +15,7 @@
 ![Language](https://img.shields.io/badge/python-3.x-3776AB?logo=python&logoColor=white)
 ![Library](https://img.shields.io/badge/pandas-data%20wrangling-150458?logo=pandas&logoColor=white)
 ![Runtime](https://img.shields.io/badge/Google%20Colab-ready-F9AB00?logo=googlecolab&logoColor=white)
-![LLM](https://img.shields.io/badge/Groq-LLM%20validation-F55036)
+![LLM](https://img.shields.io/badge/Groq-LLM%20validation-F55036?logo=groq&logoColor=white)
 ![API](https://img.shields.io/badge/OpenFDA-drug%20label%20lookup-005EA2)
 ![License](https://img.shields.io/badge/license-unspecified-lightgrey)
 
@@ -23,26 +23,31 @@
 
 </div>
 
----
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 📋 Table of Contents
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
-- [Folder Structure](#-folder-structure)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Configuration](#-configuration)
-- [Module Details](#-module-details)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Acknowledgments](#-acknowledgments)
-- [Contact](#-contact)
+<a id="toc"></a>
+<p align="center"><img src="../assets/headers/toc.svg" width="100%" alt="Table of Contents"/></p>
 
----
+<table>
+<tr><td>
 
-## ✨ Features
+| Section | Section |
+|---|---|
+| ✨ [Features](#features) | 📦 [Module Details](#module-details) |
+| 🛠 [Tech Stack](#tech-stack) | 🤝 [Contributing](#contributing) |
+| 🏗 [Architecture](#architecture) | 📄 [License](#license) |
+| 📁 [Folder Structure](#folder-structure) | 🙏 [Acknowledgments](#acknowledgments) |
+| ⚠️ [Prerequisites](#prerequisites) | 📬 [Contact](#contact) |
+| 🚀 [Installation](#installation) | 📖 [Usage](#usage) |
+| 🔧 [Configuration](#configuration) | |
+
+</td></tr>
+</table>
+
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="features"></a>
+<p align="center"><img src="../assets/headers/features-pipeline.svg" width="100%" alt="Features"/></p>
 
 **Initial standardization**
 - Drops unused columns (`updated`, `created`, `new_price`, `id`, `Therapeutic_Group`) and lowercases/strips key text fields
@@ -69,9 +74,11 @@
 **Merge utilities**
 - Consolidates any folder of CSVs into one merged file, with batch support across multiple folders
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 🛠 Tech Stack
+<a id="tech-stack"></a>
+<p align="center"><img src="../assets/headers/techstack-pipeline.svg" width="100%" alt="Tech Stack"/></p>
 
 | Category | Technology | Purpose |
 |---|---|---|
@@ -85,9 +92,11 @@
 | LLM | Groq (`llama-3.1-8b-instant`) | Ingredient/trade-name validation and canonicalization |
 | Reference data | OpenFDA `drug/label.json` | Brand names, manufacturers, dosage forms for confirmed drugs |
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 🏗 Architecture
+<a id="architecture"></a>
+<p align="center"><img src="../assets/headers/architecture-pipeline.svg" width="100%" alt="Architecture"/></p>
 
 ```
 DataDoseDataset.csv (raw)
@@ -117,9 +126,11 @@ DataDoseDataset.csv (raw)
 
 Notebooks 01 → 02 → 03 form the main linear path. Notebook 04 operates on a separately curated `DataDoseDataset_FinalV.csv` rather than an automatic output of 01–03, and notebook 05 is a general-purpose helper usable at any stage.
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 📁 Folder Structure
+<a id="folder-structure"></a>
+<p align="center"><img src="../assets/headers/folder.svg" width="100%" alt="Folder Structure"/></p>
 
 ```
 .
@@ -131,9 +142,11 @@ Notebooks 01 → 02 → 03 form the main linear path. Notebook 04 operates on a 
 └── README.md                                        # This file
 ```
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## ⚠ Prerequisites
+<a id="prerequisites"></a>
+<p align="center"><img src="../assets/headers/prerequisites.svg" width="100%" alt="Prerequisites"/></p>
 
 1. **Python 3** with `pandas`, `numpy`, `requests` installed (`pip install pandas numpy requests`)
 2. **Google Colab** (recommended) or any environment where you can adjust the hard-coded `BASE_DIR` paths
@@ -142,9 +155,11 @@ Notebooks 01 → 02 → 03 form the main linear path. Notebook 04 operates on a 
 5. *(Optional)* An **OpenFDA API key** — queries work without one, but a key raises rate limits
 6. *(Optional)* A curated `DataDoseDataset_FinalV.csv` if you intend to run notebook 04
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 🚀 Installation
+<a id="installation"></a>
+<p align="center"><img src="../assets/headers/installation.svg" width="100%" alt="Installation"/></p>
 
 1. **Open the notebooks in Google Colab** (or your local Jupyter environment):
    ```text
@@ -173,11 +188,13 @@ Notebooks 01 → 02 → 03 form the main linear path. Notebook 04 operates on a 
    OPENFDA_API_KEY = "your-openfda-key"   # optional
    ```
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 📖 Usage
+<a id="usage"></a>
+<p align="center"><img src="../assets/headers/usage.svg" width="100%" alt="Usage"/></p>
 
-### Basic Usage — run the pipeline in order
+#### Basic Usage — run the pipeline in order
 
 ```text
 1. Run 01_DataDose_Initial_Cleaning.ipynb       → DataDoseDataset_Cleaned.csv
@@ -185,7 +202,7 @@ Notebooks 01 → 02 → 03 form the main linear path. Notebook 04 operates on a 
 3. Run 03_FDA_Enrichment.ipynb                  → ingredients_fda_results.csv / .json
 ```
 
-### Advanced Usage — cleaning a single ingredient string
+#### Advanced Usage — cleaning a single ingredient string
 
 ```python
 clean_active_ingredient("Vit. B Complex + Vitamin C 500mg Tablet")
@@ -197,13 +214,13 @@ clean_tradename_text("Amoxicillin Capsule 250mg 30 caps")
 # → 'Amoxicillin 250mg'
 ```
 
-### Common Scenario — running the FDA enrichment pipeline on a sample
+#### Common Scenario — running the FDA enrichment pipeline on a sample
 
 ```python
 results = run_full_pipeline(sample_size=20)
 ```
 
-### Common Scenario — merging CSV outputs from a folder
+#### Common Scenario — merging CSV outputs from a folder
 
 ```python
 result = merge_csv_files(
@@ -213,9 +230,11 @@ result = merge_csv_files(
 )
 ```
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## ⚙ Configuration
+<a id="configuration"></a>
+<p align="center"><img src="../assets/headers/configuration.svg" width="100%" alt="Configuration"/></p>
 
 | Variable | Notebook(s) | Default | Description |
 |---|---|---|---|
@@ -236,68 +255,132 @@ result = merge_csv_files(
 
 > **Note:** All `GROQ_API_KEYS` lists default to empty. Without a key, the cleaning/regex logic still runs, but LLM validation calls in notebooks 02–04 simply return `None`/`False` rather than failing.
 
----
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-## 📦 Module Details
+<a id="module-details"></a>
+<p align="center"><img src="../assets/headers/module-details.svg" width="100%" alt="Module Details"/></p>
 
-### `01_DataDose_Initial_Cleaning.ipynb`
+<details open>
+<summary><b>📓 01_DataDose_Initial_Cleaning.ipynb</b></summary>
+<br/>
+
 > Loads the raw dataset and applies first-pass standardization.
 - **Key Components:** column-drop step, text lowercasing/stripping, dosage-form typo-fix + consolidation mapping → `form_standardized`
 - **Dependencies:** `pandas`, `numpy`
 - **Notes:** Rows with a null/`"nan"` `form` value are dropped before standardization.
 
-### `02_Active_Ingredient_Cleaning_and_Verification.ipynb`
+</details>
+
+<details>
+<summary><b>📓 02_Active_Ingredient_Cleaning_and_Verification.ipynb</b></summary>
+<br/>
+
 > Two-part notebook: cleans raw ingredient text into canonical `+`-joined strings, then offers fuzzy/LLM verification helpers.
 - **Key Components:** `decode_encoded_tokens()`, `apply_spell_fix()`, `normalize_text()`, `normalize_omega()`, `is_cosmetic_entry()`, `clean_active_ingredient()`, `fuzzy_match_ingredient()`, `verify_ingredients()`
 - **Dependencies:** `pandas`, `numpy`, `re`, `difflib`, `requests`
 - **Notes:** `verify_ingredients()` only processes the first 100 unique ingredients (`unique_ingredients[:100]`) as a demo limit; the LLM verification call itself is not wired into `verify_ingredients()` in the current cells.
 
-### `03_FDA_Enrichment.ipynb`
+</details>
+
+<details>
+<summary><b>📓 03_FDA_Enrichment.ipynb</b></summary>
+<br/>
+
 > Validates ingredients via a Groq LLM and cross-references OpenFDA drug labels.
 - **Key Components:** `extract_unique_ingredients()`, `call_groq_api()`, `query_openfda()`, `filter_confirmed_drugs()`, `run_full_pipeline()`
 - **Dependencies:** `requests`, `pandas`, `json`
 - **Notes:** `run_full_pipeline()` defaults to a `sample_size=10` demo run and is left commented out at the end of the notebook; a drug is only "confirmed" if both `groq.is_drug` and `fda.found` are true.
 
-### `04_Tradename_Cleaning_and_Validation.ipynb`
+</details>
+
+<details>
+<summary><b>📓 04_Tradename_Cleaning_and_Validation.ipynb</b></summary>
+<br/>
+
 > Strips dosage-form and pack-count text from brand names, then optionally validates them via an LLM.
 - **Key Components:** `_DOSAGE_FORM_RE`, `_PACK_VOLUME_RE` regex patterns, `clean_tradename_text()`, `validate_tradename_with_llm()`, `run_tradename_pipeline()`, `export_validated_tradenames()`
 - **Dependencies:** `re`, `pandas`, `requests`
 - **Notes:** Uses its own `BASE_DIR` (`Tradename Clean` subfolder), separate from notebooks 01–03; `run_tradename_pipeline()` defaults to processing only `df.head(sample_size)` rows.
 
-### `05_Merge_Utilities.ipynb`
+</details>
+
+<details>
+<summary><b>📓 05_Merge_Utilities.ipynb</b></summary>
+<br/>
+
 > General-purpose CSV consolidation helpers, independent of the rest of the pipeline.
 - **Key Components:** `merge_csv_files(folder_path, output_file, skip_pattern=None)`, `batch_merge_folders(folder_specs)`
 - **Dependencies:** `pandas`, `glob`, `os`
 - **Notes:** `merge_csv_files` concatenates rows via `pd.concat` without aligning differing column sets across files.
 
----
+</details>
 
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
+<a id="contributing"></a>
+<p align="center"><img src="../assets/headers/contributors.svg" width="100%" alt="Contributing"/></p>
 
-## 🤝 Contributing
+<div align="center">
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/your-change`)
 3. Commit your changes with a clear message
 4. Push the branch and open a Pull Request describing what changed and why
 
----
+</div>
 
-## 📄 License
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="license"></a>
+<p align="center"><img src="../assets/headers/license.svg" width="100%" alt="License"/></p>
+
+<div align="center">
 
 No `LICENSE` file is included in this repository. Add one (e.g. MIT, Apache 2.0) before distributing this project publicly.
 
----
+</div>
 
-## 🙏 Acknowledgments
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
 
-- [pandas](https://pandas.pydata.org/) and [NumPy](https://numpy.org/) for data wrangling
-- [Groq](https://groq.com/) for LLM-hosted ingredient/trade-name validation
-- [OpenFDA](https://open.fda.gov/) for drug label reference data
-- Python's built-in [`difflib`](https://docs.python.org/3/library/difflib.html) for fuzzy matching
+<a id="acknowledgments"></a>
+<p align="center"><img src="../assets/headers/acknowledgments.svg" width="100%" alt="Acknowledgments"/></p>
 
----
+<div align="center">
 
-## 📬 Contact
+| Technology | Use in this pipeline |
+|---|---|
+| [pandas](https://pandas.pydata.org/) · [NumPy](https://numpy.org/) | Data wrangling |
+| [Groq](https://groq.com/) | LLM-hosted ingredient/trade-name validation |
+| [OpenFDA](https://open.fda.gov/) | Drug label reference data |
+| Python's built-in [`difflib`](https://docs.python.org/3/library/difflib.html) | Fuzzy matching |
+
+</div>
+
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="../assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="contact"></a>
+<p align="center"><img src="../assets/headers/contact.svg" width="100%" alt="Contact"/></p>
+
+<div align="center">
 
 No contact information was found in the provided files. Add a maintainer name, email, or issue-tracker link here before publishing.
+
+</div>
+
+<br/>
+
+<div align="center">
+
+*Cleaning Code — Pharma Data Cleaning & Enrichment Pipeline*<br/>
+*Part of the DataDose Clinical Decision Intelligence Platform*
+
+<br/>
+
+<a href="#toc"><img src="https://img.shields.io/badge/⬆_Back_to_Top-0D1117?style=for-the-badge" /></a>
+
+</div>
