@@ -1,0 +1,162 @@
+<svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DataDose — Clinical Decision Intelligence Platform">
+  <defs>
+    <linearGradient id="heroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060912"/>
+      <stop offset="48%" stop-color="#0b0f19"/>
+      <stop offset="100%" stop-color="#0a0f1c"/>
+    </linearGradient>
+
+    <linearGradient id="tealCap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7CF2E6"/>
+      <stop offset="45%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+
+    <linearGradient id="navyCap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#283655"/>
+      <stop offset="55%" stop-color="#121A2C"/>
+      <stop offset="100%" stop-color="#060912"/>
+    </linearGradient>
+
+    <linearGradient id="wordDose" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5EEAD4"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+
+    <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+
+    <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#00D4FF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#00D4FF" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="baseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2DD4BF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#22D3EE" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="logoGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2DD4BF" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#2DD4BF" stop-opacity="0"/>
+    </radialGradient>
+
+    <pattern id="heroGrid" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="30" stroke="#22D3EE" stroke-width="0.6" opacity="0.06"/>
+    </pattern>
+
+    <filter id="softBlur" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+
+    <filter id="textGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="capLeftClip">
+      <rect x="-200" y="-80" width="200" height="160"/>
+    </clipPath>
+    <clipPath id="capRightClip">
+      <rect x="0" y="-80" width="200" height="160"/>
+    </clipPath>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="320" fill="url(#heroBg)"/>
+  <rect width="1200" height="320" fill="url(#heroGrid)"/>
+
+  <!-- animated scan sweep -->
+  <rect x="-300" y="0" width="260" height="320" fill="url(#scanGrad)">
+    <animate attributeName="x" values="-300;1500" dur="6s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- HUD corner brackets -->
+  <path d="M26 22 L26 50 M26 22 L54 22" stroke="#22D3EE" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M1174 298 L1174 270 M1174 298 L1146 298" stroke="#7C3AED" stroke-width="2" fill="none" opacity="0.8"/>
+
+  <!-- module tag -->
+  <text x="44" y="42" font-family="'JetBrains Mono','Fira Code',Consolas,monospace" font-size="13" letter-spacing="3" fill="#22D3EE" opacity="0.8">DATADOSE // CLINICAL AI PLATFORM</text>
+  <circle cx="1162" cy="36" r="4.5" fill="#2DD4BF">
+    <animate attributeName="opacity" values="1;0.25;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- soft glow behind the mark -->
+  <ellipse cx="300" cy="178" rx="260" ry="170" fill="url(#logoGlow)" filter="url(#softBlur)"/>
+
+  <!-- drop shadow under capsule -->
+  <ellipse cx="300" cy="262" rx="190" ry="18" fill="#000000" opacity="0.35" filter="url(#softBlur)"/>
+
+  <!-- ===== capsule mark (rotated) ===== -->
+  <g transform="translate(300,178) rotate(-18)">
+
+    <!-- teal half -->
+    <g clip-path="url(#capLeftClip)">
+      <rect x="-180" y="-65" width="360" height="130" rx="65" ry="65" fill="url(#tealCap)"/>
+    </g>
+    <!-- navy half -->
+    <g clip-path="url(#capRightClip)">
+      <rect x="-180" y="-65" width="360" height="130" rx="65" ry="65" fill="url(#navyCap)"/>
+    </g>
+
+    <!-- glossy highlights -->
+    <ellipse cx="-95" cy="-30" rx="55" ry="14" fill="#FFFFFF" opacity="0.16"/>
+    <ellipse cx="80" cy="-32" rx="50" ry="12" fill="#FFFFFF" opacity="0.08"/>
+
+    <!-- circuit traces on navy half -->
+    <path d="M20,-35 L55,-35 L55,-10 L95,-10 L95,15 L140,15" stroke="#5EEAD4" stroke-width="2.5" fill="none" opacity="0.85"/>
+    <path d="M30,32 L65,32 L65,6 L115,6 L115,-20 L155,-20" stroke="#5EEAD4" stroke-width="2.5" fill="none" opacity="0.6"/>
+    <circle cx="20" cy="-35" r="3.5" fill="#7CF2E6"/>
+    <circle cx="55" cy="-10" r="4" fill="#7CF2E6"/>
+    <circle cx="140" cy="15" r="5" fill="#22D3EE">
+      <animate attributeName="opacity" values="1;0.35;1" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="30" cy="32" r="3" fill="#7CF2E6" opacity="0.7"/>
+    <circle cx="155" cy="-20" r="4" fill="#22D3EE" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0.25;0.8" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- pixel dissolve scatter off the teal tip -->
+    <rect x="-203" y="-33" width="16" height="16" fill="#2DD4BF" opacity="0.9" transform="rotate(8,-195,-25)"/>
+    <rect x="-222" y="3" width="13" height="13" fill="#5EEAD4" opacity="0.8" transform="rotate(-10,-215,9)"/>
+    <rect x="-156" y="33" width="11" height="11" fill="#0F766E" opacity="0.6" transform="rotate(14,-150,38)"/>
+    <rect x="-240" y="-12" width="9" height="9" fill="#22D3EE" opacity="0.55" transform="rotate(-6,-235,-7)"/>
+    <rect x="-211" y="28" width="7" height="7" fill="#134E4A" opacity="0.45" transform="rotate(20,-207,31)"/>
+    <rect x="-255" y="17" width="6" height="6" fill="#2DD4BF" opacity="0.35" transform="rotate(-15,-252,20)"/>
+  </g>
+
+  <!-- ===== heartbeat + medical cross (upright, above the mark) ===== -->
+  <path d="M118,92 L163,92 L178,77 L193,107 L210,36 L227,118 L244,92 L296,92"
+        stroke="#5EEAD4" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+
+  <g filter="url(#textGlow)">
+    <rect x="328" y="36" width="14" height="40" rx="4" fill="#2DD4BF"/>
+    <rect x="313" y="51" width="44" height="14" rx="4" fill="#2DD4BF"/>
+  </g>
+
+  <!-- ===== wordmark ===== -->
+  <text x="560" y="205" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="96" font-weight="800"
+        fill="#F7FBFF" textLength="232" lengthAdjust="spacingAndGlyphs">Data</text>
+  <text x="810" y="205" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="96" font-weight="800"
+        fill="url(#wordDose)" textLength="232" lengthAdjust="spacingAndGlyphs" filter="url(#textGlow)">Dose</text>
+
+  <text x="562" y="246" font-family="'JetBrains Mono','Fira Code',Consolas,monospace" font-size="16" letter-spacing="3"
+        fill="#8FD9EC" opacity="0.78">CLINICAL DECISION INTELLIGENCE PLATFORM</text>
+
+  <line x1="562" y1="262" x2="562" y2="262" stroke="url(#edgeGrad)" stroke-width="3" stroke-linecap="round">
+    <animate attributeName="x2" values="562;740;562" dur="3.6s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- bottom comet baseline -->
+  <rect x="0" y="316" width="1200" height="1" fill="#22D3EE" opacity="0.12"/>
+  <rect x="-320" y="314.5" width="320" height="3" fill="url(#baseGrad)">
+    <animate attributeName="x" values="-320;1220" dur="4s" repeatCount="indefinite"/>
+  </rect>
+</svg>
