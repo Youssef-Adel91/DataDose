@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTUyMTY1anQ4d2doYzQ5ZG1oeXpiMGdocWl2dzJxc20weXp3anlheSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/t5vJgC1YwyDHPB518L/giphy.gif" alt="DataDose Banner" width="100%" />
+  <img src="assets/headers/datadose-banner.svg" width="100%" alt="DataDose — Clinical Decision Intelligence Platform" />
 </p>
 
 <div align="center">
@@ -1038,7 +1038,7 @@ DrugData.pbix — Risk Analysis page
 </td>
 <td align="center" width="50%">
 
-**🤖 GraphRAG Chatbot**<br/>
+**🤖 GraphRAG Чatbot**<br/>
 *AI medical assistant with graph-grounded answers*
 
 ```
