@@ -1,0 +1,25 @@
+{
+  "name": "DataDose Pharmaceutical",
+  "dataColors": [
+    "#1D4ED8", "#15803D", "#D97706",
+    "#DC2626", "#7C3AED", "#0891B2",
+    "#BE185D", "#EA580C"
+  ],
+  "background": "#F8FAFC",
+  "foreground": "#0F172A",
+  "tableAccent": "#1D4ED8",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "fontFamily": [{ "value": "Segoe UI" }],
+        "fontSize":   [{ "value": 12 }]
+      }
+    },
+    "card": {
+      "*": {
+        "cardTitle": [{ "fontSize": 11, "fontColor": "#475569" }],
+        "dataLabel": [{ "fontSize": 28, "fontColor": "#0F172A", "bold": true }]
+      }
+    }
+  }
+}

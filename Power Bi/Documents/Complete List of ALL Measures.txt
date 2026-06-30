@@ -1,0 +1,165 @@
+// ============ BASE MEASURES ============
+Avg_Adverse_Reactions = AVERAGE('DataDoseDataset-Cleaned'[adverse_reactions_count])
+
+Avg_Interactions = AVERAGE('DataDoseDataset-Cleaned'[drug_interactions_count])
+
+Avg_Warnings = AVERAGE('DataDoseDataset-Cleaned'[warnings_count])
+
+Max_Drug_Interactions = MAX('DataDoseDataset-Cleaned'[drug_interactions_count])
+
+Max_Warnings = MAX('DataDoseDataset-Cleaned'[warnings_count])
+
+Max_Adverse_Reactions = MAX('DataDoseDataset-Cleaned'[adverse_reactions_count])
+
+Total_Adverse_Reactions = SUM('DataDoseDataset-Cleaned'[adverse_reactions_count])
+
+Total_Drug_Records = COUNTROWS('DataDoseDataset-Cleaned')
+
+Total_Indications = SUM('DataDoseDataset-Cleaned'[indications_count])
+
+Total_Interactions = SUM('DataDoseDataset-Cleaned'[drug_interactions_count])
+
+Total_Warnings = SUM('DataDoseDataset-Cleaned'[warnings_count])
+
+Unique_Trade_Names = DISTINCTCOUNT('DataDoseDataset-Cleaned'[trade_name])
+
+// ============ COMBINATION ANALYSIS ============
+Combination_Products = 
+CALCULATE(
+    COUNTROWS('DataDoseDataset-Cleaned'),
+    LOWER('DataDoseDataset-Cleaned'[is_combination] & "") = "true"
+)
+
+Single_Products = 
+CALCULATE(
+    COUNTROWS('DataDoseDataset-Cleaned'),
+    LOWER('DataDoseDataset-Cleaned'[is_combination] & "") <> "true"
+)
+
+Combination_Percentage = DIVIDE([Combination_Products], [Total_Drug_Records], 0)
+
+Single_Percentage = DIVIDE([Single_Products], [Total_Drug_Records], 0)
+
+// ============ DOSAGE FORM COUNTS ============
+Injection_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[dosage_form] = "injection")
+
+Cream_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[dosage_form] = "cream")
+
+Drops_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[dosage_form] = "drops")
+
+Gel_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[dosage_form] = "gel")
+
+Injection_Percentage = DIVIDE([Injection_Count], [Total_Drug_Records], 0)
+
+Cream_Percentage = DIVIDE([Cream_Count], [Total_Drug_Records], 0)
+
+Drops_Percentage = DIVIDE([Drops_Count], [Total_Drug_Records], 0)
+
+Gel_Percentage = DIVIDE([Gel_Count], [Total_Drug_Records], 0)
+
+// ============ ROUTE COUNTS ============
+Injection_Route_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[route_of_administration] = "injection")
+
+Topical_Route_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[route_of_administration] = "topical")
+
+Otic_Route_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[route_of_administration] = "otic")
+
+Oral_Route_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[route_of_administration] = "oral")
+
+Injection_Route_Percentage = DIVIDE([Injection_Route_Count], [Total_Drug_Records], 0)
+
+Topical_Route_Percentage = DIVIDE([Topical_Route_Count], [Total_Drug_Records], 0)
+
+Otic_Route_Percentage = DIVIDE([Otic_Route_Count], [Total_Drug_Records], 0)
+
+Oral_Route_Percentage = DIVIDE([Oral_Route_Count], [Total_Drug_Records], 0)
+
+// ============ SAFETY ANALYSIS ============
+Safe_Drug_Count = 
+CALCULATE(
+    COUNTROWS('DataDoseDataset-Cleaned'),
+    'DataDoseDataset-Cleaned'[warnings_count] = 0,
+    'DataDoseDataset-Cleaned'[drug_interactions_count] = 0,
+    'DataDoseDataset-Cleaned'[adverse_reactions_count] = 0
+)
+
+Risky_Drug_Count = [Total_Drug_Records] - [Safe_Drug_Count]
+
+Safe_Drug_Percentage = DIVIDE([Safe_Drug_Count], [Total_Drug_Records], 0)
+
+Risky_Drug_Percentage = DIVIDE([Risky_Drug_Count], [Total_Drug_Records], 0)
+
+Zero_Interaction_Count = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[drug_interactions_count] = 0)
+
+Zero_Interaction_Percentage = DIVIDE([Zero_Interaction_Count], [Total_Drug_Records], 0)
+
+Records_With_Adverse_Reactions = CALCULATE(COUNTROWS('DataDoseDataset-Cleaned'), 'DataDoseDataset-Cleaned'[has_adverse_reaction] > 0)
+
+// ============ TOTALS ============
+Total_Safety_Burden = [Total_Warnings] + [Total_Interactions] + [Total_Adverse_Reactions]
+
+Warnings_Percentage_Of_Total = DIVIDE([Total_Warnings], [Total_Safety_Burden], 0)
+
+Interactions_Percentage_Of_Total = DIVIDE([Total_Interactions], [Total_Safety_Burden], 0)
+
+Adverse_Percentage_Of_Total = DIVIDE([Total_Adverse_Reactions], [Total_Safety_Burden], 0)
+
+// ============ RISK SCORES ============
+Risk_Score = 
+('DataDoseDataset-Cleaned'[warnings_count] * 0.4) +
+('DataDoseDataset-Cleaned'[drug_interactions_count] * 0.4) +
+('DataDoseDataset-Cleaned'[adverse_reactions_count] * 0.2)
+
+Avg_Risk_By_Ingredient_Count = 
+CALCULATE(
+    AVERAGE('DataDoseDataset-Cleaned'[warnings_count]) +
+    AVERAGE('DataDoseDataset-Cleaned'[drug_interactions_count]) +
+    AVERAGE('DataDoseDataset-Cleaned'[adverse_reactions_count])
+)
+
+Risk_Score_By_Dosage = 
+CALCULATE(
+    AVERAGE('DataDoseDataset-Cleaned'[warnings_count]) +
+    AVERAGE('DataDoseDataset-Cleaned'[drug_interactions_count]) +
+    AVERAGE('DataDoseDataset-Cleaned'[adverse_reactions_count])
+)
+
+// ============ HIGH RISK DRUG ============
+High_Risk_Drug_Name = 
+VAR TopDrugTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            SUMMARIZE('DataDoseDataset-Cleaned', 'DataDoseDataset-Cleaned'[trade_name]),
+            "RiskValue",
+                CALCULATE(
+                    MAX('DataDoseDataset-Cleaned'[warnings_count]) +
+                    MAX('DataDoseDataset-Cleaned'[drug_interactions_count]) +
+                    MAX('DataDoseDataset-Cleaned'[adverse_reactions_count])
+                )
+        ),
+        [RiskValue], DESC
+    )
+RETURN MAXX(TopDrugTable, 'DataDoseDataset-Cleaned'[trade_name])
+
+High_Risk_Drug_Score = 
+VAR TopDrugTable =
+    TOPN(
+        1,
+        ADDCOLUMNS(
+            SUMMARIZE('DataDoseDataset-Cleaned', 'DataDoseDataset-Cleaned'[trade_name]),
+            "RiskValue",
+                CALCULATE(
+                    MAX('DataDoseDataset-Cleaned'[warnings_count]) +
+                    MAX('DataDoseDataset-Cleaned'[drug_interactions_count]) +
+                    MAX('DataDoseDataset-Cleaned'[adverse_reactions_count])
+                )
+        ),
+        [RiskValue], DESC
+    )
+RETURN MAXX(TopDrugTable, [RiskValue])
+
+// ============ FOR TABLE VISUALS (use with trade_name) ============
+Adverse_Reactions_By_Trade = CALCULATE(MAX('DataDoseDataset-Cleaned'[adverse_reactions_count]))
+
+Warnings_By_Trade = CALCULATE(MAX('DataDoseDataset-Cleaned'[warnings_count]))
