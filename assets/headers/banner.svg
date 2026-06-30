@@ -1,0 +1,79 @@
+<svg width="1280" height="320" viewBox="0 0 1280 320" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1B33"/>
+      <stop offset="100%" stop-color="#13284A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="78%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#2E75B6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#2E75B6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#FFFFFF" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="320" fill="url(#bg)"/>
+  <rect width="1280" height="320" fill="url(#grid)"/>
+  <rect width="1280" height="320" fill="url(#glow)"/>
+
+  <!-- left accent rule, clinical chart style -->
+  <rect x="0" y="0" width="6" height="320" fill="#C0392B"/>
+
+  <!-- star schema signature, right side -->
+  <g transform="translate(905,160)" opacity="0.97">
+    <!-- connecting lines -->
+    <line x1="0" y1="0" x2="-118" y2="-78" stroke="#5B9BD5" stroke-width="1.6" opacity="0.8"/>
+    <line x1="0" y1="0" x2="118" y2="-78" stroke="#5B9BD5" stroke-width="1.6" opacity="0.8"/>
+    <line x1="0" y1="0" x2="-118" y2="78" stroke="#5B9BD5" stroke-width="1.6" opacity="0.8"/>
+    <line x1="0" y1="0" x2="118" y2="78" stroke="#5B9BD5" stroke-width="1.6" opacity="0.8"/>
+    <line x1="0" y1="0" x2="0" y2="-108" stroke="#5B9BD5" stroke-width="1.6" opacity="0.8"/>
+
+    <!-- center fact node -->
+    <circle cx="0" cy="0" r="30" fill="#C0392B"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#FF6B5B" stroke-width="1.5" opacity="0.6"/>
+    <text x="0" y="5" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="11" font-weight="700" fill="#FFF5F3" text-anchor="middle">FACT</text>
+
+    <!-- dimension nodes -->
+    <circle cx="-118" cy="-78" r="15" fill="#2E75B6"/>
+    <circle cx="118" cy="-78" r="15" fill="#2E75B6"/>
+    <circle cx="-118" cy="78" r="15" fill="#2E75B6"/>
+    <circle cx="118" cy="78" r="15" fill="#2E75B6"/>
+    <circle cx="0" cy="-108" r="15" fill="#2E75B6"/>
+
+    <text x="-118" y="-104" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="9.5" fill="#AFC9E8" text-anchor="middle">DRUG</text>
+    <text x="118" y="-104" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="9.5" fill="#AFC9E8" text-anchor="middle">PHARMACY</text>
+    <text x="-118" y="104" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="9.5" fill="#AFC9E8" text-anchor="middle">PATIENT</text>
+    <text x="118" y="104" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="9.5" fill="#AFC9E8" text-anchor="middle">DATE</text>
+    <text x="0" y="-130" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="9.5" fill="#AFC9E8" text-anchor="middle">INGREDIENT</text>
+  </g>
+
+  <!-- waveform / interaction-signal motif, thin, beneath the title -->
+  <g transform="translate(70,240)" opacity="0.55">
+    <path d="M0,0 L40,0 L52,-16 L66,14 L80,-22 L94,0 L160,0"
+          fill="none" stroke="#C0392B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+
+  <!-- eyebrow label -->
+  <text x="72" y="92" font-family="'JetBrains Mono', 'Courier New', monospace" font-size="13" letter-spacing="3.5" fill="#FF8A75" font-weight="600">PRESCRIPTION SAFETY DATA PLATFORM</text>
+
+  <!-- main title -->
+  <text x="68" y="148" font-family="Arial, 'Helvetica Neue', sans-serif" font-size="58" font-weight="800" fill="#F4F7FB" letter-spacing="-0.5">DataDose</text>
+
+  <!-- subtitle -->
+  <text x="72" y="182" font-family="Arial, sans-serif" font-size="17" fill="#B7C6DC">Snowflake Schema &amp; Databricks Integration</text>
+
+  <!-- tech strip -->
+  <g font-family="'JetBrains Mono', 'Courier New', monospace" font-size="11.5" fill="#8FA8C7">
+    <text x="72" y="270">SNOWFLAKE</text>
+    <circle cx="156" cy="266.5" r="2.2" fill="#5B9BD5"/>
+    <text x="168" y="270">DATABRICKS &#183; PYSPARK</text>
+    <circle cx="308" cy="266.5" r="2.2" fill="#5B9BD5"/>
+    <text x="320" y="270">AZURE KEY VAULT</text>
+    <circle cx="448" cy="266.5" r="2.2" fill="#5B9BD5"/>
+    <text x="460" y="270">NEO4J</text>
+  </g>
+
+  <!-- bottom hairline -->
+  <line x1="68" y1="296" x2="560" y2="296" stroke="#2E4768" stroke-width="1"/>
+</svg>
