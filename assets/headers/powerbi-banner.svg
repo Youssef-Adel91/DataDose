@@ -1,0 +1,145 @@
+<svg viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Power BI Dashboard — DataDose Pharma Analytics Reporting Layer">
+  <defs>
+    <linearGradient id="pb_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060912"/>
+      <stop offset="45%" stop-color="#0b0f19"/>
+      <stop offset="100%" stop-color="#0a0f1c"/>
+    </linearGradient>
+    <linearGradient id="pb_scan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F2C811" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#F2C811" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#F2C811" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="pb_edge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E8B800"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+    <pattern id="pb_grid" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="30" stroke="#F2C811" stroke-width="0.6" opacity="0.07"/>
+    </pattern>
+    <linearGradient id="pb_barA" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F2C811"/>
+      <stop offset="100%" stop-color="#E8B800"/>
+    </linearGradient>
+    <linearGradient id="pb_barB" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#29B5E8"/>
+    </linearGradient>
+    <linearGradient id="pb_barC" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F2C811"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+    <radialGradient id="pb_halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F2C811" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#F2C811" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="pb_glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="pb_glowSoft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="pb_frame"><rect width="1200" height="280" rx="22"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#pb_frame)">
+    <rect width="1200" height="280" fill="url(#pb_bg)"/>
+    <rect width="1200" height="280" fill="url(#pb_grid)"/>
+    <rect x="-280" y="0" width="240" height="280" fill="url(#pb_scan)">
+      <animate attributeName="x" values="-280;1260" dur="7s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- border -->
+  <rect x="1.5" y="1.5" width="1197" height="277" rx="22" fill="none"
+        stroke="url(#pb_edge)" stroke-width="1.4" opacity="0.55">
+    <animate attributeName="opacity" values="0.3;0.78;0.3" dur="4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- HUD corners -->
+  <path d="M26 20 L26 46 M26 20 L52 20" stroke="#F2C811" stroke-width="2.2" fill="none" opacity="0.85"/>
+  <path d="M1174 260 L1174 234 M1174 260 L1148 260" stroke="#00D4FF" stroke-width="2.2" fill="none" opacity="0.85"/>
+
+  <!-- floating particles -->
+  <g fill="#F2C811" opacity="0.55">
+    <circle cx="980" cy="52" r="2.2"><animate attributeName="cy" values="52;40;52" dur="5.5s" repeatCount="indefinite"/></circle>
+    <circle cx="1040" cy="212" r="1.8"><animate attributeName="cy" values="212;226;212" dur="6.5s" repeatCount="indefinite"/></circle>
+    <circle cx="900" cy="232" r="1.6"><animate attributeName="opacity" values="0.6;0.15;0.6" dur="4.2s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- halo behind chart mark -->
+  <ellipse cx="200" cy="155" rx="130" ry="100" fill="url(#pb_halo)">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- BI bar chart icon with animated rising bars -->
+  <!-- chart frame -->
+  <rect x="80" y="82" width="240" height="155" rx="10" fill="#0C1528" stroke="#F2C811" stroke-width="1.2" opacity="0.6"/>
+  <!-- x and y axis lines -->
+  <line x1="106" y1="104" x2="106" y2="218" stroke="#F2C811" stroke-width="1.5" opacity="0.5"/>
+  <line x1="106" y1="218" x2="298" y2="218" stroke="#F2C811" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- bar 1 — gold, tallest -->
+  <rect x="120" y="218" width="28" height="0" rx="3" fill="url(#pb_barA)" filter="url(#pb_glow)">
+    <animate attributeName="y" values="218;134;134" dur="1.4s" fill="freeze" repeatCount="1"/>
+    <animate attributeName="height" values="0;84;84" dur="1.4s" fill="freeze" repeatCount="1"/>
+  </rect>
+  <!-- bar 2 — cyan, medium -->
+  <rect x="160" y="218" width="28" height="0" rx="3" fill="url(#pb_barB)" filter="url(#pb_glow)">
+    <animate attributeName="y" values="218;164;164" dur="1.4s" begin="0.25s" fill="freeze" repeatCount="1"/>
+    <animate attributeName="height" values="0;54;54" dur="1.4s" begin="0.25s" fill="freeze" repeatCount="1"/>
+  </rect>
+  <!-- bar 3 — gold, shorter -->
+  <rect x="200" y="218" width="28" height="0" rx="3" fill="url(#pb_barA)" filter="url(#pb_glow)">
+    <animate attributeName="y" values="218;152;152" dur="1.4s" begin="0.5s" fill="freeze" repeatCount="1"/>
+    <animate attributeName="height" values="0;66;66" dur="1.4s" begin="0.5s" fill="freeze" repeatCount="1"/>
+  </rect>
+  <!-- bar 4 — cyan-gold, tallest2 -->
+  <rect x="240" y="218" width="28" height="0" rx="3" fill="url(#pb_barC)" filter="url(#pb_glow)">
+    <animate attributeName="y" values="218;118;118" dur="1.4s" begin="0.75s" fill="freeze" repeatCount="1"/>
+    <animate attributeName="height" values="0;100;100" dur="1.4s" begin="0.75s" fill="freeze" repeatCount="1"/>
+  </rect>
+
+  <!-- trend line over bars -->
+  <polyline points="134,134 174,164 214,152 254,118"
+            fill="none" stroke="#F2C811" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0"
+            filter="url(#pb_glow)">
+    <animate attributeName="opacity" values="0;0.9;0.9" dur="0.4s" begin="1.4s" fill="freeze" repeatCount="1"/>
+  </polyline>
+  <!-- trend dots -->
+  <g fill="#F2C811" opacity="0">
+    <circle cx="134" cy="134" r="4.5"><animate attributeName="opacity" values="0;1;1" dur="0.3s" begin="1.6s" fill="freeze" repeatCount="1"/></circle>
+    <circle cx="174" cy="164" r="4.5"><animate attributeName="opacity" values="0;1;1" dur="0.3s" begin="1.7s" fill="freeze" repeatCount="1"/></circle>
+    <circle cx="214" cy="152" r="4.5"><animate attributeName="opacity" values="0;1;1" dur="0.3s" begin="1.8s" fill="freeze" repeatCount="1"/></circle>
+    <circle cx="254" cy="118" r="4.5"><animate attributeName="opacity" values="0;1;1" dur="0.3s" begin="1.9s" fill="freeze" repeatCount="1"/></circle>
+  </g>
+
+  <!-- "PBI" badge -->
+  <rect x="100" y="90" width="38" height="20" rx="4" fill="#F2C811" filter="url(#pb_glow)" opacity="0.9"/>
+  <text x="119" y="105" font-family="'Segoe UI',Arial,sans-serif" font-size="12" font-weight="800" fill="#0C1528" text-anchor="middle">PBI</text>
+
+  <!-- kicker tag -->
+  <text x="432" y="78" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="14" letter-spacing="4" fill="#F2C811" opacity="0.8">REPORTING LAYER // BI // ANALYTICS</text>
+  <circle cx="1148" cy="73" r="4" fill="#00D4FF">
+    <animate attributeName="opacity" values="1;0.25;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- wordmark — glow -->
+  <text x="430" y="174" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="78" font-weight="800"
+        fill="#F2C811" filter="url(#pb_glowSoft)" opacity="0.55">Power<tspan fill="#00D4FF"> BI</tspan><tspan fill="#F2C811" font-size="40" baseline-shift="-4"> Dashboard</tspan></text>
+  <!-- wordmark — crisp -->
+  <text x="430" y="174" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="78" font-weight="800"
+        fill="#F2FAFF">Power<tspan fill="#F2C811"> BI</tspan><tspan fill="#F8E97A" font-size="40" baseline-shift="-4"> Dashboard</tspan></text>
+
+  <!-- tagline -->
+  <text x="432" y="212" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="19" letter-spacing="1"
+        fill="#F8E97A" opacity="0.78">Pharma Drug Interaction Analytics · Snowflake · DAX · Lovable</text>
+
+  <!-- underline tracer -->
+  <line x1="432" y1="228" x2="492" y2="228" stroke="url(#pb_edge)" stroke-width="3" stroke-linecap="round">
+    <animate attributeName="x2" values="492;720;492" dur="3.8s" repeatCount="indefinite"/>
+  </line>
+  <line x1="730" y1="228" x2="1160" y2="228" stroke="#F2C811" stroke-width="1" opacity="0.12"/>
+</svg>
