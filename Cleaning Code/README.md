@@ -1,14 +1,10 @@
+<p align="center">
+  <img src="../assets/headers/cleaning-banner.svg" width="100%" alt="Cleaning Code — Pharma Data Cleaning &amp; Enrichment Pipeline"/>
+</p>
+
 <div align="center">
 
-```
-  ____ _                  _              ____  _            _ _              
- / ___| | ___  __ _ _ __ (_)_ __   __ _  |  _ \(_)_ __   ___| (_)_ __   ___   
-| |   | |/ _ \/ _` | '_ \| | '_ \ / _` | | |_) | | '_ \ / _ \ | | '_ \ / _ \  
-| |___| |  __/ (_| | | | | | | | | (_| | |  _ <| | |_) |  __/ | | | | |  __/  
- \____|_|\___|\__,_|_| |_|_|_| |_|\__, | |_| \_\_| .__/ \___|_|_|_| |_|\___|  
-                                  |___/          |_|                          
-        Raw CSV → Standardize → Verify → FDA-Enrich → Merge
-```
+
 
 # 🔥 Pharma Data Cleaning & Enrichment Pipeline
 
