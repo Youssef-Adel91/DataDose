@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="assets/headers/pipeline-diagram-banner.svg" alt="Pipeline Diagram" width="100%"/>
-</div>
+
 
 <br/>
 
