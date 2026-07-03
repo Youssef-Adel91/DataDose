@@ -1,5 +1,6 @@
+## 🏗️ Pipeline Diagram
 <p align="center">
-  <img src="./Pipline Diagram/Pipline DataDose.png"
+  <img src="./pipeline-diagram/datadose-pipeline.png"
        alt="DataDose Pipeline Diagram"
        width="100%">
 </p>
