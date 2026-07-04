@@ -1,5 +1,6 @@
+
 <div align="center">
-  <img src="assets/headers/pipeline-diagram-banner.svg" alt="Pipeline Diagram" width="100%"/>
+  <img src="../assets/headers/pipeline-diagram-banner.svg" alt="Data Engineering Pipeline" width="100%"/>
 </div>
 
 <br/>
