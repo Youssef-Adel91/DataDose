@@ -1,0 +1,8 @@
+.env
+certs/*.pem
+docker/airflow-logs/
+data/*.csv
+__pycache__/
+*.pyc
+.DS_Store
+*.tar

@@ -1,0 +1,13 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir kafka-python pandas
+
+COPY src/producer/producer_simulator.py /app/producer_simulator.py
+
+# output_FINAL.csv is mounted at runtime (see docker-compose.airflow.yaml),
+# not baked into the image — it's your dataset, not part of this repo.
+ENV DATASET_PATH=/app/data/output_FINAL.csv
+
+CMD ["python", "producer_simulator.py", "--rate", "1"]

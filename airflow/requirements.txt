@@ -1,0 +1,5 @@
+apache-airflow-providers-databricks==6.0.0
+apache-airflow-providers-snowflake==5.0.0
+apache-airflow-providers-slack==8.0.0
+kafka-python==2.0.2
+neo4j==5.19.0
