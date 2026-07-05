@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j_local
+    ports:
+      - "7474:7474" # Browser UI
+      - "7687:7687" # Bolt connection
+    environment:
+      - NEO4J_AUTH=neo4j/password123
+      # Optional tuning settings:
+      # - NEO4J_dbms_memory_pagecache_size=1G
+      # - NEO4J_dbms_memory_heap_initial__size=1G
+      # - NEO4J_dbms_memory_heap_max__size=1G
+    volumes:
+      - ./neo4j_data:/data
+    restart: unless-stopped
