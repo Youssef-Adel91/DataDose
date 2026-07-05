@@ -13,10 +13,9 @@ requests
 neo4j
 snowflake-connector-python
 
-# Kafka simulation and streaming
+# Kafka streaming
 kafka-python
-pyspark
 
-# Data wrangling and notebook processing
+# Data wrangling
 numpy
 pandas
