@@ -58,9 +58,9 @@
 | 🏗️ [Architecture](#architecture) | 🛠️ [Technologies](#technologies) |
 | 💡 [Why Airflow?](#why-airflow) | ⚡ [Key Features](#key-features) |
 | 🎯 [Design Philosophy](#design-philosophy) | 🔐 [Design Principles](#design-principles) |
-| 🔄 [Workflow](#workflow) | 🗺️ [Future Improvements](#future-improvements) |
-| 📁 [Repository Structure](#repository-structure) | 🚀 [Deployment](#deployment) |
-| ✅ [Verification](#verification) | 🤝 [Contributing](#contributing) |
+| 🔄 [Workflow](#workflow) | 🚀 [Deployment](#deployment) |
+| 📁 [Repository Structure](#repository-structure) | ✅ [Verification](#verification) |
+| 🤝 [Contributing](#contributing) | |
 
 </td></tr></table>
 
@@ -430,22 +430,6 @@ notify_success / notify_failure
 * **Secure credential management** — Airflow Connections, never `os.getenv()` in task code
 * **Containerized deployment** — reproducible environment via Docker Compose
 * **Comprehensive observability** — logs, alerts, and validation queries all point to the specific failing condition
-
-<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
-<img src="../assets/headers/divider.svg" width="100%" alt=""/>
-
-<a id="future-improvements"></a>
-<p align="center"><img src="../assets/headers/roadmap.svg" width="100%" alt="Future Improvements"/></p>
-
-| Status | Item |
-|---|---|
-| 🟡 Planned | Dynamic DAG generation for multi-environment deployments (Dev / Staging / Prod) |
-| 🟡 Planned | Great Expectations integration for schema-level data quality |
-| 🟡 Planned | OpenLineage support for automated data lineage visualization |
-| 🟡 Planned | Prometheus metrics + Grafana dashboards for pipeline observability |
-| 🟡 Planned | Kubernetes Executor for production-scale task isolation |
-| 🟡 Planned | Apache Iceberg support for time-travel and schema evolution |
-| 🟡 Planned | Azure Key Vault secrets backend (drop-in replacement for Airflow Connections) |
 
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="../assets/headers/divider.svg" width="100%" alt=""/>
