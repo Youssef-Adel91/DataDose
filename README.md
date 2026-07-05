@@ -34,9 +34,11 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Apache_Airflow-017CEE?style=for-the-badge&logo=apacheairflow&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logo=groq&logoColor=white" />
   <img src="https://img.shields.io/badge/LLaMA_3-0668E1?style=for-the-badge&logo=meta&logoColor=white" />
-  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
   <img src="https://img.shields.io/badge/TypeScript_5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white" />
@@ -46,12 +48,6 @@
 </div>
 
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
-
-<div align="center">
-
-
-
-</div>
 
 <br/>
 
@@ -65,17 +61,17 @@
 
 | Section | Section |
 |---|---|
-| 🎯 [Project Overview](#project-overview) | 🧠 [Clinical Intelligence Engine](#clinical-intelligence-engine) |
-| 💡 [Why DataDose](#why-datadose) | 🤖 [AI Features](#ai-features) |
-| ⚡ [Key Capabilities](#key-capabilities) | 🕸 [Knowledge Graph](#knowledge-graph) |
-| 🏗 [Architecture Overview](#architecture-overview) | 📊 [Analytics & Reporting](#analytics--reporting) |
-| 🔄 [Data Engineering Pipeline](#data-engineering-pipeline) | 🛠 [Technology Stack](#technology-stack) |
-| 📡 [Real-Time Streaming](#real-time-streaming-architecture) | 🗂 [System Components](#system-components) |
-| ⚙️ [Installation](#installation) | 🚀 [Usage](#usage) |
+| 🎯 [Project Overview](#project-overview) | 🕸 [Knowledge Graph](#knowledge-graph) |
+| 💡 [Why DataDose](#why-datadose) | 📊 [Analytics & Reporting](#analytics--reporting) |
+| ⚡ [Key Capabilities](#key-capabilities) | 🛠 [Technology Stack](#technology-stack) |
+| 🏗 [Architecture Overview](#architecture-overview) | 🗂 [System Components](#system-components) |
+| 🔄 [Data Engineering Pipeline](#data-engineering-pipeline) | 🐳 [Docker & Containerization](#docker--containerization) |
+| 📡 [Real-Time Streaming](#real-time-streaming-architecture) | 🌬 [Airflow Orchestration](#airflow-orchestration) |
+| 🧠 [Clinical Intelligence Engine](#clinical-intelligence-engine) | ⚙️ [Installation](#installation) |
+| 🤖 [AI Features](#ai-features) | 🚀 [Usage](#usage) |
 | 🔧 [Configuration](#configuration) | 📡 [API Reference](#api-reference) |
-| 📁 [Folder Structure](#folder-structure) | 🖼 [Screenshots](#screenshots) |
-| 📈 [Project Metrics](#project-metrics) | 🗺 [Roadmap](#roadmap) |
-| 🤝 [Contributing](#contributing) | 🙏 [Acknowledgments](#acknowledgments) |
+| 📁 [Folder Structure](#folder-structure) | 🤝 [Contributing](#contributing) |
+| 📈 [Project Metrics](#project-metrics) | 🙏 [Acknowledgments](#acknowledgments) |
 | 📄 [License](#license) | |
 
 </td></tr>
@@ -88,18 +84,19 @@
 
 <div align="center">
 
-> **DataDose** is an enterprise-grade **AI-powered Clinical Decision Intelligence Platform** that bridges graph database technology, real-time streaming, and generative AI to deliver polypharmacy safety at the point of care — backed by a production-quality data engineering pipeline from raw pharmacy records to a governed Snowflake analytics warehouse.
+> **DataDose** is an enterprise-grade **AI-powered Clinical Decision Intelligence Platform** that bridges graph database technology, real-time streaming, and generative AI to deliver polypharmacy safety at the point of care — backed by a production-quality data engineering pipeline from raw pharmacy records to a governed Snowflake analytics warehouse, containerized end-to-end and orchestrated by Airflow.
 
 </div>
 
-The platform operates across **two deeply integrated layers**:
+The platform operates across **three deeply integrated layers**:
 
 | Layer | Description |
 |---|---|
-| **Live Clinical Application** | Next.js 15 + FastAPI + Neo4j AuraDB providing real-time drug interaction scanning, visual prescription mapping, and an AI-powered clinical assistant across five role-based dashboards |
+| **Live Clinical Application** | Next.js 15 + FastAPI + Neo4j AuraDB providing real-time drug interaction scanning, visual prescription mapping, and an AI-powered clinical assistant across five role-based dashboards — the frontend and backend run as **Docker containers** |
 | **Data Engineering Platform** | A complete batch + streaming pipeline: raw CSV → pandas cleaning → Aiven Kafka → Databricks PySpark enrichment → Snowflake star schema → Power BI reporting |
+| **Orchestration Layer** | **Apache Airflow** (with its own Postgres metadata database) triggers, schedules, and monitors the pipeline stages and local tooling end to end |
 
-Both layers model the same pharmaceutical knowledge base — `Drug`, `Disease`, and `Symptom` nodes with `INTERACTS_WITH`, `TREATS`, and `CAUSES_REACTION` relationships — ensuring clinical intelligence and analytics remain conceptually unified.
+Both application and pipeline layers model the same pharmaceutical knowledge base — `Drug`, `Disease`, and `Symptom` nodes with `INTERACTS_WITH`, `TREATS`, and `CAUSES_REACTION` relationships — ensuring clinical intelligence and analytics remain conceptually unified.
 
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
@@ -132,7 +129,7 @@ Healthcare organizations need to aggregate and analyze prescription patterns acr
 <td width="50%" valign="top">
 
 #### 🔄 The Pipeline Answer
-DataDose delivers a **five-stage validation pipeline** (pandas → OpenFDA → Groq verification → Kafka → Databricks) that produces clean, enriched, risk-scored prescription events landing in a governed Snowflake star schema — ready for executive Power BI dashboards.
+DataDose delivers a **five-stage validation pipeline** (pandas → OpenFDA → Groq verification → Kafka → Databricks) that produces clean, enriched, risk-scored prescription events landing in a governed Snowflake star schema — ready for executive Power BI dashboards, with every stage **triggerable and monitorable from Airflow**.
 
 </td>
 </tr>
@@ -200,8 +197,8 @@ PySpark Structured Streaming job that consumes Kafka events, enriches each presc
 </td>
 <td align="center" width="33%" valign="top">
 
-#### 👨‍⚕️ Role-Based Dashboards
-Five purpose-built dashboards — Patient, Physician, Pharmacist, Admin, Super Admin — with an approval workflow for new accounts, quota management per subscription tier, and audit-ready RBAC.
+#### 🐳 Containerized & Orchestrated
+The Next.js frontend and FastAPI backend run as **Docker containers** via `docker-compose`; **Apache Airflow** (with its own Postgres metadata DB) triggers and monitors the data pipeline and local tooling.
 
 </td>
 </tr>
@@ -218,6 +215,12 @@ Five purpose-built dashboards — Patient, Physician, Pharmacist, Admin, Super A
 
 ```mermaid
 flowchart TD
+    subgraph ORCH ["🌬 Airflow Orchestration"]
+        AF["Airflow Webserver + Scheduler\nDAGs trigger pipeline stages"]
+        AFPG[("Airflow Metadata DB\nPostgreSQL")]
+        AF <--> AFPG
+    end
+
     subgraph INGEST ["📥 Data Ingestion"]
         A[("Raw DataDose CSV\nPharmacy Records")]
     end
@@ -237,9 +240,9 @@ flowchart TD
         N[("🔵 Neo4j AuraDB\n3,656+ nodes\nDrug · Disease · Symptom\nINTERACTS_WITH · TREATS\nCAUSES_REACTION")]
     end
 
-    subgraph APP ["💻 Live Application"]
-        BA["🐍 FastAPI Backend\nmain.py — 9 REST endpoints\nNeo4j async driver + Groq LLM"]
-        FE["⬛ Next.js 15\nApp Router + TypeScript\nRole-based dashboards"]
+    subgraph DOCKER ["🐳 Docker Compose — Live Application"]
+        BA["🐍 FastAPI Backend (container)\nmain.py — 9 REST endpoints\nNeo4j async driver + Groq LLM"]
+        FE["⬛ Next.js 15 Frontend (container)\nApp Router + TypeScript\nRole-based dashboards"]
         PG[("🐘 PostgreSQL\nPrisma ORM\nUsers · EHR · Prescriptions")]
     end
 
@@ -251,6 +254,11 @@ flowchart TD
         R5[⚙️ Super Admin]
     end
 
+    AF -.triggers.-> B
+    AF -.triggers.-> C
+    AF -.triggers.-> D
+    AF -.monitors.-> DOCKER
+
     A --> B --> C --> D --> E --> F
     D <--> N
     N <--> BA
@@ -259,11 +267,12 @@ flowchart TD
     FE --> R1 & R2 & R3 & R4 & R5
     BA <-.->|"Groq API\nOCR / Chat / GraphRAG"| GROQ(["🤖 Groq\nLLaMA-3"])
 
+    style ORCH fill:#0D1117,stroke:#017CEE,color:#E6EDF3
     style INGEST fill:#0D1117,stroke:#30363D,color:#E6EDF3
     style PIPELINE fill:#0D1117,stroke:#7C3AED,color:#E6EDF3
     style WAREHOUSE fill:#0D1117,stroke:#29B5E8,color:#E6EDF3
     style GRAPH fill:#0D1117,stroke:#008CC1,color:#E6EDF3
-    style APP fill:#0D1117,stroke:#009688,color:#E6EDF3
+    style DOCKER fill:#0D1117,stroke:#2496ED,color:#E6EDF3
     style ROLES fill:#0D1117,stroke:#30363D,color:#E6EDF3
 ```
 
@@ -273,17 +282,19 @@ flowchart TD
 <a id="data-engineering-pipeline"></a>
 <p align="center"><img src="assets/headers/pipeline.svg" width="100%" alt="Data Engineering Pipeline"/></p>
 
-<div align="center"><sub><b>Five-Stage Cleaning → Streaming → Warehousing</b></sub></div>
+<div align="center"><sub><b>Five-Stage Cleaning → Streaming → Warehousing, Triggered by Airflow</b></sub></div>
 <br/>
 
 ```mermaid
 flowchart LR
+    S0["🌬 Airflow DAG\nSchedule / Manual Trigger"] -->
     S1["📂 Stage 1\nRaw CSV Ingestion\nPharmacy records"] -->
     S2["🧹 Stage 2\nPandas Cleaning\n01–05 Notebooks\nIngredient normalization\nOpenFDA + Groq verification\nTrade-name validation"] -->
     S3["📡 Stage 3\nKafka Streaming\nAiven SASL_SSL\nTopic: DataDose.in\nJSON prescription events"] -->
     S4["⚡ Stage 4\nDatabricks PySpark\nStructured Streaming\nNeo4j graph enrichment\nRisk scoring engine"] -->
     S5["❄️ Stage 5\nSnowflake Warehouse\nStar Schema\nSTAGING → DIM → FACT\n→ ANALYTICS layers"]
 
+    style S0 fill:#1C1C1E,stroke:#017CEE,color:#E6EDF3
     style S1 fill:#1C1C1E,stroke:#30363D,color:#E6EDF3
     style S2 fill:#1C1C1E,stroke:#7C3AED,color:#E6EDF3
     style S3 fill:#1C1C1E,stroke:#231F20,color:#E6EDF3
@@ -295,6 +306,9 @@ flowchart LR
 <summary><b>📋 Pipeline Stage Details</b></summary>
 
 <br/>
+
+**Stage 0 — Airflow Trigger**
+A DAG in the local Airflow instance schedules or manually triggers each downstream stage, giving a single control plane over the otherwise-independent cleaning, streaming, and warehouse jobs.
 
 **Stage 1 — Raw Data Ingestion**
 Raw pharmacy CSV records containing drug names, active ingredients, diseases, and dosages are ingested as the source of truth for both the Neo4j graph and the analytics warehouse.
@@ -566,6 +580,13 @@ verify.png
 ![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=for-the-badge&logo=snowflake&logoColor=white)
 ![Power BI](https://img.shields.io/badge/Power_BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)
 
+**Containerization & Orchestration**
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Apache Airflow](https://img.shields.io/badge/Apache_Airflow-017CEE?style=for-the-badge&logo=apacheairflow&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_(Airflow_metadata)-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+
 **Testing**
 
 ![Playwright](https://img.shields.io/badge/Playwright-45BA4B?style=for-the-badge&logo=playwright&logoColor=white)
@@ -581,12 +602,21 @@ verify.png
 <details>
 <summary><b>🐍 Backend — <code>backend/main.py</code></b></summary>
 
-FastAPI app exposing all Neo4j-backed clinical reasoning endpoints.
+FastAPI app exposing all Neo4j-backed clinical reasoning endpoints. Runs as its own Docker container in `docker-compose.yml`.
 
 - **Key components:** `lifespan()` — Neo4j connection lifecycle management; `get_db()` — async dependency injection; `SYMPTOM_SYNONYMS` — multilingual Arabic/English expansion dictionary; 9 route handlers
 - **Dependencies:** `fastapi`, `uvicorn`, `pydantic`, `neo4j` (async driver), `python-dotenv`, `groq`, `python-multipart`
 - **CORS:** restricted to `http://localhost:3000` / `127.0.0.1:3000`
 - **Note:** OCR, `/api/chat`, and `/api/graphrag` return 500/503 if `GROQ_API_KEY` is unset
+
+</details>
+
+<details>
+<summary><b>⬛ Frontend — <code>DataDose_website-main/</code></b></summary>
+
+Next.js 15 application. Runs as its own Docker container in `docker-compose.yml`, built from the frontend's `Dockerfile`.
+
+See the [Docker & Containerization](#docker--containerization) section for how frontend and backend containers are wired together.
 
 </details>
 
@@ -642,59 +672,231 @@ See `SnowFlake/README.md` for run order and required privileges.
 </details>
 
 <details>
-<summary><b>⬛ Frontend — <code>DataDose_website-main/</code></b></summary>
+<summary><b>🐳 Docker — <code>docker-compose.yml</code></b></summary>
 
-**API Route Handlers** (`app/api/*/route.ts`) — Next.js proxy layer:
+Local container orchestration for the live application layer:
+- `frontend` service — Next.js 15 app, built from its own `Dockerfile`
+- `backend` service — FastAPI app, built from its own `Dockerfile`
+- Shared `.env` / network so the frontend can reach the backend by service name
 
-| Route | Backend Target |
-|---|---|
-| `api/scan` | `/api/scan` |
-| `api/alternatives` | `/api/alternatives` |
-| `api/tracer` | `/api/tracer` |
-| `api/graph` | `/api/graph` |
-| `api/graphrag` | `/api/graphrag` |
-| `api/ocr` | `/api/ocr` |
-| `api/chat` | `/api/chat` |
-| `api/visualize-graph` | `/api/visualize-graph` |
-| `api/prescriptions/submit` | Prisma — saves prescription |
-| `api/admin/approve-user` | Prisma — approves PENDING user |
-| `api/admin/pending-users` | Prisma — lists pending users |
-| `api/auth/[...nextauth]` | NextAuth session handling |
-
-**Landing-page components** (`app/components/`):
-
-| Component | Purpose |
-|---|---|
-| `Navbar`, `Hero`, `Footer` | Page shell |
-| `Features`, `HowItWorks`, `Workflows` | Marketing sections |
-| `DashboardPreview`, `InteractiveDemo` | Product previews |
-| `Analytics` | Animated counter stats (`useTransform`) |
-| `KnowledgeGraph` | Decorative graph-network animation |
-| `Pricing`, `Testimonials`, `TrustStrip`, `FinalCTA` | Conversion sections |
-| `GraphRAGChatbot` | Chat widget → `/api/graphrag` or `/api/chat` |
-| `OCRScanner` | Image upload UI with `onSendToScanner` callback |
-| `PolypharmacyScan` | Scan simulation (`forceScanning`, `injectDrugs` props) |
-| `SmartAlternatives`, `ReverseSymptomTracer`, `SymptomDetector` | Feature UI wrappers |
-| `VisualPrescriptionMap` | React Flow canvas, filters `type === "pill"` for drug nodes |
-| `DashboardLayout` | Shared layout for all `/dashboard/*` pages |
-
-**Role-based dashboard widgets:**
-
-| Folder | Components |
-|---|---|
-| `components/patient/` | `AIPatientInsights`, `MyHealthProfile` |
-| `components/physician/` | `PatientEHR`, `PrescriptionCreator`, `RiskAnalysis` |
-| `components/pharmacist/` | `DrugAlerts`, `DrugInteractionChecker`, `PrescriptionScanner` |
-| `components/admin/` | `HospitalAnalytics`, `SafetyMonitoring`, `UserManagement` |
-| `components/superadmin/` | `KnowledgeDatabase`, `PipelineStatus`, `SystemMonitoring` |
-
-**Data layer:**
-- `prisma/schema.prisma` — `Role` enum (`PATIENT`, `PHYSICIAN`, `PHARMACIST`, `ADMIN`, `SUPER_ADMIN`), `ApprovalStatus` enum (`PENDING` / `APPROVED` / `REJECTED`)
-- New accounts start `PENDING` until an `ADMIN` approves them
-- `lib/quota.ts` — daily-scan quota tied to `subscriptionTier` field on `User`
-- `prisma/manual_migration_rbac.sql` — hand-written RBAC migration
+See [Docker & Containerization](#docker--containerization) for the compose file layout and run commands.
 
 </details>
+
+<details>
+<summary><b>🌬 Airflow — local orchestration</b></summary>
+
+Local Airflow instance (webserver + scheduler + its own Postgres metadata DB) used to trigger and monitor the data pipeline and other local tooling.
+
+See [Airflow Orchestration](#airflow-orchestration) for DAG layout and run commands.
+
+</details>
+
+<details>
+<summary><b>📊 Power BI — <code>Power Bi/DrugData.pbix</code></b></summary>
+
+4-page reporting layer on top of the Snowflake analytics layer (Home, Overview, Clinical Insights, Risk Analysis), driven by an HTML Content custom visual bound to the `DataDose_HTML` DAX measure.
+
+- **Data source:** Snowflake `PHARMA_ANALYTICS_DB`
+- **Key measures:** `Risk_Score`, `Total_Safety_Burden`, `Safe_Drug_Count` / `Risky_Drug_Count`
+- **Hosting:** published copy deployed via Lovable
+
+See [Analytics & Reporting](#analytics--reporting) and `Power Bi/README.md` for the full data model and DAX measure reference.
+
+</details>
+
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="docker--containerization"></a>
+<p align="center"><img src="assets/headers/docker.svg" width="100%" alt="Docker and Containerization"/></p>
+
+<div align="center"><sub><b>Frontend + Backend, Containerized Locally</b></sub></div>
+<br/>
+
+The Next.js frontend and FastAPI backend for the live clinical application run as **Docker containers**, orchestrated with a single `docker-compose.yml`. Everything downstream of the containers (Neo4j AuraDB, Snowflake, Aiven Kafka, Databricks) stays cloud-hosted — Docker here scopes to the two services you develop against locally.
+
+```mermaid
+flowchart LR
+    subgraph HOST ["Local Docker Host"]
+        FEC["frontend container\nNext.js 15\nport 3000"]
+        BEC["backend container\nFastAPI\nport 8000"]
+        NET(["docker network\ndatadose_default"])
+        FEC <--> NET
+        BEC <--> NET
+    end
+    FEC -->|"REST calls\nhttp://backend:8000"| BEC
+    BEC -.->|"neo4j+ssc://"| N[("Neo4j AuraDB")]
+    BEC -.->|"Groq API"| G(["Groq LLaMA-3"])
+
+    style HOST fill:#0D1117,stroke:#2496ED,color:#E6EDF3
+```
+
+#### Example `docker-compose.yml` layout
+
+```yaml
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  frontend:
+    build: ./DataDose_website-main
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    env_file:
+      - ./DataDose_website-main/.env
+    restart: unless-stopped
+```
+
+> Adjust build context paths, env files, and the `NEXT_PUBLIC_API_URL` value to match your actual folder names and how the frontend reaches the backend (container-to-container name vs. `localhost`).
+
+#### Common commands
+
+```bash
+# Build and start both containers
+docker compose up --build -d
+
+# Tail logs for both services
+docker compose logs -f
+
+# Rebuild just the frontend after a code change
+docker compose up --build -d frontend
+
+# Stop and remove containers (keeps images/volumes)
+docker compose down
+
+# Stop everything and clear volumes too
+docker compose down -v
+```
+
+#### What's containerized vs. what isn't
+
+| Component | Containerized? | Notes |
+|---|---|---|
+| Next.js frontend | ✅ | `frontend` service |
+| FastAPI backend | ✅ | `backend` service |
+| Airflow (webserver, scheduler) | ✅ | Its own compose stack — see [Airflow Orchestration](#airflow-orchestration) |
+| Airflow metadata DB (Postgres) | ✅ | Runs alongside Airflow in Docker |
+| Neo4j AuraDB | ❌ | Managed cloud service |
+| Snowflake | ❌ | Managed cloud service |
+| Aiven Kafka | ❌ | Managed cloud service |
+| Databricks | ❌ | Managed cloud workspace |
+
+<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
+<img src="assets/headers/divider.svg" width="100%" alt=""/>
+
+<a id="airflow-orchestration"></a>
+<p align="center"><img src="assets/headers/airflow.svg" width="100%" alt="Airflow Orchestration"/></p>
+
+<div align="center"><sub><b>Local Airflow — Scheduling &amp; Triggering the Pipeline</b></sub></div>
+<br/>
+
+A local **Apache Airflow** instance (webserver + scheduler, backed by its own **PostgreSQL** metadata database, both running in Docker) is the control plane for the DataDose data pipeline and other local tooling — replacing manual, one-off script runs with scheduled and manually-triggerable DAGs.
+
+```mermaid
+flowchart TD
+    UI["🌬 Airflow Webserver UI\nDAG runs, logs, retries"]
+    SCHED["🕒 Airflow Scheduler"]
+    PGDB[("🐘 Airflow Metadata DB\nPostgreSQL")]
+    UI <--> PGDB
+    SCHED <--> PGDB
+
+    SCHED --> DAG1["DAG: cleaning_pipeline\n01→05 notebooks"]
+    SCHED --> DAG2["DAG: kafka_producer\nproducer_simulator.py"]
+    SCHED --> DAG3["DAG: databricks_trigger\nkick off PySpark job"]
+    SCHED --> DAG4["DAG: local_tooling\nadhoc / maintenance tasks"]
+
+    style UI fill:#0D1117,stroke:#017CEE,color:#E6EDF3
+    style SCHED fill:#0D1117,stroke:#017CEE,color:#E6EDF3
+    style PGDB fill:#0D1117,stroke:#336791,color:#E6EDF3
+```
+
+#### Example Airflow `docker-compose.yaml` (trimmed)
+
+```yaml
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_pg_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+    command: scheduler
+
+volumes:
+  airflow_pg_data:
+```
+
+> Replace the image tag, executor, and DAG folder mounts with whatever your actual local setup uses — this is a representative layout, not a copy of your exact file.
+
+#### Suggested DAG breakdown
+
+| DAG | Triggers | Purpose |
+|---|---|---|
+| `cleaning_pipeline` | Scheduled / manual | Runs `Cleaning Code/01–05` notebooks in order, producing `output_FINAL.csv` |
+| `kafka_producer` | Scheduled / manual | Starts/stops `Kafka/producer_simulator.py` runs, or triggers a fixed-size `--max` batch |
+| `databricks_trigger` | Scheduled / manual, or downstream of `kafka_producer` | Kicks off the Databricks PySpark job via the Databricks Jobs API |
+| `local_tooling` | Manual | Wraps any other local maintenance scripts (dataset refresh, Snowflake verification queries, etc.) |
+
+#### Common commands
+
+```bash
+# Start Airflow (webserver + scheduler + its Postgres)
+docker compose -f docker-compose.airflow.yml up -d
+
+# Tail scheduler logs
+docker compose -f docker-compose.airflow.yml logs -f airflow-scheduler
+
+# Trigger a DAG manually from the CLI
+docker compose -f docker-compose.airflow.yml exec airflow-webserver \
+  airflow dags trigger cleaning_pipeline
+
+# Open the UI
+http://localhost:8080
+
+# Stop Airflow
+docker compose -f docker-compose.airflow.yml down
+```
+
+> If Airflow and the app containers share one `docker-compose.yml` instead of separate files, drop the `-f` flag and just use `docker compose up -d` / `docker compose down` for everything.
 
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
@@ -706,17 +908,32 @@ See `SnowFlake/README.md` for run order and required privileges.
 
 Before cloning, ensure you have:
 
-- **Node.js 18+** — for the Next.js 15 frontend
-- **Python 3.10+** — for the FastAPI backend, Kafka scripts, and notebooks
+- **Docker & Docker Compose** — to run the frontend, backend, and local Airflow stack
+- **Node.js 18+** — only needed if running the Next.js frontend outside Docker
+- **Python 3.10+** — for the FastAPI backend (outside Docker), Kafka scripts, and notebooks
 - **Neo4j AuraDB** instance pre-loaded with `Drug`, `Disease`/`Condition`, `Symptom` nodes and `INTERACTS_WITH`, `TREATS`, `CAUSES_REACTION` relationships
-- **PostgreSQL** database for Prisma-managed users, EHR, and prescription history
+- **PostgreSQL** — one instance for Prisma-managed app data (users, EHR, prescriptions), a separate one for Airflow's own metadata (both can run in Docker)
 - **Groq API key** — enables OCR, `/api/chat`, and `/api/graphrag`
 - *(Pipeline only)* **Aiven Kafka**, **Databricks** workspace (with `spark-sql-kafka` and `snowflake-spark-connector` JARs), **Snowflake** account
 - *(Optional)* **Power BI Desktop** to open `Power Bi/DrugData.pbix`
 
 ---
 
-#### 1. Backend (FastAPI + Neo4j)
+#### 1. Live Application — via Docker (recommended)
+
+```bash
+# from the repo root, with docker-compose.yml configured per the Docker section above
+docker compose up --build -d
+```
+
+- Frontend → `http://localhost:3000`
+- Backend → `http://localhost:8000`
+
+---
+
+#### 1b. Live Application — without Docker (manual)
+
+**Backend (FastAPI + Neo4j)**
 
 ```bash
 cd backend
@@ -741,9 +958,7 @@ Start the API server on port 8000:
 python -m uvicorn main:app --reload
 ```
 
----
-
-#### 2. Frontend (Next.js 15)
+**Frontend (Next.js 15)**
 
 ```bash
 cd "DataDose_website-main"
@@ -765,7 +980,7 @@ npm run dev
 
 ---
 
-#### 3. Data Pipeline *(optional — analytics side)*
+#### 2. Data Pipeline *(optional — analytics side)*
 
 ```bash
 # Install top-level deps: pandas, numpy, requests, kafka-python, pyspark, neo4j, snowflake-connector-python
@@ -776,6 +991,18 @@ Run order:
 1. Execute notebooks `Cleaning Code/01` through `05` in sequence
 2. Run `SnowFlake/Code/DataDose-Schema.sql` in Snowsight to create the star schema
 3. Run the Databricks notebook in `Databricks_Pyspark/`
+
+> Steps 1–3 can be triggered manually as above, **or** run end-to-end through the `cleaning_pipeline`, `kafka_producer`, and `databricks_trigger` Airflow DAGs — see [Airflow Orchestration](#airflow-orchestration).
+
+---
+
+#### 3. Airflow Orchestration *(optional but recommended)*
+
+```bash
+docker compose -f docker-compose.airflow.yml up -d
+```
+
+Open `http://localhost:8080`, enable the DAGs, and trigger `cleaning_pipeline` to run the full pipeline from the UI instead of the CLI.
 
 ---
 
@@ -792,7 +1019,17 @@ Update: data source connection to your Snowflake credentials if refreshing live 
 <a id="usage"></a>
 <p align="center"><img src="assets/headers/usage.svg" width="100%" alt="Usage"/></p>
 
-#### Run the Live Application
+#### Run the Live Application (Docker)
+
+```bash
+docker compose up --build -d
+docker compose logs -f
+
+# Open
+http://localhost:3000/login
+```
+
+#### Run the Live Application (manual, no Docker)
 
 ```bash
 # Terminal 1 — Backend
@@ -846,6 +1083,13 @@ export KAFKA_USERNAME=... KAFKA_PASSWORD=... KAFKA_CA_PEM_PATH=./certs/ca.pem
 python producer_simulator.py --rate 5
 ```
 
+Or trigger it from Airflow instead of the CLI:
+
+```bash
+docker compose -f docker-compose.airflow.yml exec airflow-webserver \
+  airflow dags trigger kafka_producer
+```
+
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
 
@@ -859,6 +1103,7 @@ python producer_simulator.py --rate 5
 | `NEO4J_PASSWORD` | backend | `""` | Neo4j password |
 | `GROQ_API_KEY` | backend | `""` | Required for OCR, `/api/chat`, `/api/graphrag`; those routes 500/503 without it |
 | `DATABASE_URL` (Prisma) | frontend | — | PostgreSQL connection string |
+| `NEXT_PUBLIC_API_URL` | frontend | — | Backend base URL — `http://backend:8000` inside Docker, `http://localhost:8000` when run manually |
 | NextAuth env vars | frontend | — | Required by `app/api/auth/[...nextauth]` |
 | `KAFKA_BOOTSTRAP_SERVERS` | Kafka | `datadosekafka-901-...l.aivencloud.com:15816` | Aiven bootstrap host:port |
 | `KAFKA_USERNAME` / `KAFKA_PASSWORD` | Kafka | required | SASL_SCRAM-SHA-256 credentials |
@@ -867,6 +1112,8 @@ python producer_simulator.py --rate 5
 | `KAFKA_CA_PEM_PATH` | Kafka | `./certs/ca.pem` | TLS certificate path |
 | `DATASET_PATH` | producer | `./output_FINAL.csv` | Verified ingredient CSV |
 | Databricks/Snowflake vars | `Databricks_Pyspark`, `SnowFlake/Code` | see notebooks | `KAFKA_*`, `NEO4J_*`, `SNOWFLAKE_*` |
+| `AIRFLOW__DATABASE__SQL_ALCHEMY_CONN` | Airflow | `postgresql+psycopg2://airflow:airflow@postgres/airflow` (example) | Airflow's own Postgres metadata DB connection string |
+| `AIRFLOW__CORE__EXECUTOR` | Airflow | `LocalExecutor` (example) | Airflow task executor |
 
 > **Note:** Unlike sub-folder READMEs that describe hard-coded credentials, the actual `producer_simulator.py` and `consumer_Simulator.py` resolve all credentials through environment variables via a shared `get_env()` helper — the Aiven hostname is the only hard-coded fallback. The code is the source of truth.
 
@@ -876,7 +1123,7 @@ python producer_simulator.py --rate 5
 <a id="api-reference"></a>
 <p align="center"><img src="assets/headers/api.svg" width="100%" alt="API Reference"/></p>
 
-Base URL: `http://localhost:8000` — all endpoints served by `backend/main.py`
+Base URL: `http://localhost:8000` (or `http://backend:8000` from inside the Docker network) — all endpoints served by `backend/main.py`
 
 | Method & Path | Summary | Request Body | Notes |
 |---|---|---|---|
@@ -933,16 +1180,28 @@ DataDose/
 ├── Proposal/
 │   └── DataDose_Proposal.pdf          # 11-page project proposal
 │
+├── docker/                            # (or repo root) Dockerfiles + docker-compose.yml
+│   ├── docker-compose.yml             # frontend + backend services
+│   └── docker-compose.airflow.yml     # Airflow webserver + scheduler + Postgres
+│
+├── dags/                              # Airflow DAG definitions
+│   ├── cleaning_pipeline.py
+│   ├── kafka_producer.py
+│   ├── databricks_trigger.py
+│   └── local_tooling.py
+│
 ├── assets/
 │   └── headers/                       # Animated SVG header system (this README)
 │
 ├── backend/
 │   ├── main.py                        # FastAPI app — 9 REST endpoints
+│   ├── Dockerfile                     # Backend container build
 │   ├── requirements.txt               # Python deps (see Known Limitations for missing deps)
 │   ├── get-pip.py
 │   └── start_backend.bat             # Windows convenience script
 │
 └── DataDose_website-main/             # Next.js 15 application
+    ├── Dockerfile                     # Frontend container build
     ├── app/
     │   ├── api/                       # Next.js route handlers proxying to FastAPI
     │   ├── components/                # Landing-page + role-based dashboard widgets
@@ -963,92 +1222,7 @@ DataDose/
     └── "#L01f4c4 Pharmacist Workflow.pdf"
 ```
 
-<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
-<img src="assets/headers/divider.svg" width="100%" alt=""/>
-
-<a id="screenshots"></a>
-<p align="center"><img src="assets/headers/screenshots.svg" width="100%" alt="Screenshots"/></p>
-
-<div align="center">
-
-*Screenshots to be added. Run the application and capture the following views:*
-
-</div>
-
-<table>
-<tr>
-<td align="center" width="50%">
-
-**🏥 Pharmacist Dashboard**<br/>
-*Drug interaction checker + prescription scanner*
-
-```
-[ Screenshot Placeholder ]
-/dashboard/pharmacist
-```
-
-</td>
-<td align="center" width="50%">
-
-**👨‍⚕️ Physician Dashboard**<br/>
-*Patient EHR + prescription creation + risk analysis*
-
-```
-[ Screenshot Placeholder ]
-/dashboard/physician
-```
-
-</td>
-</tr>
-<tr>
-<td align="center" width="50%">
-
-**🕸 Visual Prescription Map**<br/>
-*React Flow — drug nodes, DDI edges, symptoms*
-
-```
-[ Screenshot Placeholder ]
-/api/visualize-graph → React Flow canvas
-```
-
-</td>
-<td align="center" width="50%">
-
-**📷 OCR Scanner**<br/>
-*Upload prescription image → extracted drug list*
-
-```
-[ Screenshot Placeholder ]
-OCRScanner component
-```
-
-</td>
-</tr>
-<tr>
-<td align="center" width="50%">
-
-**📊 Power BI Risk Analysis**<br/>
-*Snowflake-backed population risk dashboard*
-
-```
-[ Screenshot Placeholder ]
-DrugData.pbix — Risk Analysis page
-```
-
-</td>
-<td align="center" width="50%">
-
-**🤖 GraphRAG Чatbot**<br/>
-*AI medical assistant with graph-grounded answers*
-
-```
-[ Screenshot Placeholder ]
-GraphRAGChatbot component
-```
-
-</td>
-</tr>
-</table>
+> Adjust the exact `docker/` and `dags/` paths above to match wherever your Dockerfiles, compose files, and DAGs actually live in the repo.
 
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
@@ -1076,8 +1250,8 @@ GraphRAGChatbot component
 </tr>
 <tr>
   <td>🗄 <b>Databases</b></td>
-  <td>2 Databases</td>
-  <td>Neo4j AuraDB (graph) + PostgreSQL (relational)</td>
+  <td>3 Databases</td>
+  <td>Neo4j AuraDB (graph) + PostgreSQL (app, relational) + PostgreSQL (Airflow metadata)</td>
 </tr>
 <tr>
   <td>🕸 <b>Knowledge Graph</b></td>
@@ -1095,32 +1269,28 @@ GraphRAGChatbot component
   <td>Raw CSV → Pandas → Kafka → Databricks PySpark → Snowflake</td>
 </tr>
 <tr>
+  <td>🐳 <b>Containers</b></td>
+  <td>2 App Services</td>
+  <td>frontend (Next.js) + backend (FastAPI), via Docker Compose</td>
+</tr>
+<tr>
+  <td>🌬 <b>Orchestration</b></td>
+  <td>Airflow-Managed</td>
+  <td>DAGs trigger cleaning, Kafka, and Databricks stages; own Postgres metadata DB</td>
+</tr>
+<tr>
   <td>📊 <b>BI</b></td>
   <td>4 Report Pages</td>
   <td>Home · Overview · Clinical Insights · Risk Analysis (Power BI)</td>
 </tr>
 <tr>
   <td>🛠 <b>Stack</b></td>
-  <td>10+ Technologies</td>
-  <td>Next.js, FastAPI, Neo4j, Snowflake, Kafka, Databricks, Power BI, Groq, Prisma, PySpark</td>
+  <td>12+ Technologies</td>
+  <td>Next.js, FastAPI, Neo4j, Snowflake, Kafka, Databricks, Power BI, Groq, Prisma, PySpark, Docker, Airflow</td>
 </tr>
 </table>
 
 </div>
-
-<p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
-<img src="assets/headers/divider.svg" width="100%" alt=""/>
-
-<a id="roadmap"></a>
-<p align="center"><img src="assets/headers/roadmap.svg" width="100%" alt="Roadmap"/></p>
-
-| Status | Item |
-|---|---|
-| 🟡 Planned | Real screenshots/demo GIFs replacing screenshot placeholders |
-| 🟡 Planned | Automated Playwright E2E coverage across all five dashboards |
-| 🟡 Planned | `LICENSE` file and formal contribution guidelines |
-| 🟡 Planned | Consolidating legacy/duplicate endpoint pairs (`tracer` → `trace-symptom`, `graph` → `visualize-graph`) |
-| 🟡 Planned | CI pipeline for the Cleaning Code → Kafka → Databricks → Snowflake chain |
 
 <p align="right"><sub><a href="#toc">↑ back to top</a></sub></p>
 <img src="assets/headers/divider.svg" width="100%" alt=""/>
@@ -1159,6 +1329,9 @@ Contributions, issues, and feature requests are welcome.
 | [Databricks](https://www.databricks.com/) | PySpark Structured Streaming + enrichment |
 | [Prisma](https://www.prisma.io/) | ORM for PostgreSQL-backed RBAC |
 | [Power BI](https://powerbi.microsoft.com/) | Executive reporting dashboard |
+| [Docker](https://www.docker.com/) | Local containerization of frontend + backend |
+| [Apache Airflow](https://airflow.apache.org/) | Local scheduling/triggering of the data pipeline |
+| [PostgreSQL](https://www.postgresql.org/) | App relational data (Prisma) + Airflow metadata store |
 | [Playwright](https://playwright.dev/) | End-to-end testing |
 
 </div>
@@ -1183,7 +1356,7 @@ No `LICENSE` file is currently included in this repository. The project is built
 <div align="center">
 
 *DataDose — Clinical Decision Intelligence Platform*<br/>
-*Combining Graph Databases · Real-Time Streaming · Healthcare AI*
+*Combining Graph Databases · Real-Time Streaming · Docker · Airflow · Healthcare AI*
 
 <br/>
 
