@@ -41,10 +41,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="DataDose Neo4j API", version="1.0.0", lifespan=lifespan)
 
-# CORS configuration for Next.js frontend
+# CORS configuration — allow localhost in dev and any Vercel deployment in production
+APP_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=APP_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -149,6 +155,19 @@ SYMPTOM_SYNONYMS: dict[str, list[str]] = {
 # ==========================================
 # ENDPOINTS
 # ==========================================
+
+@app.get("/", summary="Health check")
+async def root():
+    """Root endpoint — confirms the API is live."""
+    return {"status": "ok", "message": "DataDose API is running", "docs": "/docs"}
+
+
+@app.get("/api/health", summary="Health check")
+async def health():
+    """Health endpoint for monitoring."""
+    db_ok = driver is not None
+    return {"status": "ok" if db_ok else "degraded", "database": "connected" if db_ok else "disconnected"}
+
 
 @app.post("/api/scan", response_model=List[InteractionResponse], summary="Polypharmacy DDI Scanner")
 async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
