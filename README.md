@@ -11,6 +11,14 @@
 <br/><br/>
 
 <p align="center">
+  <video src="assets/DataDoseDemo.mp4" controls width="100%" poster="assets/headers/datadose-banner.svg"></video>
+</p>
+
+<p align="center"><sub>▶️ Watch the full product walkthrough above</sub></p>
+
+<br/>
+
+<p align="center">
   <strong>An AI-powered Clinical Decision Intelligence Platform</strong><br/>
   combining Graph Databases · Real-Time Streaming · Data Engineering · Healthcare Analytics
 </p>
