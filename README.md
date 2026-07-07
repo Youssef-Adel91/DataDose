@@ -11,7 +11,7 @@
 <br/><br/>
 
 <p align="center">
-  <a href="https://github.com/Youssef-Adel91/DataDose/blob/main/assets/DataDoseDemo.mp4">
+  <a href="https://canva.link/o6c3waynb1wageb">
     <img src="assets/DataDoseDemo_preview.gif" width="100%" alt="DataDose Demo Preview"/>
   </a>
 </p>
