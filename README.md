@@ -11,10 +11,11 @@
 <br/><br/>
 
 <p align="center">
-  <video src="assets/DataDoseDemo.mp4" controls width="100%" poster="assets/headers/datadose-banner.svg"></video>
+  <a href="https://github.com/Youssef-Adel91/DataDose/blob/main/assets/DataDoseDemo.mp4">
+    <img src="assets/DataDoseDemo_preview.gif" width="100%" alt="DataDose Demo Preview"/>
+  </a>
 </p>
-
-<p align="center"><sub>▶️ Watch the full product walkthrough above</sub></p>
+<p align="center"><sub>👆 Click the animation to watch the full demo video</sub></p>
 
 <br/>
 
