@@ -3,8 +3,6 @@ import json
 import asyncio
 from urllib.parse import urlparse
 import requests
-import snowflake.connector
-from kafka import KafkaConsumer
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -1029,6 +1027,7 @@ def _ping_snowflake():
     if not account:
         return {"status": "failed", "error": "Snowflake configuration missing"}
     try:
+        import snowflake.connector  # lazy import — avoid crashing serverless boot
         conn = snowflake.connector.connect(
             user=os.getenv("SNOWFLAKE_USER", ""),
             password=os.getenv("SNOWFLAKE_PASSWORD", ""),
@@ -1070,6 +1069,7 @@ def _ping_kafka():
     if not servers:
         return {"status": "failed", "error": "Kafka configuration missing"}
     try:
+        from kafka import KafkaConsumer  # lazy import — avoid crashing serverless boot
         consumer = KafkaConsumer(
             bootstrap_servers=servers,
             security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "SASL_SSL"),
