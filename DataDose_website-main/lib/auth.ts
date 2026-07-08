@@ -3,48 +3,34 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "./prisma";
 
-// Development/Demo Mock Users
-const MOCK_USERS = [
+// ─── Demo accounts (kept in sync with app/login/page.tsx DEMO_ACCOUNTS) ────────
+// These are upserted into the real DB on first login so production deployments
+// never hit a "user not found" error for demo credentials.
+const DEMO_USERS = [
   {
-    id: "demo-physician-id",
-    name: "Dr. Alex Care",
-    email: "physician@datadose.test",
-    password: "physician123",
-    role: "PHYSICIAN",
-    status: "ACTIVE"
-  },
-  {
-    id: "demo-pharmacist-id",
-    name: "Pharm. Sarah Dose",
-    email: "pharmacist@datadose.test",
-    password: "pharmacist123",
-    role: "PHARMACIST",
-    status: "ACTIVE"
-  },
-  {
-    id: "demo-patient-id",
-    name: "John Patient",
-    email: "patient@datadose.test",
-    password: "patient123",
-    role: "PATIENT",
-    status: "ACTIVE"
-  },
-  {
-    id: "demo-admin-id",
     name: "Hospital Administrator",
-    email: "admin@datadose.test",
-    password: "admin123",
-    role: "ADMIN",
-    status: "ACTIVE"
+    email: "admin@datadose.demo",
+    password: "Demo@Admin2026",
+    role: "ADMIN" as const,
   },
   {
-    id: "demo-system-id",
-    name: "System Super Admin",
-    email: "system@datadose.test",
-    password: "system123",
-    role: "SUPER_ADMIN",
-    status: "ACTIVE"
-  }
+    name: "Dr. Alex Care",
+    email: "physician@datadose.demo",
+    password: "Demo@Physician2026",
+    role: "PHYSICIAN" as const,
+  },
+  {
+    name: "Pharm. Sarah Dose",
+    email: "pharmacist@datadose.demo",
+    password: "Demo@Pharmacist2026",
+    role: "PHARMACIST" as const,
+  },
+  {
+    name: "John Patient",
+    email: "patient@datadose.demo",
+    password: "Demo@Patient2026",
+    role: "PATIENT" as const,
+  },
 ];
 
 export const authOptions: NextAuthOptions = {
@@ -61,29 +47,58 @@ export const authOptions: NextAuthOptions = {
         }
 
         const emailTrimmed = credentials.email.trim().toLowerCase();
-        const isDemoMode = process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
-        if (isDemoMode) {
-          const mockUser = MOCK_USERS.find(
-            (u) => u.email.toLowerCase() === emailTrimmed
-          );
+        // ── Check if this is a demo account login ─────────────────────────────
+        const demoConfig = DEMO_USERS.find(
+          (u) => u.email.toLowerCase() === emailTrimmed
+        );
 
-          if (mockUser) {
-            if (credentials.password === mockUser.password) {
-              return {
-                id: mockUser.id,
-                email: mockUser.email,
-                name: mockUser.name,
-                role: mockUser.role,
-                status: mockUser.status,
-              };
-            }
+        if (demoConfig) {
+          // Verify the plain-text demo password matches
+          if (credentials.password !== demoConfig.password) {
             throw new Error("Invalid email or password.");
           }
-          throw new Error("Invalid email or password (Demo Mode).");
+
+          // Upsert the demo user into the real Postgres DB so the session can
+          // reference a real DB row. This means the first login auto-creates
+          // the account — no manual seeding step needed in production.
+          let dbUser: any = null;
+          try {
+            const hashedPwd = await bcrypt.hash(demoConfig.password, 10);
+            dbUser = await prisma.user.upsert({
+              where: { email: demoConfig.email },
+              update: { status: "APPROVED" }, // ensure demo accounts stay active
+              create: {
+                email: demoConfig.email,
+                name: demoConfig.name,
+                password: hashedPwd,
+                role: demoConfig.role,
+                status: "APPROVED",
+              },
+            });
+          } catch (dbError) {
+            // If DB is completely unreachable, fall back to in-memory session
+            // so the demo still works on a cold deployment.
+            console.warn("[Auth] DB upsert failed for demo user — using in-memory fallback:", dbError);
+            return {
+              id: `demo-${demoConfig.role.toLowerCase()}`,
+              email: demoConfig.email,
+              name: demoConfig.name,
+              role: demoConfig.role,
+              status: "APPROVED",
+            };
+          }
+
+          return {
+            id: dbUser.id,
+            email: dbUser.email,
+            name: dbUser.name,
+            role: dbUser.role,
+            status: dbUser.status,
+          };
         }
 
-        // Real database authentication
+        // ── Real database authentication ──────────────────────────────────────
         let user: any = null;
 
         try {
