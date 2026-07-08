@@ -1,80 +1,176 @@
-# Data Dose — Smart Clinical Decision Support System (CDSS)
+# DataDose Website
 
-![Data Dose Cover](https://via.placeholder.com/1200x400?text=Data+Dose+CDSS+-+AI+Powered+Care)
+DataDose Website is the frontend application for the DataDose clinical decision support platform. It is built with Next.js and provides role-based dashboards, prescription and interaction workflows, patient views, and supporting admin and system pages. The interface is designed to present medical decision support data in a clear, modern, and responsive way.
 
-Data Dose is a production-ready **Clinical Decision Support System (CDSS)** specifically engineered for physicians and pharmacists. It combines an ultra-modern Next.js frontend with a powerful FastAPI + Neo4j Graph Database backend. The core objective of Data Dose is to analyze complex polypharmacy prescriptions in real-time, instantly traverse thousands of medical interactions, and visually prevent adverse drug events (ADEs).
+## Overview
 
-## 🚀 Key Features
+This repository contains the web application used to demonstrate and operate the DataDose user experience. It includes:
 
-*   **N-Degree Polypharmacy Scanner:** Deterministic runtime analysis evaluating high-risk drug-drug interactions (DDIs) across `O(N^2)` combinations in milliseconds.
-*   **Reactive Visual Prescription Map:** A seamlessly unified React Flow SVG canvas that dynamically draws Neo4j connections (nodes and interactive edges) based on live scanner results. Colored risk mapping explicitly identifies `Fatal` (⬛) and `Severe` (🔴) interactions.
-*   **Smart Alternative Finder:** Powerful constraint-based traversal over the Neo4j Knowledge Graph to recommend safe alternatives that treat the intended disease without triggering known patient allergies or conflicting with existing medications.
-*   **Reverse Symptom Tracer:** Traces unexplainable clinical symptoms back to the active ingredients in the patient's current treatment plan, mapped via the `CAUSES_REACTION` edges.
-*   **Role-Based Clinical Dashboards:** Beautiful, interactive, glassmorphism-enhanced dashboards tailored respectively for the Physician Point-of-Care and the Pharmacist Dispensing Workflow.
+- A public landing experience for introducing the platform.
+- Authentication and role-based navigation.
+- Dashboards for physicians, pharmacists, patients, admins, and super admins.
+- Clinical workflow tools such as prescription scanning, interaction review, alternatives, symptom tracing, and graph-assisted insights.
+- API route handlers that coordinate frontend features with backend services and data sources.
 
-## 🛠️ Architecture & Tech Stack
+The application uses mock/demo authentication flows in the frontend alongside backend integrations, so it can be run locally for development, testing, and presentation purposes.
 
-Data Dose utilizes a strict microservice architecture splitting the UI from the heavy logical traversal:
+## Key Capabilities
 
-### Frontend (Next.js)
-*   **Framework:** Next.js 15.3.1 (App Router)
-*   **Styling:** Tailwind CSS v4 + Framer Motion for premium micro-animations
-*   **State Management:** Unified Lifted React State coordinating isolated scanner tools with visualizing components
-*   **Proxying:** Server-side route handlers (`/api/scan`, `/api/graph`) intercept UI payloads, correctly format and pass them to the backend, and safely bypass CORS.
+- Role-based dashboards for physician, pharmacist, patient, admin, and system users.
+- Prescription scanning and drug interaction review.
+- Graph-assisted clinical workflows for alternatives, symptom tracing, and visual prescription mapping.
+- Admin and super-admin pages for analytics, safety monitoring, user management, and system oversight.
+- Modern UI with responsive layouts, motion effects, and reusable dashboard components.
 
-### Backend (Python FastAPI Engine)
-*   **Framework:** FastAPI running on Uvicorn
-*   **Database:** Live **Neo4j Aura Knowledge Graph** (Connected securely via `neo4j+ssc://`)
-*   **Ingestion Setup:** Fully indexed graph containing over 3,656 interconnected active drug ingredients, conditions, structured symptom nodes, and severities.
-*   **Cypher Rigidity:** All queries strictly implement `toLower()` handling to enforce case-insensitivity against the strictly-typed graph nodes, securing against unrendered inputs.
+## Technology Stack
 
-## 📦 Getting Started
+- Framework: Next.js 15 with the App Router.
+- Language: TypeScript.
+- Styling: Tailwind CSS v4 and custom global styles.
+- Motion and charts: Framer Motion, Recharts, and Chart.js.
+- Authentication and data access: NextAuth, Prisma, and PostgreSQL.
+- Visualizations: React Flow for graph-style prescription views.
+- Tooling: ESLint, Playwright, Prisma CLI, and Vercel deployment support.
 
-### 1. Backend Setup
+## Project Structure
 
-Note: The FastAPI backend belongs in the adjacent `/backend` directory.
+Important folders inside this app:
 
-```bash
-cd backend
-python -m venv venv
-# Activate virtual environment (Windows)
-.\venv\Scripts\activate
-# Install dependencies
-pip install -r requirements.txt
-```
+- `app/` - Application routes, layouts, and API handlers.
+- `app/components/` - Reusable UI components and role-specific widgets.
+- `app/dashboard/` - Dashboard routes for each role.
+- `app/login/` - Authentication entry point.
+- `app/pricing/` - Public pricing page.
+- `app/api/` - Backend-facing route handlers for scans, chat, OCR, graph, alternatives, and admin workflows.
+- `prisma/` - Database schema and seed data.
+- `public/` - Static assets.
+- `types/` - Shared TypeScript types.
 
-Create a `.env` file in the `backend` directory with your Neo4j Aura credentials:
-```env
-NEO4J_URI="neo4j+ssc://<your-db-id>.databases.neo4j.io"
-NEO4J_USER="<your-username>"
-NEO4J_PASSWORD="<your-password>"
-```
+## Available Routes
 
-Start the FastAPI server (Runs on port 8000):
-```bash
-python -m uvicorn main:app --reload
-```
+Common public and application routes include:
 
-### 2. Frontend Setup (This Repository)
+- `/` - Landing page.
+- `/login` - Login page.
+- `/pricing` - Pricing page.
+- `/dashboard` - Dashboard redirect or overview entry point.
+- `/dashboard/physician` - Physician workflow.
+- `/dashboard/pharmacist` - Pharmacist workflow.
+- `/dashboard/patient` - Patient view.
+- `/dashboard/admin` - Admin console.
+- `/dashboard/system` - Super-admin or system monitoring view.
+- `/dashboard/settings` - Account and preferences.
+
+API handlers live under `app/api/` and are organized by feature area such as scan, OCR, graph, chat, prescriptions, alternatives, tracer, visualization, authentication, and admin operations.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20 or newer.
+- npm.
+- PostgreSQL available locally or through a hosted service.
+- Optional: backend services required by the site configuration, depending on the features you want to run.
+
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-Start the Next.js Client (Runs on port 3000):
+### 2. Configure Environment Variables
+
+Create a `.env` file in `DataDose_website-main` and set the values required by the app.
+
+Typical variables used by this project include:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/datadose"
+NEXTAUTH_SECRET="replace-with-a-secure-random-string"
+NEXTAUTH_URL="http://localhost:3000"
+BACKEND_URL="http://localhost:8000"
+GROQ_API_KEY="your-groq-key"
+OPENAI_API_KEY="your-openai-key"
+NEO4J_URI="neo4j+s://your-neo4j-host"
+```
+
+Only provide the keys needed for the features you intend to use.
+
+### 3. Run Database Setup
+
+If Prisma migrations or schema generation are required in your environment, run:
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+If this project uses seed data in your workflow, run the Prisma seed command defined in `package.json`.
+
+### 4. Start the Development Server
+
 ```bash
 npm run dev
 ```
 
-Navigate to `http://localhost:3000/dashboard/pharmacist` or `http://localhost:3000/dashboard/physician` to begin utilizing the Clinical Decision Support System.
+Open `http://localhost:3000` in your browser.
 
-## 📊 Knowledge Graph Schema
+## Demo Accounts
 
-The Neo4j database actively evaluates structural paths such as:
-1. `(Drug)-[INTERACTS_WITH {severity: 'Fatal', effect: '...', mechanism: '...'}]-(Drug)`
-2. `(Drug)-[TREATS]->(Condition)`
-3. `(Drug)-[CAUSES_REACTION]->(Symptom)`
+The quick-start workflow in this repository includes demo credentials for local exploration:
 
-## 🛡️ License & Compliance
+- Pharmacist: `pharmacist@datadose.ai` / `password123`
+- Physician: `physician@datadose.ai` / `password123`
+- Admin: `admin@datadose.ai` / `password123`
+- Super Admin: `superadmin@datadose.ai` / `password123`
 
-Data Dose is built for demonstration, educational, and enterprise-architecture presentation purposes. Always consult certified medical practitioners and FDA-cleared databases before applying graph suggestions in real-world clinical environments.
+These accounts are intended for demonstration and testing only.
+
+## Common Commands
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
+
+`npm run postinstall` also runs `prisma generate` automatically after install.
+
+## Testing
+
+This repository includes Playwright-based browser tests and workflow scripts. Depending on your setup, you may run:
+
+```bash
+npx playwright test
+```
+
+If you only want to validate the application logic or UI changes locally, use the relevant test file or feature flow script from the repository root.
+
+## Deployment
+
+The app includes Vercel configuration and is suitable for deployment to Vercel or another platform that supports Next.js applications.
+
+Before deploying, confirm that:
+
+- Environment variables are configured in the target environment.
+- Prisma schema and database connectivity are correct.
+- Any external backend services referenced by the app are reachable.
+
+## Security and Compliance
+
+DataDose is a clinical decision support interface and should be treated as a decision aid, not a replacement for licensed medical judgment. Validate recommendations against approved clinical references, local policy, and appropriate regulatory requirements before using the application in production workflows.
+
+## Support Files
+
+For feature context and implementation details, review:
+
+- `QUICK_START.md`
+- `FEATURES_SUMMARY.md`
+- `app/`
+- `prisma/schema.prisma`
+- `README.md` files in adjacent product folders when working across the wider DataDose workspace.
+
+## License
+
+This repository does not currently declare a formal license in this file. Add one if the project is intended for external distribution.
