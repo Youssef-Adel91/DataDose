@@ -18,6 +18,7 @@ x-airflow-common: &airflow-common
     dockerfile: docker/Dockerfile.airflow
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    KAFKA_BROKER_CHECK_BYPASS: "true"
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER}:${AIRFLOW_POSTGRES_PASSWORD}@airflow-postgres/${AIRFLOW_POSTGRES_DB}
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_POSTGRES_USER}:${AIRFLOW_POSTGRES_PASSWORD}@airflow-postgres/${AIRFLOW_POSTGRES_DB}
     AIRFLOW__CELERY__BROKER_URL: redis://:@airflow-redis:6379/0
@@ -135,6 +136,7 @@ services:
         condition: service_healthy
       airflow-redis:
         condition: service_healthy
+
   # ---------------- Producer simulator ----------------
   # Runs continuously (restart: always), independent of Airflow. Airflow's
   # kafka_orchestration.verify_kafka_producer_activity task only checks on
