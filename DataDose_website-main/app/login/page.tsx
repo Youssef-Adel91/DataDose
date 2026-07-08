@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, getSession } from 'next-auth/react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,239 +38,134 @@ export default function LoginPage() {
         } else {
           router.push('/dashboard/physician');
         }
-        // Keep spinner while Next.js navigates — don't call setIsLoading(false)
       }
-    } catch (err) {
-      setError('An unexpected error occurred.');
+    } catch {
+      setError('An unexpected error occurred. Please try again.');
       setIsLoading(false);
     }
   };
 
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '1rem',
-      fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '440px',
-        backgroundColor: '#ffffff',
-        borderRadius: '20px',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
-        padding: '2.5rem 2.5rem 2rem',
-      }}>
-
-        {/* ── Header ── */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{
-            width: '60px', height: '60px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, #0f766e, #0891b2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 1rem', fontSize: '26px',
-          }}>💊</div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-            DataDose
-          </h1>
-          <p style={{ color: '#64748b', marginTop: '0.3rem', fontSize: '0.875rem' }}>
-            Smart Clinical Decision Support
-          </p>
-        </div>
-
-        {/* ── Error Alert ── */}
-        {error && (
-          <div id="login-error-box" style={{
-            backgroundColor: '#fef2f2',
-            border: '2px solid #fca5a5',
-            borderRadius: '10px',
-            padding: '0.875rem 1rem',
-            marginBottom: '1.25rem',
-            color: '#b91c1c',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}>
-            ⚠️ {error}
-          </div>
-        )}
-
-        {/* ── Form ── */}
-        <form id="login-form" onSubmit={handleSubmit} noValidate>
-
-          {/* Email */}
-          <div style={{ marginBottom: '1.1rem' }}>
-            <label htmlFor="email" style={{
-              display: 'block', fontSize: '0.875rem',
-              fontWeight: 600, color: '#374151', marginBottom: '0.4rem',
-            }}>
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@datadose.ai"
-              required
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                padding: '0.75rem 1rem',
-                border: '1.5px solid #d1d5db',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                color: '#111827',
-                backgroundColor: '#fff',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => { e.target.style.borderColor = '#0f766e'; }}
-              onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; }}
-            />
-          </div>
-
-          {/* Password */}
-          <div style={{ marginBottom: '1.75rem' }}>
-            <label htmlFor="password" style={{
-              display: 'block', fontSize: '0.875rem',
-              fontWeight: 600, color: '#374151', marginBottom: '0.4rem',
-            }}>
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                padding: '0.75rem 1rem',
-                border: '1.5px solid #d1d5db',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                color: '#111827',
-                backgroundColor: '#fff',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => { e.target.style.borderColor = '#0f766e'; }}
-              onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; }}
-            />
-            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.35rem' }}>
-              Demo password: <strong>password123</strong>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Login Card */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <img src="/logo.svg" className="h-16 w-auto object-contain mx-auto mb-4" alt="DataDose Logo" />
+            <p className="text-sm text-slate-500 mt-1">
+              Clinical Decision Support System
             </p>
           </div>
 
-          {/* ── Submit Button ──
-              Dual-hardened: Tailwind classes + inline styles.
-              The button is NEVER transparent or invisible. */}
-          <button
-            id="login-submit-btn"
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-zinc-900 text-white font-semibold py-3 rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              width: '100%',
-              boxSizing: 'border-box',
-              /* Guaranteed visible colours — Tailwind is secondary */
-              backgroundColor: '#18181b',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: '1rem',
-              padding: '0.9rem 1.5rem',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.65 : 1,
-              transition: 'background-color 0.2s, opacity 0.2s',
-              letterSpacing: '0.01em',
-            }}
-            onMouseEnter={(e) => { if (!isLoading) (e.target as HTMLButtonElement).style.backgroundColor = '#27272a'; }}
-            onMouseLeave={(e) => { if (!isLoading) (e.target as HTMLButtonElement).style.backgroundColor = '#18181b'; }}
-          >
-            {isLoading ? (
-              <>
-                <span style={{
-                  display: 'inline-block',
-                  width: '18px', height: '18px',
-                  border: '2.5px solid rgba(255,255,255,0.35)',
-                  borderTopColor: '#ffffff',
-                  borderRadius: '50%',
-                  animation: 'datadose-spin 0.75s linear infinite',
-                }} />
-                Signing in…
-              </>
-            ) : (
-              'Sign In →'
-            )}
-          </button>
-        </form>
+          {/* Error Alert */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+              <p className="text-sm text-red-700 font-medium">{error}</p>
+            </div>
+          )}
 
-        {/* ── Demo accounts quick-fill ── */}
-        <div style={{ marginTop: '1.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem' }}>
-          <p style={{
-            fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center',
-            marginBottom: '0.75rem', fontWeight: 700,
-            textTransform: 'uppercase', letterSpacing: '0.08em',
-          }}>
-            Quick Fill — Demo Accounts
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-            {[
-              { icon: '💊', role: 'Pharmacist',  addr: 'pharmacist@datadose.ai' },
-              { icon: '🏥', role: 'Physician',   addr: 'physician@datadose.ai'  },
-              { icon: '👔', role: 'Admin',       addr: 'admin@datadose.ai'      },
-              { icon: '⚙️', role: 'Super Admin', addr: 'superadmin@datadose.ai' },
-              { icon: '👤', role: 'Patient',     addr: 'sara@datadose.ai'       },
-            ].map(({ icon, role, addr }) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => { setEmail(addr); setPassword('password123'); }}
-                style={{
-                  textAlign: 'left', padding: '0.5rem 0.65rem',
-                  borderRadius: '8px', border: '1px solid #e2e8f0',
-                  backgroundColor: '#f8fafc', cursor: 'pointer',
-                  fontSize: '0.72rem', transition: 'background-color 0.15s',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget).style.backgroundColor = '#e0f2fe'; }}
-                onMouseLeave={(e) => { (e.currentTarget).style.backgroundColor = '#f8fafc'; }}
-              >
-                <span style={{ fontWeight: 700, color: '#334155' }}>{icon} {role}</span><br />
-                <span style={{ color: '#64748b' }}>{addr}</span>
-              </button>
-            ))}
-          </div>
+          {/* Demo Mode Alert Banner */}
+          {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && process.env.NODE_ENV !== 'production' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5 mb-6 flex items-start gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0 animate-pulse" />
+              <div>
+                <h3 className="text-xs font-semibold text-amber-800">Demo authentication enabled</h3>
+                <p className="text-[11px] text-amber-600 mt-0.5">
+                  Database connection is bypassed. Use the test accounts below to log in.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.name@hospital.org"
+                  required
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full mt-6 bg-teal-700 text-white font-semibold py-2.5 rounded-lg hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Signing in…
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          {/* Demo accounts — only visible in development when demo mode is active */}
+          {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && process.env.NODE_ENV !== 'production' && (
+            <div className="mt-6 pt-5 border-t border-slate-100">
+              <p className="text-xs text-slate-400 text-center mb-3 font-medium uppercase tracking-wide">
+                Demo Accounts (Local Dev Only)
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { role: 'Physician', addr: 'physician@datadose.test', pass: 'physician123' },
+                  { role: 'Pharmacist', addr: 'pharmacist@datadose.test', pass: 'pharmacist123' },
+                  { role: 'Patient', addr: 'patient@datadose.test', pass: 'patient123' },
+                  { role: 'Hospital Admin', addr: 'admin@datadose.test', pass: 'admin123' },
+                  { role: 'Super Admin', addr: 'system@datadose.test', pass: 'system123' },
+                ].map(({ role, addr, pass }) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => { setEmail(addr); setPassword(pass); }}
+                    className="text-left px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-200 transition text-xs cursor-pointer"
+                  >
+                    <span className="font-semibold text-slate-700">{role}</span>
+                    <br />
+                    <span className="text-slate-400">{addr}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* ── Back link ── */}
-        <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-          <a href="/" style={{
-            fontSize: '0.875rem', color: '#0f766e',
-            textDecoration: 'none', fontWeight: 600,
-          }}>
-            ← Back to Home
+        {/* Back link */}
+        <div className="text-center mt-4">
+          <a href="/" className="text-sm text-slate-500 hover:text-teal-700 font-medium flex items-center justify-center gap-1.5 transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to Home
           </a>
         </div>
       </div>
-
-      <style>{`
-        @keyframes datadose-spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

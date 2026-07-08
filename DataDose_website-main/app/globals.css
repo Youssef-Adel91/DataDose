@@ -13,12 +13,6 @@
   --color-teal-700: #0f766e;
   --color-teal-800: #115e59;
   --color-teal-900: #134e4a;
-  --color-mint-50: #f0fdf8;
-  --color-mint-100: #dcfce9;
-  --color-mint-200: #bbf7d1;
-  --color-mint-300: #86efad;
-  --color-mint-400: #4ade7f;
-  --color-mint-500: #22c55d;
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -29,38 +23,13 @@
   --color-slate-700: #334155;
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
+  --color-brand-teal: #00897B;
+  --color-brand-navy: #06162E;
+  --color-brand-cyan-bg: #e6f4f1;
   --font-sans: "Inter", sans-serif;
 }
 
-/* Glassmorphism utilities */
-.glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-}
-
-.glass-card-strong {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
-}
-
-/* Gradient backgrounds */
-.gradient-bg {
-  background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 40%, #f0fdf8 70%, #ccfbf1 100%);
-}
-
-.gradient-teal {
-  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
-}
-
-.gradient-teal-light {
-  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, #99f6e4 100%);
-}
+/* ── Clinical Design System ──────────────────────────────────────────────── */
 
 /* Smooth scrolling */
 html {
@@ -68,25 +37,50 @@ html {
 }
 
 body {
-  background: var(--background);
+  background: var(--color-background);
   color: var(--color-foreground);
   font-family: "Inter", sans-serif;
   overflow-x: hidden;
 }
 
-/* Background Image Class */
-.home-background {
-  background-image: url('/home_background.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  min-height: 100vh;
+/* Glassmorphism utilities — used by existing components */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* Custom scrollbar */
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Gradient utilities — kept for components that reference them */
+.gradient-bg {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f0fdfa 100%);
+}
+
+.bg-gradient-bg {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f0fdfa 100%);
+}
+
+.gradient-teal {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+}
+
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+}
+
+/* ── Custom Scrollbar ────────────────────────────────────────────────────── */
+
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -94,49 +88,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #14b8a6;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 
-/* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
+
+/* ── Minimal Animations ──────────────────────────────────────────────────── */
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.2); }
-  50% { box-shadow: 0 0 40px rgba(20, 184, 166, 0.4); }
-}
-
-@keyframes circuit-flow {
-  0% { stroke-dashoffset: 100; }
-  100% { stroke-dashoffset: 0; }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-/* Dashboard mockup styles */
-.dashboard-shadow {
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.12), 0 12px 36px rgba(0, 0, 0, 0.08);
-}
-
-.section-gradient-1 {
-  background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
-}
-
-.section-gradient-2 {
-  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
-}
-
-.section-alt {
-  background-color: var(--color-slate-50);
+  0%, 100% { box-shadow: 0 0 12px rgba(20, 184, 166, 0.15); }
+  50% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.3); }
 }
 
 .node-pulse {

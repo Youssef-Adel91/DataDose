@@ -1,0 +1,71 @@
+<svg viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DataDose Airflow Orchestration">
+  <defs>
+    <linearGradient id="bg_airflow_banner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060912"/>
+      <stop offset="45%" stop-color="#0b0f19"/>
+      <stop offset="100%" stop-color="#0a0f1c"/>
+    </linearGradient>
+    <linearGradient id="scan_airflow_banner" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#017CEE" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#017CEE" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#017CEE" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="edge_airflow_banner" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#017CEE"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+    <pattern id="grid_airflow_banner" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="26" stroke="#017CEE" stroke-width="0.6" opacity="0.07"/>
+    </pattern>
+    <filter id="glow_airflow_banner" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="clip_airflow_banner"><rect width="1200" height="280" rx="18"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#clip_airflow_banner)">
+    <rect width="1200" height="280" fill="url(#bg_airflow_banner)"/>
+    <rect width="1200" height="280" fill="url(#grid_airflow_banner)"/>
+    <rect x="-260" y="0" width="220" height="280" fill="url(#scan_airflow_banner)">
+      <animate attributeName="x" values="-260;1260" dur="6s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="0" y="279" width="1200" height="1" fill="#017CEE" opacity="0.12"/>
+  </g>
+
+  <rect x="1" y="1" width="1198" height="278" rx="18" fill="none" stroke="url(#edge_airflow_banner)" stroke-width="1.4" opacity="0.5">
+    <animate attributeName="opacity" values="0.28;0.85;0.28" dur="3.4s" repeatCount="indefinite"/>
+  </rect>
+
+  <path d="M22 16 L22 40 M22 16 L46 16" stroke="#017CEE" stroke-width="2.2" fill="none" opacity="0.85"/>
+  <path d="M1178 264 L1178 240 M1178 264 L1154 264" stroke="#00D4FF" stroke-width="2.2" fill="none" opacity="0.85"/>
+
+  <text x="42" y="38" font-family="'JetBrains Mono','Fira Code',Consolas,monospace" font-size="13" letter-spacing="4" fill="#017CEE" opacity="0.8">ORCHESTRATION // AIRFLOW</text>
+  <circle cx="1162" cy="32" r="4.5" fill="#00D4FF">
+    <animate attributeName="opacity" values="1;0.25;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <g transform="translate(70,150)">
+    <circle cx="0" cy="0" r="9" fill="none" stroke="#00D4FF" stroke-width="2"/>
+    <circle cx="70" cy="-45" r="9" fill="none" stroke="#017CEE" stroke-width="2"/>
+    <circle cx="70" cy="45" r="9" fill="none" stroke="#017CEE" stroke-width="2"/>
+    <circle cx="150" cy="0" r="9" fill="#00D4FF"/>
+    <line x1="8" y1="-4" x2="63" y2="-42" stroke="#017CEE" stroke-width="1.6" opacity="0.7"/>
+    <line x1="8" y1="4" x2="63" y2="42" stroke="#017CEE" stroke-width="1.6" opacity="0.7"/>
+    <line x1="78" y1="-42" x2="143" y2="-4" stroke="#017CEE" stroke-width="1.6" opacity="0.7"/>
+    <line x1="78" y1="42" x2="143" y2="4" stroke="#017CEE" stroke-width="1.6" opacity="0.7"/>
+    <circle cx="150" cy="0" r="3" fill="#F2FAFF">
+      <animateMotion path="M0,0 L70,-45 L150,0" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <text x="430" y="118" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="46" font-weight="700" fill="#017CEE" filter="url(#glow_airflow_banner)" opacity="0.6">DataDose Airflow</text>
+  <text x="430" y="118" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="46" font-weight="700" fill="#F2FAFF">DataDose Airflow</text>
+
+  <text x="432" y="152" font-family="'JetBrains Mono','Fira Code',Consolas,monospace" font-size="19" fill="#B7C4D6">Kafka to Databricks to Snowflake, orchestrated end to end</text>
+
+  <line x1="432" y1="176" x2="432" y2="176" stroke="url(#edge_airflow_banner)" stroke-width="3" stroke-linecap="round">
+    <animate attributeName="x2" values="432;700;432" dur="3.8s" repeatCount="indefinite"/>
+  </line>
+  <line x1="710" y1="176" x2="1160" y2="176" stroke="#017CEE" stroke-width="1" opacity="0.15"/>
+</svg>

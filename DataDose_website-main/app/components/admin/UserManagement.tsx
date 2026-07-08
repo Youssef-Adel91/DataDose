@@ -49,7 +49,7 @@ const roleColors: Record<string, string> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function UserManagement() {
+export default function UserManagement({ showOnly }: { showOnly?: 'active' | 'pending' }) {
   const { data: session } = useSession();
   const callerRole = (session?.user as any)?.role as string | undefined;
   const isSuperAdmin = callerRole === 'SUPER_ADMIN';
@@ -103,12 +103,13 @@ export default function UserManagement() {
     <div className="space-y-6" id="users">
 
       {/* ── Pending Approvals Panel ───────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="glass-card-strong rounded-xl p-8 border-l-4 border-amber-400"
-      >
+      {showOnly !== 'active' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card-strong rounded-xl p-8 border-l-4 border-amber-400 animate-fadeIn"
+        >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-100 rounded-lg">
@@ -229,15 +230,17 @@ export default function UserManagement() {
             </AnimatePresence>
           </div>
         )}
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* ── Active Users Table ────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="glass-card-strong rounded-xl p-8"
-      >
+      {showOnly !== 'pending' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="glass-card-strong rounded-xl p-8 animate-fadeIn"
+        >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-teal-100 rounded-lg">
@@ -309,7 +312,8 @@ export default function UserManagement() {
             </tbody>
           </table>
         </div>
-      </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

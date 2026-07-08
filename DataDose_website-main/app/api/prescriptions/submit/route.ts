@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
+import prisma from '@/lib/prisma';
 import { enforceDailyQuota } from '@/lib/quota';
 
 export async function POST(req: Request) {
+  // ── Authentication ──
+  const auth = await requireAuth(['PHYSICIAN']);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await req.json();
-    const userEmail = body?.userEmail;
+    const patientEmail = body?.patientEmail;
     const medications = Array.isArray(body?.medications) ? body.medications : [];
 
     if (!medications.length) {
@@ -14,12 +20,31 @@ export async function POST(req: Request) {
       );
     }
 
-    const quota = await enforceDailyQuota(userEmail, false);
+    const quota = await enforceDailyQuota(auth.email, false);
     if (quota.exceeded) {
       return NextResponse.json(
-        { error: 'QUOTA_EXCEEDED', message: '403 Forbidden: QUOTA_EXCEEDED' },
+        { error: 'QUOTA_EXCEEDED', message: 'Daily prescription limit reached. Please try again tomorrow.' },
         { status: 403 }
       );
+    }
+
+    // Persist prescription to database
+    try {
+      const drugNames = medications.map((m: any) => typeof m === 'string' ? m : m.name || '');
+      
+      await prisma.prescriptionHistory.create({
+        data: {
+          doctorId: auth.userId,
+          patientId: patientEmail
+            ? (await prisma.user.findUnique({ where: { email: patientEmail } }))?.id || auth.userId
+            : auth.userId,
+          drugs: drugNames,
+          diagnosis: body?.diagnosis || null,
+        },
+      });
+    } catch (dbError) {
+      console.error('[prescription-submit] DB Error:', dbError);
+      // Continue even if DB write fails — don't block the workflow
     }
 
     return NextResponse.json({

@@ -9,10 +9,8 @@ import {
   X,
   LogOut,
   Home,
-  User,
   Settings,
   Bell,
-  Heart,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -51,106 +49,89 @@ export default function DashboardLayout({
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full"
-        />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-slate-200 border-t-teal-600 rounded-full animate-spin" />
+          <p className="text-sm text-slate-500">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-bg">
+    <div className="min-h-screen bg-slate-50">
       {/* Top Navigation Bar */}
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="glass-card-strong border-b border-teal-200/50 sticky top-0 z-40"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-full mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
           {/* Logo and Title */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-slate-100 rounded-lg transition lg:hidden"
+              className="p-1.5 hover:bg-slate-100 rounded-lg transition lg:hidden"
             >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {sidebarOpen ? <X className="w-5 h-5 text-slate-600" /> : <Menu className="w-5 h-5 text-slate-600" />}
             </button>
 
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-teal flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white fill-white" />
-              </div>
+            <Link href="/dashboard" className="flex items-center gap-3">
+              <img src="/logo.svg" className="h-8 w-auto object-contain" alt="DataDose Logo" />
               <div>
-                <p className="font-bold text-slate-900">Data Dose</p>
-                <p className="text-xs text-slate-500">{title}</p>
+                <div className="flex items-center gap-1.5">
+                  {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && process.env.NODE_ENV !== 'production' && (
+                    <span className="px-1.5 py-0.5 text-[8px] font-semibold bg-amber-100 text-amber-800 rounded border border-amber-200 uppercase tracking-wider">
+                      Demo
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 leading-none">{title}</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {/* Notifications */}
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative p-2 hover:bg-slate-100 rounded-lg transition"
+                className="p-2 hover:bg-slate-100 rounded-lg transition relative"
               >
-                <Bell className="w-5 h-5 text-slate-600" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                <Bell className="w-4.5 h-4.5 text-slate-500" />
               </button>
 
               {notificationsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute right-0 mt-2 w-72 glass-card-strong rounded-lg p-4 shadow-lg"
-                >
-                  <h3 className="font-semibold text-slate-900 mb-3">Notifications</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="p-2 bg-teal-50 rounded border border-teal-200">
-                      <p className="text-teal-900">✓ System updated successfully</p>
-                      <p className="text-xs text-teal-700">5 minutes ago</p>
-                    </div>
-                    <div className="p-2 bg-blue-50 rounded border border-blue-200">
-                      <p className="text-blue-900">New user registered</p>
-                      <p className="text-xs text-blue-700">1 hour ago</p>
-                    </div>
-                  </div>
-                </motion.div>
+                <div className="absolute right-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg p-3 shadow-lg z-50">
+                  <h3 className="font-semibold text-slate-900 text-sm mb-2">Notifications</h3>
+                  <p className="text-xs text-slate-400 py-4 text-center">No new notifications</p>
+                </div>
               )}
             </div>
 
             {/* User Profile */}
-            <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200">
-              <div className="text-right text-sm">
-                <p className="font-medium text-slate-900">{user.name}</p>
-                <p className="text-xs text-slate-500 capitalize">{user.role.replace('_', ' ')}</p>
+            <div className="hidden sm:flex items-center gap-2.5 pl-3 ml-1 border-l border-slate-200">
+              <div className="text-right">
+                <p className="text-sm font-medium text-slate-900 leading-tight">{user.name}</p>
+                <p className="text-[10px] text-slate-400 capitalize leading-tight">
+                  {user.role.replace('_', ' ').toLowerCase()}
+                </p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-teal flex items-center justify-center text-white font-bold">
+              <div className="w-8 h-8 rounded-full bg-teal-700 flex items-center justify-center text-white text-sm font-bold">
                 {user.name.charAt(0)}
               </div>
             </div>
 
-            {/* Logout Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            {/* Logout */}
+            <button
               onClick={handleLogout}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-              title="Logout"
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+              title="Sign Out"
             >
-              <LogOut className="w-5 h-5" />
-            </motion.button>
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
-      <div className="flex min-h-[calc(100vh-4rem)]">
-        {/* Sidebar - fixed on mobile, static on desktop */}
+      <div className="flex min-h-[calc(100vh-3.5rem)]">
         {/* Mobile overlay backdrop */}
         {sidebarOpen && (
           <div
@@ -159,61 +140,54 @@ export default function DashboardLayout({
           />
         )}
 
+        {/* Sidebar */}
         <aside
           className={`
-            fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 glass-card border-r border-teal-200/50 overflow-y-auto z-30 transition-transform duration-300
+            fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-56 bg-white border-r border-slate-200 overflow-y-auto z-30 transition-transform duration-200
             lg:static lg:translate-x-0 lg:h-auto lg:flex-shrink-0
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
-          <nav className="p-4 space-y-2">
+          <nav className="p-3 space-y-0.5">
             {/* Home Link */}
             <Link href="/dashboard">
-              <motion.div
-                whileHover={{ x: 4 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-teal-50 transition cursor-pointer"
-              >
-                <Home className="w-5 h-5 text-teal-600" />
-                <span className="font-medium text-slate-700">Dashboard</span>
-              </motion.div>
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition cursor-pointer text-slate-600 hover:text-slate-900">
+                <Home className="w-4.5 h-4.5" />
+                <span className="text-sm font-medium">Dashboard</span>
+              </div>
             </Link>
+
+            <div className="h-px bg-slate-100 my-2" />
 
             {/* Dynamic Navigation Items */}
             {sidebarItems.map((item, index) => (
               <Link key={index} href={item.href}>
-                <motion.div
-                  whileHover={{ x: 4 }}
-                  className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-teal-50 transition cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-teal-600 group-hover:text-teal-700 transition">
+                <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition cursor-pointer group">
+                  <div className="flex items-center gap-2.5">
+                    <div className="text-slate-400 group-hover:text-teal-600 transition">
                       {item.icon}
                     </div>
-                    <span className="font-medium text-slate-700 group-hover:text-slate-900">
+                    <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900">
                       {item.label}
                     </span>
                   </div>
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="bg-red-500 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center">
                       {item.badge}
                     </span>
                   )}
-                </motion.div>
+                </div>
               </Link>
             ))}
 
-            {/* Divider */}
-            <div className="my-4 h-px bg-slate-200" />
+            <div className="h-px bg-slate-100 my-2" />
 
             {/* Settings */}
             <Link href="/dashboard/settings">
-              <motion.div
-                whileHover={{ x: 4 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 transition cursor-pointer"
-              >
-                <Settings className="w-5 h-5 text-slate-400" />
-                <span className="font-medium text-slate-600">Settings</span>
-              </motion.div>
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition cursor-pointer text-slate-400 hover:text-slate-600">
+                <Settings className="w-4.5 h-4.5" />
+                <span className="text-sm font-medium">Settings</span>
+              </div>
             </Link>
           </nav>
         </aside>

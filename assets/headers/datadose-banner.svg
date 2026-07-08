@@ -1,25 +1,25 @@
 <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DataDose — Clinical Decision Intelligence Platform">
   <defs>
     <linearGradient id="heroBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#060912"/>
-      <stop offset="48%" stop-color="#0b0f19"/>
-      <stop offset="100%" stop-color="#0a0f1c"/>
+      <stop offset="0%" stop-color="#070b14"/>
+      <stop offset="45%" stop-color="#0b0f1c"/>
+      <stop offset="100%" stop-color="#0a0e1a"/>
     </linearGradient>
 
     <linearGradient id="tealCap" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7CF2E6"/>
-      <stop offset="45%" stop-color="#2DD4BF"/>
+      <stop offset="0%" stop-color="#8CFCEF"/>
+      <stop offset="42%" stop-color="#2DD4BF"/>
       <stop offset="100%" stop-color="#0F766E"/>
     </linearGradient>
 
     <linearGradient id="navyCap" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#283655"/>
-      <stop offset="55%" stop-color="#121A2C"/>
-      <stop offset="100%" stop-color="#060912"/>
+      <stop offset="0%" stop-color="#2E3E63"/>
+      <stop offset="55%" stop-color="#141C31"/>
+      <stop offset="100%" stop-color="#05070d"/>
     </linearGradient>
 
     <linearGradient id="wordDose" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#5EEAD4"/>
+      <stop offset="0%" stop-color="#6EF3DD"/>
       <stop offset="100%" stop-color="#22D3EE"/>
     </linearGradient>
 
@@ -30,7 +30,7 @@
 
     <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#00D4FF" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#00D4FF" stop-opacity="0.12"/>
+      <stop offset="50%" stop-color="#00D4FF" stop-opacity="0.09"/>
       <stop offset="100%" stop-color="#00D4FF" stop-opacity="0"/>
     </linearGradient>
 
@@ -41,20 +41,37 @@
     </linearGradient>
 
     <radialGradient id="logoGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#2DD4BF" stop-opacity="0.32"/>
+      <stop offset="0%" stop-color="#2DD4BF" stop-opacity="0.34"/>
       <stop offset="100%" stop-color="#2DD4BF" stop-opacity="0"/>
     </radialGradient>
 
+    <radialGradient id="vignette" cx="50%" cy="50%" r="78%">
+      <stop offset="55%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.4"/>
+    </radialGradient>
+
     <pattern id="heroGrid" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="30" stroke="#22D3EE" stroke-width="0.6" opacity="0.06"/>
+      <line x1="0" y1="0" x2="0" y2="30" stroke="#22D3EE" stroke-width="0.6" opacity="0.055"/>
     </pattern>
 
     <filter id="softBlur" x="-80%" y="-80%" width="260%" height="260%">
       <feGaussianBlur stdDeviation="14"/>
     </filter>
 
-    <filter id="textGlow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="5" result="b"/>
+    <filter id="bigBlur" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+
+    <filter id="textGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="capGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
       <feMerge>
         <feMergeNode in="b"/>
         <feMergeNode in="SourceGraphic"/>
@@ -73,9 +90,33 @@
   <rect width="1200" height="320" fill="url(#heroBg)"/>
   <rect width="1200" height="320" fill="url(#heroGrid)"/>
 
+  <!-- floating data particles -->
+  <g fill="#2DD4BF">
+    <circle cx="430" cy="60" r="2" opacity="0.5">
+      <animate attributeName="cy" values="60;40;60" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.1;0.5" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="980" cy="230" r="2.4" opacity="0.4" fill="#22D3EE">
+      <animate attributeName="cy" values="230;255;230" dur="6.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.08;0.4" dur="6.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="700" cy="70" r="1.8" opacity="0.45">
+      <animate attributeName="cy" values="70;90;70" dur="4.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;0.1;0.45" dur="4.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="1080" cy="90" r="2" opacity="0.35" fill="#7C3AED">
+      <animate attributeName="cy" values="90;110;90" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.05;0.35" dur="7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="140" cy="250" r="1.6" opacity="0.35">
+      <animate attributeName="cy" values="250;235;250" dur="5.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.08;0.35" dur="5.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
   <!-- animated scan sweep -->
   <rect x="-300" y="0" width="260" height="320" fill="url(#scanGrad)">
-    <animate attributeName="x" values="-300;1500" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="x" values="-300;1500" dur="7s" repeatCount="indefinite"/>
   </rect>
 
   <!-- HUD corner brackets -->
@@ -88,11 +129,14 @@
     <animate attributeName="opacity" values="1;0.25;1" dur="2s" repeatCount="indefinite"/>
   </circle>
 
-  <!-- soft glow behind the mark -->
-  <ellipse cx="300" cy="178" rx="260" ry="170" fill="url(#logoGlow)" filter="url(#softBlur)"/>
+  <!-- breathing glow behind the mark -->
+  <ellipse cx="300" cy="178" rx="260" ry="170" fill="url(#logoGlow)" filter="url(#bigBlur)">
+    <animate attributeName="rx" values="255;272;255" dur="4.5s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="165;178;165" dur="4.5s" repeatCount="indefinite"/>
+  </ellipse>
 
   <!-- drop shadow under capsule -->
-  <ellipse cx="300" cy="262" rx="190" ry="18" fill="#000000" opacity="0.35" filter="url(#softBlur)"/>
+  <ellipse cx="300" cy="264" rx="188" ry="17" fill="#000000" opacity="0.4" filter="url(#softBlur)"/>
 
   <!-- ===== capsule mark (rotated) ===== -->
   <g transform="translate(300,178) rotate(-18)">
@@ -106,17 +150,29 @@
       <rect x="-180" y="-65" width="360" height="130" rx="65" ry="65" fill="url(#navyCap)"/>
     </g>
 
-    <!-- glossy highlights -->
-    <ellipse cx="-95" cy="-30" rx="55" ry="14" fill="#FFFFFF" opacity="0.16"/>
-    <ellipse cx="80" cy="-32" rx="50" ry="12" fill="#FFFFFF" opacity="0.08"/>
+    <!-- seam highlight where the two halves meet -->
+    <rect x="-2" y="-64" width="4" height="128" fill="#000000" opacity="0.2"/>
 
-    <!-- circuit traces on navy half -->
-    <path d="M20,-35 L55,-35 L55,-10 L95,-10 L95,15 L140,15" stroke="#5EEAD4" stroke-width="2.5" fill="none" opacity="0.85"/>
-    <path d="M30,32 L65,32 L65,6 L115,6 L115,-20 L155,-20" stroke="#5EEAD4" stroke-width="2.5" fill="none" opacity="0.6"/>
+    <!-- glossy highlights -->
+    <ellipse cx="-95" cy="-30" rx="55" ry="14" fill="#FFFFFF" opacity="0.18"/>
+    <ellipse cx="80" cy="-32" rx="50" ry="12" fill="#FFFFFF" opacity="0.09"/>
+
+    <!-- circuit traces on navy half, animated draw-in -->
+    <g filter="url(#capGlow)">
+      <path d="M20,-35 L55,-35 L55,-10 L95,-10 L95,15 L140,15" stroke="#5EEAD4" stroke-width="2.5" fill="none" opacity="0.9"
+            stroke-dasharray="260" stroke-dashoffset="260">
+        <animate attributeName="stroke-dashoffset" values="260;0;0;260" keyTimes="0;0.3;0.85;1" dur="5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M30,32 L65,32 L65,6 L115,6 L115,-20 L155,-20" stroke="#5EEAD4" stroke-width="2.5" fill="none" opacity="0.65"
+            stroke-dasharray="260" stroke-dashoffset="260">
+        <animate attributeName="stroke-dashoffset" values="260;0;0;260" keyTimes="0;0.3;0.85;1" dur="5s" begin="0.4s" repeatCount="indefinite"/>
+      </path>
+    </g>
     <circle cx="20" cy="-35" r="3.5" fill="#7CF2E6"/>
     <circle cx="55" cy="-10" r="4" fill="#7CF2E6"/>
     <circle cx="140" cy="15" r="5" fill="#22D3EE">
       <animate attributeName="opacity" values="1;0.35;1" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="5;6.2;5" dur="1.8s" repeatCount="indefinite"/>
     </circle>
     <circle cx="30" cy="32" r="3" fill="#7CF2E6" opacity="0.7"/>
     <circle cx="155" cy="-20" r="4" fill="#22D3EE" opacity="0.8">
@@ -124,28 +180,41 @@
     </circle>
 
     <!-- pixel dissolve scatter off the teal tip -->
-    <rect x="-203" y="-33" width="16" height="16" fill="#2DD4BF" opacity="0.9" transform="rotate(8,-195,-25)"/>
-    <rect x="-222" y="3" width="13" height="13" fill="#5EEAD4" opacity="0.8" transform="rotate(-10,-215,9)"/>
-    <rect x="-156" y="33" width="11" height="11" fill="#0F766E" opacity="0.6" transform="rotate(14,-150,38)"/>
-    <rect x="-240" y="-12" width="9" height="9" fill="#22D3EE" opacity="0.55" transform="rotate(-6,-235,-7)"/>
-    <rect x="-211" y="28" width="7" height="7" fill="#134E4A" opacity="0.45" transform="rotate(20,-207,31)"/>
-    <rect x="-255" y="17" width="6" height="6" fill="#2DD4BF" opacity="0.35" transform="rotate(-15,-252,20)"/>
+    <g>
+      <rect x="-203" y="-33" width="16" height="16" fill="#2DD4BF" opacity="0.9" transform="rotate(8,-195,-25)">
+        <animate attributeName="opacity" values="0.9;0.5;0.9" dur="3.2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-222" y="3" width="13" height="13" fill="#5EEAD4" opacity="0.8" transform="rotate(-10,-215,9)">
+        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2.8s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-156" y="33" width="11" height="11" fill="#0F766E" opacity="0.6" transform="rotate(14,-150,38)"/>
+      <rect x="-240" y="-12" width="9" height="9" fill="#22D3EE" opacity="0.55" transform="rotate(-6,-235,-7)">
+        <animate attributeName="opacity" values="0.55;0.2;0.55" dur="3.6s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-211" y="28" width="7" height="7" fill="#134E4A" opacity="0.45" transform="rotate(20,-207,31)"/>
+      <rect x="-255" y="17" width="6" height="6" fill="#2DD4BF" opacity="0.35" transform="rotate(-15,-252,20)">
+        <animate attributeName="opacity" values="0.35;0.1;0.35" dur="4s" repeatCount="indefinite"/>
+      </rect>
+    </g>
   </g>
 
   <!-- ===== heartbeat + medical cross (upright, above the mark) ===== -->
   <path d="M118,92 L163,92 L178,77 L193,107 L210,36 L227,118 L244,92 L296,92"
-        stroke="#5EEAD4" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+        stroke="#5EEAD4" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"
+        stroke-dasharray="230" stroke-dashoffset="230">
+    <animate attributeName="stroke-dashoffset" values="230;0;0;230" keyTimes="0;0.35;0.9;1" dur="4.6s" repeatCount="indefinite"/>
+  </path>
 
   <g filter="url(#textGlow)">
     <rect x="328" y="36" width="14" height="40" rx="4" fill="#2DD4BF"/>
-    <rect x="313" y="51" width="44" height="14" rx="4" fill="#2DD4BF"/>
+    <rect x="313" y="51" width="44" height="14" rx="4" fill="#2DD4BF">
+      <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+    </rect>
   </g>
 
   <!-- ===== wordmark ===== -->
-  <text x="560" y="205" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="96" font-weight="800"
-        fill="#F7FBFF" textLength="232" lengthAdjust="spacingAndGlyphs">Data</text>
-  <text x="810" y="205" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="96" font-weight="800"
-        fill="url(#wordDose)" textLength="232" lengthAdjust="spacingAndGlyphs" filter="url(#textGlow)">Dose</text>
+  <text x="558" y="205" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="96" font-weight="800"
+        letter-spacing="-1" fill="#F7FBFF">Data<tspan fill="url(#wordDose)" filter="url(#textGlow)">Dose</tspan></text>
 
   <text x="562" y="246" font-family="'JetBrains Mono','Fira Code',Consolas,monospace" font-size="16" letter-spacing="3"
         fill="#8FD9EC" opacity="0.78">CLINICAL DECISION INTELLIGENCE PLATFORM</text>

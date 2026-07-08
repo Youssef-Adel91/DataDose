@@ -1,5 +1,8 @@
 import os
 import json
+import asyncio
+from urllib.parse import urlparse
+import requests
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,8 +16,8 @@ import base64
 # Load environment variables
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "neo4j+ssc://403ff197.databases.neo4j.io")
-NEO4J_USER = os.getenv("NEO4J_USER", "403ff197")
+NEO4J_URI = os.getenv("NEO4J_URI", "")
+NEO4J_USER = os.getenv("NEO4J_USER", os.getenv("NEO4J_USERNAME", "neo4j"))
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
@@ -38,10 +41,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="DataDose Neo4j API", version="1.0.0", lifespan=lifespan)
 
-# CORS configuration for Next.js frontend
+# CORS configuration — allow localhost in dev and any Vercel deployment in production
+APP_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=APP_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -146,6 +155,19 @@ SYMPTOM_SYNONYMS: dict[str, list[str]] = {
 # ==========================================
 # ENDPOINTS
 # ==========================================
+
+@app.get("/", summary="Health check")
+async def root():
+    """Root endpoint — confirms the API is live."""
+    return {"status": "ok", "message": "DataDose API is running", "docs": "/docs"}
+
+
+@app.get("/api/health", summary="Health check")
+async def health():
+    """Health endpoint for monitoring."""
+    db_ok = driver is not None
+    return {"status": "ok" if db_ok else "degraded", "database": "connected" if db_ok else "disconnected"}
+
 
 @app.post("/api/scan", response_model=List[InteractionResponse], summary="Polypharmacy DDI Scanner")
 async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
@@ -989,6 +1011,135 @@ STRICT RULES:
         extracted_entities=extracted_entities,
         source=source,
     )
+
+# ==========================================
+# HEALTH CHECK ENDPOINT
+# ==========================================
+
+async def ping_postgres():
+    db_url = os.getenv("DATABASE_URL", "")
+    if not db_url:
+        return {"status": "failed", "error": "DATABASE_URL not configured"}
+    try:
+        parsed = urlparse(db_url)
+        host = parsed.hostname
+        port = parsed.port or 5432
+        reader, writer = await asyncio.wait_for(asyncio.open_connection(host, port), timeout=5.0)
+        writer.close()
+        await writer.wait_closed()
+        return {"status": "connected"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+async def ping_neo4j():
+    global driver
+    if not driver:
+        return {"status": "failed", "error": "Neo4j driver not initialized"}
+    try:
+        await asyncio.wait_for(driver.verify_connectivity(), timeout=5.0)
+        return {"status": "connected"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+def _ping_snowflake():
+    account = os.getenv("SNOWFLAKE_ACCOUNT", "")
+    if not account:
+        return {"status": "failed", "error": "Snowflake configuration missing"}
+    try:
+        import snowflake.connector  # lazy import — avoid crashing serverless boot
+        conn = snowflake.connector.connect(
+            user=os.getenv("SNOWFLAKE_USER", ""),
+            password=os.getenv("SNOWFLAKE_PASSWORD", ""),
+            account=account,
+            warehouse=os.getenv("SNOWFLAKE_WAREHOUSE", ""),
+            database=os.getenv("SNOWFLAKE_DATABASE", ""),
+            schema=os.getenv("SNOWFLAKE_SCHEMA", ""),
+            role=os.getenv("SNOWFLAKE_ROLE", ""),
+            client_session_keep_alive=False,
+            login_timeout=5
+        )
+        conn.close()
+        return {"status": "connected"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+async def ping_snowflake():
+    return await asyncio.to_thread(_ping_snowflake)
+
+def _ping_databricks():
+    host = os.getenv("DATABRICKS_HOST", "")
+    token = os.getenv("DATABRICKS_TOKEN", "")
+    if not host or not token:
+        return {"status": "failed", "error": "Databricks configuration missing"}
+    try:
+        url = f"{host.rstrip('/')}/api/2.0/clusters/list"
+        headers = {"Authorization": f"Bearer {token}"}
+        resp = requests.get(url, headers=headers, timeout=5.0)
+        resp.raise_for_status()
+        return {"status": "connected"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+async def ping_databricks():
+    return await asyncio.to_thread(_ping_databricks)
+
+def _ping_kafka():
+    servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "")
+    if not servers:
+        return {"status": "failed", "error": "Kafka configuration missing"}
+    try:
+        from kafka import KafkaConsumer  # lazy import — avoid crashing serverless boot
+        consumer = KafkaConsumer(
+            bootstrap_servers=servers,
+            security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "SASL_SSL"),
+            sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-256"),
+            sasl_plain_username=os.getenv("KAFKA_SASL_USERNAME", ""),
+            sasl_plain_password=os.getenv("KAFKA_SASL_PASSWORD", ""),
+            api_version_auto_timeout_ms=5000,
+            request_timeout_ms=5000,
+            session_timeout_ms=5000
+        )
+        consumer.topics()
+        consumer.close()
+        return {"status": "connected"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+async def ping_kafka():
+    return await asyncio.to_thread(_ping_kafka)
+
+@app.get("/api/health", summary="Data Architecture Health Check")
+async def health_check():
+    """
+    Asynchronously pings PostgreSQL, Neo4j, Snowflake, Databricks, and Kafka
+    to verify cloud data architecture connectivity.
+    """
+    results = await asyncio.gather(
+        ping_postgres(),
+        ping_neo4j(),
+        ping_snowflake(),
+        ping_databricks(),
+        ping_kafka(),
+        return_exceptions=True
+    )
+    
+    services = ["PostgreSQL", "Neo4j", "Snowflake", "Databricks", "Kafka"]
+    health_status = {}
+    overall = "healthy"
+    
+    for service, result in zip(services, results):
+        if isinstance(result, Exception):
+            health_status[service] = {"status": "failed", "error": str(result)}
+            overall = "degraded"
+        else:
+            health_status[service] = result
+            if result.get("status") != "connected":
+                overall = "degraded"
+                
+    return {
+        "overall_status": overall,
+        "services": health_status
+    }
 
 
 if __name__ == "__main__":

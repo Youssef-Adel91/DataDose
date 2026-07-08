@@ -1,12 +1,21 @@
-# Data wrangling and notebook processing
-numpy
-pandas
-requests
+# Core Framework
+fastapi
+uvicorn
+pydantic
+python-dotenv
+python-multipart
 
-# Kafka simulation and streaming
-kafka-python
-pyspark
+# External APIs
+groq
+requests
 
 # Graph and warehouse integrations
 neo4j
 snowflake-connector-python
+
+# Kafka streaming
+kafka-python
+
+# Data wrangling
+numpy
+pandas

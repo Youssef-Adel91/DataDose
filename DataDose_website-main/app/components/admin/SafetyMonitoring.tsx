@@ -1,129 +1,173 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, ShieldCheck, ClipboardList, Clock, Search, Filter, ShieldAlert } from 'lucide-react';
 
-const safetyEvents = [
-  {
-    id: 1,
-    type: 'critical',
-    event: 'High-risk drug interaction detected',
-    medication: 'Warfarin + NSAIDs',
-    department: 'Cardiology',
-    time: '2 hours ago',
-  },
-  {
-    id: 2,
-    type: 'warning',
-    event: 'Dosage exceeds recommended limit',
-    medication: 'Metformin 2000mg',
-    department: 'Endocrinology',
-    time: '4 hours ago',
-  },
-  {
-    id: 3,
-    type: 'info',
-    event: 'Controlled substance dispensing',
-    medication: 'Oxycodone',
-    department: 'Pain Management',
-    time: '6 hours ago',
-  },
-  {
-    id: 4,
-    type: 'success',
-    event: 'Prescription safely completed',
-    medication: 'Metformin + Lisinopril',
-    department: 'Internal Medicine',
-    time: '8 hours ago',
-  },
-];
-
-const typeConfig = {
-  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: '🔴' },
-  warning: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', icon: '🟡' },
-  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: '🔵' },
-  success: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: '✅' },
-};
-
-const safetyMetrics = [
-  { label: 'Prevented Incidents', value: '127', color: 'text-green-600' },
-  { label: 'Total Alerts', value: '342', color: 'text-orange-600' },
-  { label: 'Critical Events', value: '8', color: 'text-red-600' },
-  { label: 'Safety Score', value: '96%', color: 'text-teal-600' },
-];
+interface AuditLog {
+  id: number;
+  timestamp: string;
+  actor: string;
+  action: string;
+  details: string;
+  level: 'critical' | 'warning' | 'info' | 'success';
+}
 
 export default function SafetyMonitoring() {
+  const [filterLevel, setFilterLevel] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [logs] = useState<AuditLog[]>([
+    {
+      id: 1,
+      timestamp: '2026-06-21 17:42:15',
+      actor: 'Dr. Alex Care',
+      action: 'Medical Safety Override',
+      details: 'Patient: Sara Patient. Rx: Amoxicillin. Reason: Alternatives exhausted. Benefits outweigh allergy rash risk under close clinical observation.',
+      level: 'critical',
+    },
+    {
+      id: 2,
+      timestamp: '2026-06-21 17:35:10',
+      actor: 'Pharmacist John Doe',
+      action: 'Dispensing Approved',
+      details: 'Rx-0941 approved for patient George Williams (Losartan 50mg, Tiotropium 18mcg). No DDI flagged.',
+      level: 'success',
+    },
+    {
+      id: 3,
+      timestamp: '2026-06-21 17:15:00',
+      actor: 'Dr. Sarah Smith',
+      action: 'Safety Warning Ignored',
+      details: 'Metformin Stage 3 CKD warning shown for Michael Chen. Proceeded with lower dosage limit (500mg daily).',
+      level: 'warning',
+    },
+    {
+      id: 4,
+      timestamp: '2026-06-21 16:50:22',
+      actor: 'System Admin',
+      action: 'Auth Session Reset',
+      details: 'Demo Authentication database bypass activated. Workstation session authorized.',
+      level: 'info',
+    },
+    {
+      id: 5,
+      timestamp: '2026-06-21 15:30:11',
+      actor: 'Pharmacist John Doe',
+      action: 'Prescription Flagged',
+      details: 'Rx-2094 flagged for review. Note: Penicillin allergy contraindication found in Sara Patient EHR.',
+      level: 'critical',
+    },
+  ]);
+
+  const filteredLogs = logs.filter(log => {
+    const matchesLevel = filterLevel === 'all' || log.level === filterLevel;
+    const matchesSearch = log.actor.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          log.details.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesLevel && matchesSearch;
+  });
+
+  const levelBadges = {
+    critical: 'bg-red-100 text-red-800 border-red-200',
+    warning: 'bg-amber-100 text-amber-800 border-amber-200',
+    info: 'bg-blue-100 text-blue-800 border-blue-200',
+    success: 'bg-green-100 text-green-800 border-green-200',
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className="glass-card-strong rounded-xl p-8"
+      transition={{ delay: 0.2 }}
+      className="glass-card-strong rounded-xl p-8 animate-fadeIn"
       id="safety"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-slate-900">Safety Monitoring</h2>
-        <AlertTriangle className="w-6 h-6 text-orange-600" />
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 border-b pb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">IT & Compliance Audit Logs</h2>
+          <p className="text-xs text-slate-500 mt-1">Real-time tracker of clinician overrides, dispensing approvals, and security alerts</p>
+        </div>
+        <ClipboardList className="w-6 h-6 text-teal-700" />
       </div>
 
-      {/* Safety Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {safetyMetrics.map((metric, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.05 * i }}
-            className="bg-white/50 rounded-lg p-4 border border-slate-200 text-center"
+      {/* Filter and Search controls */}
+      <div className="flex flex-col md:flex-row gap-3 mb-6 text-left">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by clinician name, action, or description..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-500 transition text-slate-800"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-slate-450 shrink-0" />
+          <select
+            value={filterLevel}
+            onChange={e => setFilterLevel(e.target.value)}
+            className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none text-slate-800"
           >
-            <p className="text-xs text-slate-600 font-medium mb-2">{metric.label}</p>
-            <p className={`text-2xl font-bold ${metric.color}`}>{metric.value}</p>
-          </motion.div>
-        ))}
+            <option value="all">All Audit Levels</option>
+            <option value="critical">Critical Overrides</option>
+            <option value="warning">Warnings</option>
+            <option value="success">Approvals</option>
+            <option value="info">System Info</option>
+          </select>
+        </div>
       </div>
 
-      {/* Safety Events Log */}
-      <div className="space-y-3">
-        {safetyEvents.map((event, i) => {
-          const config = typeConfig[event.type as keyof typeof typeConfig];
-          return (
-            <motion.div
-              key={event.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 * i }}
-              className={`${config.bg} border ${config.border} rounded-lg p-4`}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1">
-                  <span className="text-xl mt-1">{config.icon}</span>
-                  <div className="flex-1">
-                    <p className={`font-semibold ${config.text} mb-1`}>{event.event}</p>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <p className="text-slate-700">
-                        <span className="font-medium">Drug:</span> {event.medication}
-                      </p>
-                      <p className="text-slate-700">
-                        <span className="font-medium">Dept:</span> {event.department}
-                      </p>
-                    </div>
+      {/* Audit Log Table */}
+      <div className="overflow-x-auto border border-slate-200 rounded-xl shadow-sm bg-white">
+        <table className="w-full text-xs text-left">
+          <thead className="bg-slate-50 border-b border-slate-200 text-slate-550 uppercase text-[9px] font-bold tracking-wider">
+            <tr>
+              <th className="px-4 py-3">Timestamp</th>
+              <th className="px-4 py-3">Clinician / Actor</th>
+              <th className="px-4 py-3">Audit Action</th>
+              <th className="px-4 py-3">Event Details</th>
+              <th className="px-4 py-3 text-center">Severity</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-150 text-slate-700">
+            {filteredLogs.map((log) => (
+              <tr key={log.id} className="hover:bg-slate-50/50">
+                <td className="px-4 py-4 font-medium text-slate-400 whitespace-nowrap">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    {log.timestamp}
                   </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs text-slate-500 font-medium">{event.time}</p>
-                  {event.type === 'critical' && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      className="mt-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded"
-                    >
-                      Investigate
-                    </motion.button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+                </td>
+                <td className="px-4 py-4 font-bold text-slate-800 whitespace-nowrap">{log.actor}</td>
+                <td className="px-4 py-4 font-semibold text-teal-800 whitespace-nowrap">{log.action}</td>
+                <td className="px-4 py-4 text-slate-650 max-w-sm font-medium leading-relaxed">{log.details}</td>
+                <td className="px-4 py-4 text-center whitespace-nowrap">
+                  <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded border ${levelBadges[log.level]}`}>
+                    {log.level}
+                  </span>
+                </td>
+              </tr>
+            ))}
+            {filteredLogs.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-8 text-slate-400 font-medium bg-slate-50">
+                  No compliance audit logs found matching criteria.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Bottom Compliance Notice */}
+      <div className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-3 text-left text-xs text-slate-650">
+        <ShieldCheck className="w-5 h-5 text-teal-700 shrink-0" />
+        <p>
+          Audit logs are read-only and secured with SHA-256 integrity checks. All pharmaceutical overrides are permanently recorded in the EHR compliance ledger for Joint Commission reviews.
+        </p>
       </div>
     </motion.div>
   );

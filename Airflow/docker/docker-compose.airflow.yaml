@@ -1,0 +1,167 @@
+# DataDose - Airflow orchestration + producer simulator.
+# Own network, own Postgres, non-default port — won't collide with your
+# existing datadose-backend / datadose-frontend / postgres containers.
+#
+# Pipeline secrets (Kafka/Snowflake/Neo4j/Databricks) are NOT set here as
+# environment variables for the Airflow containers — they're created as
+# Airflow Connections after startup (see DEPLOYMENT_GUIDE.md). Only
+# Airflow's own bootstrap secrets and the producer's own credentials
+# (since the producer isn't Airflow-managed) live in .env.
+#
+# Run: docker compose -f docker-compose.airflow.yaml up -d
+
+name: datadose-airflow
+
+x-airflow-common: &airflow-common
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.airflow
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER}:${AIRFLOW_POSTGRES_PASSWORD}@airflow-postgres/${AIRFLOW_POSTGRES_DB}
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_POSTGRES_USER}:${AIRFLOW_POSTGRES_PASSWORD}@airflow-postgres/${AIRFLOW_POSTGRES_DB}
+    AIRFLOW__CELERY__BROKER_URL: redis://:@airflow-redis:6379/0
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    # The ONE non-Connection piece of pipeline config — a file path, not a secret string.
+    KAFKA_CA_PEM_PATH: /opt/certs/ca.pem
+    DQ_MAX_NULL_RATE: ${DQ_MAX_NULL_RATE:-0.02}
+    FRESHNESS_MINUTES: ${FRESHNESS_MINUTES:-5}
+  volumes:
+    - ../dags:/opt/airflow/dags
+    - ../src:/opt/airflow/src
+    - ../sql:/opt/airflow/sql
+    - ./airflow-logs:/opt/airflow/logs
+    - ../certs:/opt/certs:ro
+  user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+    - datadose-airflow-net
+  depends_on: &airflow-common-depends-on
+    airflow-redis:
+      condition: service_healthy
+    airflow-postgres:
+      condition: service_healthy
+
+services:
+  airflow-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${AIRFLOW_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AIRFLOW_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AIRFLOW_POSTGRES_DB}
+    volumes:
+      - airflow-postgres-db-volume:/var/lib/postgresql/data
+    networks:
+      - datadose-airflow-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${AIRFLOW_POSTGRES_USER}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    # No host port published — can't collide with your existing "postgres"
+    # container even though both use the postgres:16-alpine image.
+
+  airflow-redis:
+    image: redis:7
+    networks:
+      - datadose-airflow-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
+    restart: always
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "${AIRFLOW_WEBSERVER_HOST_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-triggerer:
+    <<: *airflow-common
+    command: triggerer
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username "${AIRFLOW_ADMIN_USER:-admin}" \
+          --password "${AIRFLOW_ADMIN_PASSWORD:-admin}" \
+          --firstname datadose --lastname admin \
+          --role Admin --email admin@datadose.local
+
+  # ---------------- Producer simulator ----------------
+  # Runs continuously (restart: always), independent of Airflow. Airflow's
+  # kafka_orchestration.verify_kafka_producer_activity task only checks on
+  # it — it doesn't start/stop this container.
+  producer-simulator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.producer
+    restart: always
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+      KAFKA_USERNAME: ${KAFKA_USERNAME}
+      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
+      KAFKA_CA_PEM_PATH: /opt/certs/ca.pem
+    volumes:
+      - ../certs:/opt/certs:ro
+      - ../data/output_FINAL.csv:/app/data/output_FINAL.csv:ro
+    networks:
+      - datadose-airflow-net
+
+networks:
+  datadose-airflow-net:
+    name: datadose-airflow-net
+
+volumes:
+  airflow-postgres-db-volume:

@@ -1,0 +1,22 @@
+[project]
+name = "datadose"
+version = "0.1.0"
+description = "DataDose backend API"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "python-dotenv",
+    "python-multipart",
+    "groq",
+    "requests",
+    "neo4j",
+    "snowflake-connector-python",
+    "kafka-python",
+    "numpy",
+    "pandas"
+]
+
+[tool.vercel]
+entrypoint = "backend.main:app"

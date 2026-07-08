@@ -1,36 +1,46 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import TrustStrip from "./components/TrustStrip";
+import KnowledgeGraph from "./components/KnowledgeGraph";
 import Features from "./components/Features";
-import DashboardPreview from "./components/DashboardPreview";
+import HowItWorks from "./components/HowItWorks";
+import Workflows from "./components/Workflows";
+import Footer from "./components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#f8fafc] font-sans text-slate-900 selection:bg-teal-200 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 relative overflow-x-hidden">
+      {/* Decorative Blur Circles */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-teal/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[20%] right-[-10%] w-[45%] h-[45%] bg-brand-teal/8 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-[20%] left-[-5%] w-[40%] h-[40%] bg-brand-teal/5 rounded-full blur-[100px] pointer-events-none z-0" />
+
       <Navbar />
-      
-      {/* Background radial gradient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[800px] bg-gradient-to-b from-teal-100/50 to-transparent rounded-full blur-[100px] pointer-events-none" />
 
-      <main className="relative z-10 w-full pt-16">
+      <main className="relative z-10 w-full">
+        {/* 1. Clinical System Entry */}
         <Hero />
-        
-        {/* Dashboard Preview centered below Hero */}
-        <div className="flex justify-center w-full px-4 sm:px-6 lg:px-8 mt-4 relative z-20 max-w-7xl mx-auto">
-          <div className="w-full">
-            <DashboardPreview />
-          </div>
+
+        {/* 2. System Capabilities */}
+        <TrustStrip />
+
+        {/* 3. Knowledge Graph Visualization */}
+        <KnowledgeGraph />
+
+        {/* 4. Core Features Grid */}
+        <Features />
+
+        {/* 5. How the System Works */}
+        <div id="system-workflow">
+          <HowItWorks />
         </div>
 
-        <div className="mt-24 mb-16 max-w-7xl mx-auto border-t border-slate-200 pt-16">
-          <h2 className="text-3xl font-extrabold text-slate-800 text-center mb-4">Features Section</h2>
-          <p className="text-center text-slate-500 max-w-lg mx-auto mb-12">Futuristic professional, secure healthcare technology platform.</p>
-          <Features />
-        </div>
+        {/* 6. Role-Based Workflows */}
+        <Workflows />
       </main>
-      
-      <footer className="text-center pb-8 pt-12 border-t border-slate-100 text-xs font-semibold text-slate-400">
-         Copyright © Data Dose | Product · Company · Legal
-      </footer>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

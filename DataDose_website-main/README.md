@@ -1,80 +1,345 @@
-# Data Dose — Smart Clinical Decision Support System (CDSS)
+<div align="center">
 
-![Data Dose Cover](https://via.placeholder.com/1200x400?text=Data+Dose+CDSS+-+AI+Powered+Care)
+<img src="../assets/headers/website-banner.svg" alt="DataDose Website Banner" width="100%" />
 
-Data Dose is a production-ready **Clinical Decision Support System (CDSS)** specifically engineered for physicians and pharmacists. It combines an ultra-modern Next.js frontend with a powerful FastAPI + Neo4j Graph Database backend. The core objective of Data Dose is to analyze complex polypharmacy prescriptions in real-time, instantly traverse thousands of medical interactions, and visually prevent adverse drug events (ADEs).
+<br/>
 
-## 🚀 Key Features
+<img src="https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 15"/>
+<img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+<img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
+<img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma"/>
+<img src="https://img.shields.io/badge/PostgreSQL-Database-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+<img src="https://img.shields.io/badge/NextAuth.js-Auth-000000?style=for-the-badge" alt="NextAuth"/>
+<img src="https://img.shields.io/badge/Vercel-Deployment-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel"/>
+<img src="https://img.shields.io/badge/Playwright-Testing-2EAD33?style=for-the-badge&logo=playwright&logoColor=white" alt="Playwright"/>
 
-*   **N-Degree Polypharmacy Scanner:** Deterministic runtime analysis evaluating high-risk drug-drug interactions (DDIs) across `O(N^2)` combinations in milliseconds.
-*   **Reactive Visual Prescription Map:** A seamlessly unified React Flow SVG canvas that dynamically draws Neo4j connections (nodes and interactive edges) based on live scanner results. Colored risk mapping explicitly identifies `Fatal` (⬛) and `Severe` (🔴) interactions.
-*   **Smart Alternative Finder:** Powerful constraint-based traversal over the Neo4j Knowledge Graph to recommend safe alternatives that treat the intended disease without triggering known patient allergies or conflicting with existing medications.
-*   **Reverse Symptom Tracer:** Traces unexplainable clinical symptoms back to the active ingredients in the patient's current treatment plan, mapped via the `CAUSES_REACTION` edges.
-*   **Role-Based Clinical Dashboards:** Beautiful, interactive, glassmorphism-enhanced dashboards tailored respectively for the Physician Point-of-Care and the Pharmacist Dispensing Workflow.
+<br/><br/>
 
-## 🛠️ Architecture & Tech Stack
+**Role-based clinical decision support frontend for physicians, pharmacists, patients, and administrators.**
 
-Data Dose utilizes a strict microservice architecture splitting the UI from the heavy logical traversal:
+[Overview](#overview) • [Key Capabilities](#key-capabilities) • [Tech Stack](#technology-stack) • [Getting Started](#getting-started) • [Routes](#available-routes) • [Deployment](#deployment) • [Contributing](#contributing)
 
-### Frontend (Next.js)
-*   **Framework:** Next.js 15.3.1 (App Router)
-*   **Styling:** Tailwind CSS v4 + Framer Motion for premium micro-animations
-*   **State Management:** Unified Lifted React State coordinating isolated scanner tools with visualizing components
-*   **Proxying:** Server-side route handlers (`/api/scan`, `/api/graph`) intercept UI payloads, correctly format and pass them to the backend, and safely bypass CORS.
+</div>
 
-### Backend (Python FastAPI Engine)
-*   **Framework:** FastAPI running on Uvicorn
-*   **Database:** Live **Neo4j Aura Knowledge Graph** (Connected securely via `neo4j+ssc://`)
-*   **Ingestion Setup:** Fully indexed graph containing over 3,656 interconnected active drug ingredients, conditions, structured symptom nodes, and severities.
-*   **Cypher Rigidity:** All queries strictly implement `toLower()` handling to enforce case-insensitivity against the strictly-typed graph nodes, securing against unrendered inputs.
+<br/>
 
-## 📦 Getting Started
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
-### 1. Backend Setup
+## Table of Contents
 
-Note: The FastAPI backend belongs in the adjacent `/backend` directory.
+<img src="../assets/headers/toc.svg" width="100%" alt="Table of Contents"/>
 
-```bash
-cd backend
-python -m venv venv
-# Activate virtual environment (Windows)
-.\venv\Scripts\activate
-# Install dependencies
-pip install -r requirements.txt
+| Section | Description |
+|---|---|
+| [Overview](#overview) | What this repository is and what it does |
+| [Key Capabilities](#key-capabilities) | Core product features |
+| [Technology Stack](#technology-stack) | Frameworks, languages, and tooling |
+| [Repository Structure](#repository-structure) | Folder layout and responsibilities |
+| [Available Routes](#available-routes) | Public and application routes |
+| [Prerequisites](#prerequisites) | Required tooling and services |
+| [Getting Started](#getting-started) | Local installation and setup |
+| [Environment Variables](#environment-variables) | Required and optional configuration |
+| [Demo Accounts](#demo-accounts) | Local test credentials |
+| [Common Commands](#common-commands) | npm scripts reference |
+| [Testing](#testing) | Playwright test execution |
+| [Deployment](#deployment) | Production deployment guidance |
+| [Security & Compliance](#security-and-compliance) | Clinical usage disclaimer |
+| [Roadmap](#roadmap) | Planned improvements |
+| [Support Files](#support-files) | Related documentation |
+| [License](#license) | Licensing status |
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Overview
+
+<img src="../assets/headers/overview.svg" width="100%" alt="Project Overview"/>
+
+**DataDose Website** is the frontend application for the DataDose clinical decision support platform. It is built with **Next.js (App Router)** and provides role-based dashboards, prescription and interaction workflows, patient views, and supporting admin and system pages. The interface presents medical decision support data in a clear, modern, and responsive way.
+
+This repository contains the web application used to demonstrate and operate the DataDose user experience:
+
+- A public landing experience for introducing the platform.
+- Authentication and role-based navigation.
+- Dashboards for physicians, pharmacists, patients, admins, and super admins.
+- Clinical workflow tools such as prescription scanning, interaction review, alternatives, symptom tracing, and graph-assisted insights.
+- API route handlers that coordinate frontend features with backend services and data sources.
+
+> The application uses mock/demo authentication flows in the frontend alongside backend integrations, so it can be run locally for development, testing, and presentation purposes.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Key Capabilities
+
+<img src="../assets/headers/features.svg" width="100%" alt="Key Capabilities"/>
+
+| Capability | Description |
+|---|---|
+| 🩺 Role-Based Dashboards | Dedicated dashboards for physician, pharmacist, patient, admin, and system users |
+| 💊 Prescription Scanning | Scan and review prescriptions for potential drug interactions |
+| 🕸️ Graph-Assisted Workflows | Visual alternatives, symptom tracing, and prescription mapping via React Flow |
+| 🛡️ Admin & Oversight Tools | Analytics, safety monitoring, user management, and system oversight pages |
+| ✨ Modern UI/UX | Responsive layouts, motion effects (Framer Motion), and reusable components |
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Technology Stack
+
+<img src="../assets/headers/techstack.svg" width="100%" alt="Technology Stack"/>
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 + custom global styles |
+| Motion & Charts | Framer Motion, Recharts, Chart.js |
+| Auth & Data Access | NextAuth, Prisma, PostgreSQL |
+| Visualizations | React Flow (graph-style prescription views) |
+| Tooling | ESLint, Playwright, Prisma CLI |
+| Deployment | Vercel |
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Repository Structure
+
+<img src="../assets/headers/folder.svg" width="100%" alt="Folder Structure"/>
+
+```text
+DataDose_website-main/
+├── app/                     # Application routes, layouts, and API handlers
+│   ├── components/          # Reusable UI components and role-specific widgets
+│   ├── dashboard/           # Dashboard routes for each role
+│   │   ├── physician/
+│   │   ├── pharmacist/
+│   │   ├── patient/
+│   │   ├── admin/
+│   │   ├── system/
+│   │   └── settings/
+│   ├── login/                # Authentication entry point
+│   ├── pricing/               # Public pricing page
+│   └── api/                    # Backend-facing route handlers
+│       ├── scan/                # Prescription scanning
+│       ├── ocr/                 # OCR processing
+│       ├── graph/               # Graph-assisted clinical workflows
+│       ├── chat/                # Conversational assistant endpoints
+│       ├── alternatives/        # Alternative medication suggestions
+│       ├── tracer/              # Symptom tracing
+│       └── admin/               # Admin operations
+├── prisma/                  # Database schema and seed data
+│   └── schema.prisma
+├── public/                  # Static assets
+├── types/                   # Shared TypeScript types
+├── QUICK_START.md
+├── FEATURES_SUMMARY.md
+└── README.md
 ```
 
-Create a `.env` file in the `backend` directory with your Neo4j Aura credentials:
-```env
-NEO4J_URI="neo4j+ssc://<your-db-id>.databases.neo4j.io"
-NEO4J_USER="<your-username>"
-NEO4J_PASSWORD="<your-password>"
-```
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
-Start the FastAPI server (Runs on port 8000):
-```bash
-python -m uvicorn main:app --reload
-```
+## Available Routes
 
-### 2. Frontend Setup (This Repository)
+<img src="../assets/headers/dashboard-pages.svg" width="100%" alt="Dashboard Pages"/>
+
+| Route | Description |
+|---|---|
+| `/` | Landing page |
+| `/login` | Login page |
+| `/pricing` | Pricing page |
+| `/dashboard` | Dashboard redirect / overview entry point |
+| `/dashboard/physician` | Physician workflow |
+| `/dashboard/pharmacist` | Pharmacist workflow |
+| `/dashboard/patient` | Patient view |
+| `/dashboard/admin` | Admin console |
+| `/dashboard/system` | Super-admin / system monitoring view |
+| `/dashboard/settings` | Account and preferences |
+
+API handlers live under `app/api/` and are organized by feature area: scan, OCR, graph, chat, prescriptions, alternatives, tracer, visualization, authentication, and admin operations.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Prerequisites
+
+<img src="../assets/headers/prerequisites.svg" width="100%" alt="Prerequisites"/>
+
+| Requirement | Notes |
+|---|---|
+| Node.js | Version 20 or newer |
+| npm | Package manager |
+| PostgreSQL | Local instance or hosted service |
+| Backend services | Optional, required depending on enabled features |
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Getting Started
+
+<img src="../assets/headers/installation.svg" width="100%" alt="Installation"/>
+
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-Start the Next.js Client (Runs on port 3000):
+### 2. Configure Environment Variables
+
+Create a `.env` file in `DataDose_website-main` and set the values required by the app (see [Environment Variables](#environment-variables)).
+
+### 3. Run Database Setup
+
+If Prisma migrations or schema generation are required in your environment:
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+If this project uses seed data in your workflow, run the Prisma seed command defined in `package.json`.
+
+### 4. Start the Development Server
+
 ```bash
 npm run dev
 ```
 
-Navigate to `http://localhost:3000/dashboard/pharmacist` or `http://localhost:3000/dashboard/physician` to begin utilizing the Clinical Decision Support System.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📊 Knowledge Graph Schema
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
-The Neo4j database actively evaluates structural paths such as:
-1. `(Drug)-[INTERACTS_WITH {severity: 'Fatal', effect: '...', mechanism: '...'}]-(Drug)`
-2. `(Drug)-[TREATS]->(Condition)`
-3. `(Drug)-[CAUSES_REACTION]->(Symptom)`
+## Environment Variables
 
-## 🛡️ License & Compliance
+<img src="../assets/headers/configuration.svg" width="100%" alt="Configuration"/>
 
-Data Dose is built for demonstration, educational, and enterprise-architecture presentation purposes. Always consult certified medical practitioners and FDA-cleared databases before applying graph suggestions in real-world clinical environments.
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/datadose"
+NEXTAUTH_SECRET="replace-with-a-secure-random-string"
+NEXTAUTH_URL="http://localhost:3000"
+BACKEND_URL="http://localhost:8000"
+GROQ_API_KEY="your-groq-key"
+OPENAI_API_KEY="your-openai-key"
+NEO4J_URI="neo4j+s://your-neo4j-host"
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string used by Prisma |
+| `NEXTAUTH_SECRET` | Yes | Secret used to sign NextAuth sessions |
+| `NEXTAUTH_URL` | Yes | Base URL for the NextAuth callback flow |
+| `BACKEND_URL` | Optional | Base URL of connected backend services |
+| `GROQ_API_KEY` | Optional | Enables Groq-powered features |
+| `OPENAI_API_KEY` | Optional | Enables OpenAI-powered features |
+| `NEO4J_URI` | Optional | Enables graph-assisted clinical workflows |
+
+> Only provide the keys required for the features you intend to use.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Demo Accounts
+
+<img src="../assets/headers/access.svg" width="100%" alt="Access"/>
+
+For local exploration only:
+
+| Role | Email | Password |
+|---|---|---|
+| Pharmacist | `pharmacist@datadose.ai` | `password123` |
+| Physician | `physician@datadose.ai` | `password123` |
+| Admin | `admin@datadose.ai` | `password123` |
+| Super Admin | `superadmin@datadose.ai` | `password123` |
+
+> These accounts are intended for demonstration and testing only. Do not reuse in production.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Common Commands
+
+<img src="../assets/headers/usage.svg" width="100%" alt="Usage"/>
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Run the production build |
+| `npm run lint` | Run ESLint checks |
+| `npm run postinstall` | Runs `prisma generate` automatically after install |
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Testing
+
+This repository includes Playwright-based browser tests and workflow scripts.
+
+```bash
+npx playwright test
+```
+
+If you only want to validate application logic or UI changes locally, use the relevant test file or feature flow script from the repository root.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Deployment
+
+<img src="../assets/headers/access.svg" width="100%" alt="Deployment"/>
+
+The app includes Vercel configuration and is suitable for deployment to Vercel or another platform that supports Next.js applications.
+
+Before deploying, confirm:
+
+- [ ] Environment variables are configured in the target environment.
+- [ ] Prisma schema and database connectivity are correct.
+- [ ] Any external backend services referenced by the app are reachable.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Security and Compliance
+
+<img src="../assets/headers/prerequisites.svg" width="100%" alt="Security"/>
+
+DataDose is a clinical decision support interface and should be treated as a **decision aid, not a replacement for licensed medical judgment**. Validate recommendations against approved clinical references, local policy, and applicable regulatory requirements before using the application in production workflows.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Roadmap
+
+<img src="../assets/headers/roadmap.svg" width="100%" alt="Roadmap"/>
+
+- [ ] Formal license declaration
+- [ ] Expanded automated test coverage across dashboard roles
+- [ ] Production-hardened authentication flow (replace demo credentials)
+- [ ] CI/CD pipeline for automated build, lint, and test on pull requests
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Support Files
+
+<img src="../assets/headers/module-details.svg" width="100%" alt="Support Files"/>
+
+For feature context and implementation details, review:
+
+- [`QUICK_START.md`](./QUICK_START.md)
+- [`FEATURES_SUMMARY.md`](./FEATURES_SUMMARY.md)
+- [`app/`](./app)
+- [`prisma/schema.prisma`](./prisma/schema.prisma)
+- `README.md` files in adjacent product folders when working across the wider DataDose workspace
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## Contributing
+
+<img src="../assets/headers/contributors.svg" width="100%" alt="Contributing"/>
+
+Contributions are welcome. Please open an issue to discuss significant changes before submitting a pull request, and ensure `npm run lint` and the Playwright test suite pass locally.
+
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
+
+## License
+
+<img src="../assets/headers/license.svg" width="100%" alt="License"/>
+
+This repository does not currently declare a formal license in this file. Add one (e.g., MIT, Apache 2.0) if the project is intended for external distribution.
+
+<br/>
+
+<div align="center">
+
+Built with ⚡ using Next.js, TypeScript, and Tailwind CSS
+
+</div>

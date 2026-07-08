@@ -44,7 +44,7 @@ async function run() {
          await page.screenshot({ path: scPath, fullPage: true });
          console.log(`  -> Screenshot saved for ${role.name}.`);
       }
-    } catch(err) {
+    } catch(err: any) {
       console.error(`  -> [ERROR] Failed to login ${role.name}:`, err.message);
     } finally {
       await page.close();
