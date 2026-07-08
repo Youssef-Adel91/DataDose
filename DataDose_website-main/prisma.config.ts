@@ -1,8 +1,10 @@
 // prisma.config.ts — Prisma v7 configuration (connection URLs live here, NOT in schema.prisma)
-import "dotenv/config";
+import * as dotenv from "dotenv";
+// Load .env.local first (Next.js convention), then fall back to .env
+dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env" });
+
 import { defineConfig } from "prisma/config";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -10,11 +12,11 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
     seed: "npx tsx prisma/seed.ts",
-    // DIRECT_URL bypasses PgBouncer for DDL migrations (Supabase requirement)
   },
 
   datasource: {
-    // This URL is used by `prisma migrate` / `prisma db push`
+    // DIRECT_URL: bypasses PgBouncer pooler — required for db push & migrations
+    // DATABASE_URL (with pgbouncer=true) is used by the app at runtime via lib/prisma.ts
     url: process.env["DIRECT_URL"]!,
   },
 });

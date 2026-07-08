@@ -228,10 +228,10 @@ export default function LoginPage() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
             {[
-              { icon: '💊', role: 'Pharmacist',  addr: 'pharmacist@datadose.ai' },
-              { icon: '🏥', role: 'Physician',   addr: 'physician@datadose.ai'  },
+              { icon: '💊', role: 'Pharmacist',  addr: 'pharm@datadose.ai'      },
+              { icon: '🏥', role: 'Physician',   addr: 'dr@datadose.ai'         },
               { icon: '👔', role: 'Admin',       addr: 'admin@datadose.ai'      },
-              { icon: '⚙️', role: 'Super Admin', addr: 'superadmin@datadose.ai' },
+              { icon: '⚙️', role: 'Super Admin', addr: 'youssef@datadose.ai'    },
               { icon: '👤', role: 'Patient',     addr: 'sara@datadose.ai'       },
             ].map(({ icon, role, addr }) => (
               <button
