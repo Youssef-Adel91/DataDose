@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScanLine, AlertTriangle, User, Search, FileText, CheckCircle2, Pill, Activity, Stethoscope } from "lucide-react";
+import { ScanLine, AlertTriangle, User, Search, FileText, CheckCircle2, Activity, Stethoscope } from "lucide-react";
 
 const prescriptions = [
   { id: "RX-2431", patient: "Sarah Johnson", drug: "Amoxicillin 500mg", status: "safe", time: "2 min ago" },
@@ -60,10 +60,7 @@ export default function DashboardPreview() {
           {/* Dashboard Header Shared */}
           <div className="bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${activeView === "physician" ? "bg-blue-600" : "bg-teal-600"}`}>
-                <Pill className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-sm font-bold text-slate-800">Data Dose</span>
+              <img src="/logo.svg" className="h-7 w-auto object-contain" alt="DataDose Logo" />
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${activeView === "physician" ? "bg-blue-50 text-blue-600" : "bg-teal-50 text-teal-600"}`}>
                 {activeView === "physician" ? "Physician Workspace" : "Pharmacist Terminal"}
               </span>

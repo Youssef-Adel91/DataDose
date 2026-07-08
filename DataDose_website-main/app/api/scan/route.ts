@@ -1,36 +1,26 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { enforceDailyQuota } from '@/lib/quota';
+import { requireAuth } from '@/lib/apiAuth';
 
-// Prisma client initialized lazily inside POST to avoid static module crashes
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 export async function POST(req: Request) {
-  // === ENVIRONMENT STARTUP LOGS ===
-  console.log("--- Initializing /api/scan Request ---");
-  const neoExists = !!process.env.NEO4J_URI;
-  const groqExists = !!process.env.GROQ_API_KEY;
-  const openaiExists = !!process.env.OPENAI_API_KEY;
-  
-  console.log(`[SERVICE TRACE] Neo4j Connection String Present: ${neoExists}`);
-  console.log(`[SERVICE TRACE] GROQ_API_KEY Present: ${groqExists}`);
-  console.log(`[SERVICE TRACE] OPENAI_API_KEY Present: ${openaiExists}`);
-  console.log("------------------------------------------");
+  // ── Authentication & Authorization ──
+  const auth = await requireAuth(['PHYSICIAN', 'PHARMACIST']);
+  if (!auth.authorized) return auth.response;
 
   try {
     const body = await req.json();
 
     // --- QUOTA MANAGEMENT LOGIC ---
-    if (body.userEmail) {
-      const quota = await enforceDailyQuota(body.userEmail, true);
-      if (quota.exceeded) {
-        return NextResponse.json(
-          { error: "QUOTA_EXCEEDED", message: "You have reached your daily limit of 5 scans. Please wait 24 hours or upgrade to Pro." },
-          { status: 403 }
-        );
-      }
+    const quota = await enforceDailyQuota(auth.email, true);
+    if (quota.exceeded) {
+      return NextResponse.json(
+        { error: "QUOTA_EXCEEDED", message: "You have reached your daily scan limit. Please try again tomorrow." },
+        { status: 403 }
+      );
     }
-    // --- END QUOTA LOGIC ---
 
     let ehrContext: any = {};
     if (body.patientEmail) {
@@ -49,15 +39,9 @@ export async function POST(req: Request) {
     const payload = {
       ...body,
       ehr: ehrContext,
-      // Force backend models/graph traversal to include patient context checks.
       analysisInstruction:
         'Cross-reference proposed medications against patient allergies and chronic conditions, not only drug-drug interactions.',
     };
-    
-    console.log("==========================================");
-    console.log("INTERCEPTED PAYLOAD EN ROUTE TO BACKEND:");
-    console.log(JSON.stringify(payload, null, 2));
-    console.log("==========================================");
 
     let backendData: any[] = [];
     try {
@@ -76,7 +60,7 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             error: 'AI_GRAPH_ENGINE_ERROR',
-            message: `AI Graph Engine error: ${backendError || `HTTP ${backendRes.status}`}`,
+            message: `Clinical analysis engine error: ${backendError || `HTTP ${backendRes.status}`}`,
           },
           { status: 502 }
         );
@@ -87,7 +71,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: 'AI_GRAPH_ENGINE_OFFLINE',
-          message: 'AI Graph Engine is offline. Please start the Python backend.',
+          message: 'Clinical analysis engine is offline. Please contact IT support.',
         },
         { status: 503 }
       );
@@ -100,7 +84,7 @@ export async function POST(req: Request) {
       drug1: item.drug1,
       drug2: item.drug2,
       severity: (item.severity || "major").toLowerCase(),
-      mechanism: item.mechanism || "Interaction identified structurally via Graph DB.",
+      mechanism: item.mechanism || "Interaction identified via clinical knowledge graph.",
       recommendation: item.effect || "Consider alternative therapies or strict monitoring.",
     }));
 
@@ -111,7 +95,6 @@ export async function POST(req: Request) {
     if (fatalSevere > 0) overallRisk = "HIGH";
     else if (major > 0) overallRisk = "MODERATE";
 
-    // Approximate total possible pairs vs safe pairs
     const totalPairs = (reqDrugs.length * (reqDrugs.length - 1)) / 2;
     const safePairs = Math.max(0, totalPairs - mappedInteractions.length);
 
@@ -125,14 +108,14 @@ export async function POST(req: Request) {
         safe: safePairs,
         overallRisk
       },
-      graph: { nodes: [], edges: [] } // PolypharmacyScan UI expects this property to not be undefined
+      graph: { nodes: [], edges: [] }
     };
 
     return NextResponse.json(resultPayload);
   } catch (error: any) {
-    console.error("[SCAN_API_FATAL_ERROR]:", error.message, error.stack);
+    console.error("[SCAN_API_ERROR]:", error.message);
     return NextResponse.json(
-      { error: error.message },
+      { error: 'An unexpected error occurred during the scan.' },
       { status: 500 }
     );
   }

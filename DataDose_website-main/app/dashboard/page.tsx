@@ -19,10 +19,11 @@ export default function DashboardPage() {
 
     // Route to role-specific dashboard
     const dashboardRoutes: Record<string, string> = {
-      pharmacist: '/dashboard/pharmacist',
-      physician: '/dashboard/physician',
-      admin: '/dashboard/admin',
-      super_admin: '/dashboard/system',
+      PATIENT: '/dashboard/patient',
+      PHARMACIST: '/dashboard/pharmacist',
+      PHYSICIAN: '/dashboard/physician',
+      ADMIN: '/dashboard/admin',
+      SUPER_ADMIN: '/dashboard/system',
     };
 
     const route = dashboardRoutes[user.role];

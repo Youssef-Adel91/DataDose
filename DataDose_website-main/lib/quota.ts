@@ -34,7 +34,7 @@ export async function enforceDailyQuota(email: string, increment: boolean) {
       return { exceeded: fallback.exceeded, source: 'fallback' as const };
     }
 
-    if (actingUser.subscriptionTier !== 'FREE') {
+    if (actingUser.accessLevel !== 'STANDARD') {
       return { exceeded: false, source: 'db' as const };
     }
 

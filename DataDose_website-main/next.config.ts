@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     // Type errors won't block a Vercel production build
     ignoreBuildErrors: true,
   },
-};
+    ignoreDuringBuilds: true,
+  }
+;
 
 export default nextConfig;

@@ -1,184 +1,118 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Server,
   Database,
-  Settings,
   Zap,
-  TrendingUp,
-  AlertTriangle,
-  Activity,
+  Settings as SettingsIcon,
 } from 'lucide-react';
-import DashboardLayout from '@/app/components/DashboardLayout';
+import DashboardShell from '@/app/components/layout/DashboardShell';
+import Settings from '@/app/components/layout/Settings';
 import SystemMonitoring from '@/app/components/superadmin/SystemMonitoring';
 import KnowledgeDatabase from '@/app/components/superadmin/KnowledgeDatabase';
 import PipelineStatus from '@/app/components/superadmin/PipelineStatus';
+import { containerVariants, itemVariants } from '@/app/components/shared/animations';
+import { useAuth } from '@/app/context/AuthContext';
 
-const sidebarItems = [
-  {
-    label: 'System Status',
-    icon: <Server className="w-5 h-5" />,
-    href: '#system',
-  },
-  {
-    label: 'Subscriptions',
-    icon: <TrendingUp className="w-5 h-5" />,
-    href: '#subscriptions',
-    badge: 3,
-  },
-  {
-    label: 'Knowledge Base',
-    icon: <Database className="w-5 h-5" />,
-    href: '#knowledge',
-  },
-  {
-    label: 'Data Pipelines',
-    icon: <Zap className="w-5 h-5" />,
-    href: '#pipelines',
-  },
-  {
-    label: 'Neo4j Graph',
-    icon: <Activity className="w-5 h-5" />,
-    href: '#graph',
-  },
+const menuItems = [
+  { id: 'knowledge', label: 'Knowledge Database', icon: <Database className="w-5 h-5" /> },
+  { id: 'pipelines', label: 'Pipeline Status', icon: <Zap className="w-5 h-5" /> },
+  { id: 'monitoring', label: 'System Status', icon: <Server className="w-5 h-5" /> },
+  { id: 'settings', label: 'Settings', icon: <SettingsIcon className="w-5 h-5" /> },
 ];
-
-const stats = [
-  {
-    label: 'Active Instances',
-    value: '24',
-    icon: <Server className="w-6 h-6" />,
-    gradient: 'from-teal-500 to-cyan-500',
-    color: 'text-teal-600',
-  },
-  {
-    label: 'Data Integrity',
-    value: '100%',
-    icon: <Database className="w-6 h-6" />,
-    gradient: 'from-green-500 to-emerald-500',
-    color: 'text-green-600',
-  },
-  {
-    label: 'System Health',
-    value: '98.5%',
-    icon: <Activity className="w-6 h-6" />,
-    gradient: 'from-purple-500 to-pink-500',
-    color: 'text-purple-600',
-  },
-  {
-    label: 'API Calls/Hour',
-    value: '12.4K',
-    icon: <Zap className="w-6 h-6" />,
-    gradient: 'from-orange-500 to-red-500',
-    color: 'text-orange-600',
-  },
-];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5 },
-  },
-};
 
 export default function SuperAdminDashboard() {
-  return (
-    <DashboardLayout sidebarItems={sidebarItems} title="Super Admin Dashboard">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-8"
-      >
-        {/* Header */}
-        <motion.div variants={itemVariants}>
-          <h1 className="text-3xl font-bold text-slate-900">Super Admin Dashboard</h1>
-          <p className="text-slate-600 mt-2">
-            DataDose Platform Infrastructure & System Control
-          </p>
-        </motion.div>
+  const { user } = useAuth();
+  const [activeFeature, setActiveFeature] = useState('dashboard');
 
-        {/* Key Metrics */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {stats.map((stat, i) => (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              whileHover={{ y: -5 }}
-              className="glass-card-strong rounded-xl p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.gradient}`}>
-                  <div className="text-white">{stat.icon}</div>
-                </div>
-                <Activity className="w-5 h-5 text-green-500" />
-              </div>
-              <h3 className="text-slate-600 text-sm font-medium">{stat.label}</h3>
-              <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
+  const renderActiveFeature = () => {
+    switch (activeFeature) {
+      case 'dashboard':
+        return (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            {/* Header */}
+            <motion.div variants={itemVariants}>
+              <h1 className="text-2xl font-bold text-slate-900">System Administration</h1>
+              <p className="text-slate-500 mt-1 text-sm">
+                Super Admin Console. Manage clinical knowledge databases, data parsing pipelines, and monitor overall health status.
+              </p>
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* Platform Management Workflow */}
-        <motion.div variants={itemVariants} className="glass-card-strong rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Platform Management Workflow</h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { step: 1, label: 'Super Admin Login', icon: '🔐' },
-              { step: 2, label: 'System Dashboard', icon: '📊' },
-              { step: 3, label: 'Subscription Mgmt', icon: '💳' },
-              { step: 4, label: 'Database Admin', icon: '🗄️' },
-              { step: 5, label: 'ML Pipelines', icon: '🔄' },
-              { step: 6, label: 'Knowledge Graph', icon: '🧠' },
-              { step: 7, label: 'System Alerts', icon: '⚠️' },
-              { step: 8, label: 'Config & Deploy', icon: '🚀' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.05 }}
-                className="relative"
-              >
-                {i < 7 && (
-                  <div className="hidden md:block absolute -right-2 top-1/2 w-4 h-px bg-gradient-teal opacity-50" />
-                )}
-
-                <div className="glass-card rounded-lg p-4 text-center">
-                  <div className="text-3xl mb-2">{item.icon}</div>
-                  <p className="font-semibold text-slate-700 text-sm">{item.label}</p>
-                  <div className="text-xs text-teal-600 font-bold mt-2">Step {item.step}</div>
+            {/* Quick Actions Grid */}
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  title: 'Knowledge Database',
+                  desc: 'Review medical active ingredients, drug-to-drug interactions, and clinical relationships.',
+                  action: () => setActiveFeature('knowledge'),
+                  icon: <Database className="w-5 h-5 text-teal-600" />,
+                  label: 'Open Database',
+                },
+                {
+                  title: 'Pipeline Status',
+                  desc: 'Monitor EHR integrations, batch data extraction jobs, and sync health logs.',
+                  action: () => setActiveFeature('pipelines'),
+                  icon: <Zap className="w-5 h-5 text-teal-600" />,
+                  label: 'Open Pipelines',
+                },
+                {
+                  title: 'System Monitoring',
+                  desc: 'Track network load, active service pods, container health, and IT audit logs.',
+                  action: () => setActiveFeature('monitoring'),
+                  icon: <Server className="w-5 h-5 text-teal-600" />,
+                  label: 'Open Monitoring',
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between h-40"
+                >
+                  <div>
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="p-1.5 bg-teal-50 rounded-lg">{item.icon}</div>
+                      <h3 className="font-bold text-slate-900 text-sm">{item.title}</h3>
+                    </div>
+                    <p className="text-xs text-slate-500 line-clamp-2">{item.desc}</p>
+                  </div>
+                  <button
+                    onClick={item.action}
+                    className="mt-3 w-full bg-teal-700 hover:bg-teal-800 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition cursor-pointer text-center"
+                  >
+                    {item.label}
+                  </button>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        );
+      case 'knowledge':
+        return <KnowledgeDatabase />;
+      case 'pipelines':
+        return <PipelineStatus />;
+      case 'monitoring':
+        return <SystemMonitoring />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return null;
+    }
+  };
 
-        {/* Main Components */}
-        <motion.div variants={itemVariants} className="space-y-6">
-          <SystemMonitoring />
-          <PipelineStatus />
-          <KnowledgeDatabase />
-        </motion.div>
-      </motion.div>
-    </DashboardLayout>
+  return (
+    <DashboardShell
+      menuItems={menuItems}
+      activeFeature={activeFeature}
+      setActiveFeature={setActiveFeature}
+      title="System Administration"
+    >
+      {renderActiveFeature()}
+    </DashboardShell>
   );
 }

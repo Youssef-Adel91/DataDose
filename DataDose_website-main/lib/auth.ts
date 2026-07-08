@@ -1,95 +1,120 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import prisma from "@/lib/prisma";
+import prisma from "./prisma";
 
-/**
- * Shared NextAuth configuration.
- * Exported from lib/auth.ts so it can be consumed by:
- *  - app/api/auth/[...nextauth]/route.ts  (handler)
- *  - any server-side code that calls getServerSession(authOptions)
- */
+// Development/Demo Mock Users
+const MOCK_USERS = [
+  {
+    id: "demo-physician-id",
+    name: "Dr. Alex Care",
+    email: "physician@datadose.test",
+    password: "physician123",
+    role: "PHYSICIAN",
+    status: "ACTIVE"
+  },
+  {
+    id: "demo-pharmacist-id",
+    name: "Pharm. Sarah Dose",
+    email: "pharmacist@datadose.test",
+    password: "pharmacist123",
+    role: "PHARMACIST",
+    status: "ACTIVE"
+  },
+  {
+    id: "demo-patient-id",
+    name: "John Patient",
+    email: "patient@datadose.test",
+    password: "patient123",
+    role: "PATIENT",
+    status: "ACTIVE"
+  },
+  {
+    id: "demo-admin-id",
+    name: "Hospital Administrator",
+    email: "admin@datadose.test",
+    password: "admin123",
+    role: "ADMIN",
+    status: "ACTIVE"
+  },
+  {
+    id: "demo-system-id",
+    name: "System Super Admin",
+    email: "system@datadose.test",
+    password: "system123",
+    role: "SUPER_ADMIN",
+    status: "ACTIVE"
+  }
+];
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "doctor@datadose.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("A. Authorize function hit with email:", credentials?.email);
-
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing credentials");
+          throw new Error("Please enter your email and password.");
         }
 
-        console.log("B. Querying Prisma for user...");
+        const emailTrimmed = credentials.email.trim().toLowerCase();
+        const isDemoMode = process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
-        // Typed as `any` because the Prisma generated client is stale and
-        // doesn't include `status` yet — run `npx prisma generate` to fix.
-        let user: any;
+        if (isDemoMode) {
+          const mockUser = MOCK_USERS.find(
+            (u) => u.email.toLowerCase() === emailTrimmed
+          );
+
+          if (mockUser) {
+            if (credentials.password === mockUser.password) {
+              return {
+                id: mockUser.id,
+                email: mockUser.email,
+                name: mockUser.name,
+                role: mockUser.role,
+                status: mockUser.status,
+              };
+            }
+            throw new Error("Invalid email or password.");
+          }
+          throw new Error("Invalid email or password (Demo Mode).");
+        }
+
+        // Real database authentication
+        let user: any = null;
+
         try {
           user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+            where: { email: emailTrimmed }
           });
         } catch (dbError) {
-          console.error("B_ERR. Prisma DB query FAILED:", dbError);
-          // Deterministic local fallback for E2E/dev when DB is unavailable.
-          if (
-            credentials.email === "dr@datadose.ai" &&
-            credentials.password === "password123"
-          ) {
-            return {
-              id: "local-physician",
-              email: "dr@datadose.ai",
-              name: "Dr. Youssef",
-              role: "PHYSICIAN",
-              status: "APPROVED",
-            };
-          }
-          throw new Error("Database connection error. Please check server logs.");
+          console.error("Database connection error:", dbError);
+          throw new Error("Unable to connect to the hospital database. Please contact IT support.");
         }
-
-        console.log("C. User found in DB:", user ? "YES" : "NO");
 
         if (!user) {
-          if (
-            credentials.email === "dr@datadose.ai" &&
-            credentials.password === "password123"
-          ) {
-            return {
-              id: "local-physician",
-              email: "dr@datadose.ai",
-              name: "Dr. Youssef",
-              role: "PHYSICIAN",
-              status: "APPROVED",
-            };
-          }
-          throw new Error("Invalid email or password");
+          throw new Error("Invalid email or password.");
         }
 
-        // ── Verify password hash ────────────────────────────────────────────
+        // Verify password with bcrypt
         const isMatch = await bcrypt.compare(credentials.password, user.password);
-        console.log("D. Password match:", isMatch ? "YES" : "NO");
-
         if (!isMatch) {
-          throw new Error("Invalid email or password");
+          throw new Error("Invalid email or password.");
         }
 
-        console.log("E. User Status:", user?.status);
-
-        // ── Approval gate — block PENDING users ─────────────────────────────
+        // Approval gate — new staff must be approved by admin
         if (user.status === "PENDING") {
           throw new Error(
-            "Your institution is pending Admin verification. You will be notified once approved."
+            "Your account is pending administrator approval. You will be notified once approved."
           );
         }
 
-        // ── REJECTED users are permanently blocked ──────────────────────────
         if (user.status === "REJECTED") {
           throw new Error(
-            "Your verification request has been rejected. Contact support for assistance."
+            "Your account has been deactivated. Please contact the hospital administration."
           );
         }
 
