@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/headers/website-banner.svg" alt="DataDose Website Banner" width="100%" />
+<img src="../assets/headers/website-banner.svg" alt="DataDose Website Banner" width="100%" />
 
 <br/>
 
@@ -23,11 +23,11 @@
 
 <br/>
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Table of Contents
 
-<img src="./assets/headers/toc.svg" width="100%" alt="Table of Contents"/>
+<img src="../assets/headers/toc.svg" width="100%" alt="Table of Contents"/>
 
 | Section | Description |
 |---|---|
@@ -48,11 +48,11 @@
 | [Support Files](#support-files) | Related documentation |
 | [License](#license) | Licensing status |
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Overview
 
-<img src="./assets/headers/overview.svg" width="100%" alt="Project Overview"/>
+<img src="../assets/headers/overview.svg" width="100%" alt="Project Overview"/>
 
 **DataDose Website** is the frontend application for the DataDose clinical decision support platform. It is built with **Next.js (App Router)** and provides role-based dashboards, prescription and interaction workflows, patient views, and supporting admin and system pages. The interface presents medical decision support data in a clear, modern, and responsive way.
 
@@ -66,11 +66,11 @@ This repository contains the web application used to demonstrate and operate the
 
 > The application uses mock/demo authentication flows in the frontend alongside backend integrations, so it can be run locally for development, testing, and presentation purposes.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Key Capabilities
 
-<img src="./assets/headers/features.svg" width="100%" alt="Key Capabilities"/>
+<img src="../assets/headers/features.svg" width="100%" alt="Key Capabilities"/>
 
 | Capability | Description |
 |---|---|
@@ -80,11 +80,11 @@ This repository contains the web application used to demonstrate and operate the
 | 🛡️ Admin & Oversight Tools | Analytics, safety monitoring, user management, and system oversight pages |
 | ✨ Modern UI/UX | Responsive layouts, motion effects (Framer Motion), and reusable components |
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Technology Stack
 
-<img src="./assets/headers/techstack.svg" width="100%" alt="Technology Stack"/>
+<img src="../assets/headers/techstack.svg" width="100%" alt="Technology Stack"/>
 
 | Layer | Technology |
 |---|---|
@@ -97,11 +97,11 @@ This repository contains the web application used to demonstrate and operate the
 | Tooling | ESLint, Playwright, Prisma CLI |
 | Deployment | Vercel |
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Repository Structure
 
-<img src="./assets/headers/folder.svg" width="100%" alt="Folder Structure"/>
+<img src="../assets/headers/folder.svg" width="100%" alt="Folder Structure"/>
 
 ```text
 DataDose_website-main/
@@ -133,11 +133,11 @@ DataDose_website-main/
 └── README.md
 ```
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Available Routes
 
-<img src="./assets/headers/dashboard-pages.svg" width="100%" alt="Dashboard Pages"/>
+<img src="../assets/headers/dashboard-pages.svg" width="100%" alt="Dashboard Pages"/>
 
 | Route | Description |
 |---|---|
@@ -154,11 +154,11 @@ DataDose_website-main/
 
 API handlers live under `app/api/` and are organized by feature area: scan, OCR, graph, chat, prescriptions, alternatives, tracer, visualization, authentication, and admin operations.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Prerequisites
 
-<img src="./assets/headers/prerequisites.svg" width="100%" alt="Prerequisites"/>
+<img src="../assets/headers/prerequisites.svg" width="100%" alt="Prerequisites"/>
 
 | Requirement | Notes |
 |---|---|
@@ -167,11 +167,11 @@ API handlers live under `app/api/` and are organized by feature area: scan, OCR,
 | PostgreSQL | Local instance or hosted service |
 | Backend services | Optional, required depending on enabled features |
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Getting Started
 
-<img src="./assets/headers/installation.svg" width="100%" alt="Installation"/>
+<img src="../assets/headers/installation.svg" width="100%" alt="Installation"/>
 
 ### 1. Install Dependencies
 
@@ -202,11 +202,11 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Environment Variables
 
-<img src="./assets/headers/configuration.svg" width="100%" alt="Configuration"/>
+<img src="../assets/headers/configuration.svg" width="100%" alt="Configuration"/>
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/datadose"
@@ -230,11 +230,11 @@ NEO4J_URI="neo4j+s://your-neo4j-host"
 
 > Only provide the keys required for the features you intend to use.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Demo Accounts
 
-<img src="./assets/headers/access.svg" width="100%" alt="Access"/>
+<img src="../assets/headers/access.svg" width="100%" alt="Access"/>
 
 For local exploration only:
 
@@ -247,11 +247,11 @@ For local exploration only:
 
 > These accounts are intended for demonstration and testing only. Do not reuse in production.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Common Commands
 
-<img src="./assets/headers/usage.svg" width="100%" alt="Usage"/>
+<img src="../assets/headers/usage.svg" width="100%" alt="Usage"/>
 
 | Command | Description |
 |---|---|
@@ -261,7 +261,7 @@ For local exploration only:
 | `npm run lint` | Run ESLint checks |
 | `npm run postinstall` | Runs `prisma generate` automatically after install |
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Testing
 
@@ -273,11 +273,11 @@ npx playwright test
 
 If you only want to validate application logic or UI changes locally, use the relevant test file or feature flow script from the repository root.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Deployment
 
-<img src="./assets/headers/access.svg" width="100%" alt="Deployment"/>
+<img src="../assets/headers/access.svg" width="100%" alt="Deployment"/>
 
 The app includes Vercel configuration and is suitable for deployment to Vercel or another platform that supports Next.js applications.
 
@@ -287,30 +287,30 @@ Before deploying, confirm:
 - [ ] Prisma schema and database connectivity are correct.
 - [ ] Any external backend services referenced by the app are reachable.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Security and Compliance
 
-<img src="./assets/headers/prerequisites.svg" width="100%" alt="Security"/>
+<img src="../assets/headers/prerequisites.svg" width="100%" alt="Security"/>
 
 DataDose is a clinical decision support interface and should be treated as a **decision aid, not a replacement for licensed medical judgment**. Validate recommendations against approved clinical references, local policy, and applicable regulatory requirements before using the application in production workflows.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Roadmap
 
-<img src="./assets/headers/roadmap.svg" width="100%" alt="Roadmap"/>
+<img src="../assets/headers/roadmap.svg" width="100%" alt="Roadmap"/>
 
 - [ ] Formal license declaration
 - [ ] Expanded automated test coverage across dashboard roles
 - [ ] Production-hardened authentication flow (replace demo credentials)
 - [ ] CI/CD pipeline for automated build, lint, and test on pull requests
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Support Files
 
-<img src="./assets/headers/module-details.svg" width="100%" alt="Support Files"/>
+<img src="../assets/headers/module-details.svg" width="100%" alt="Support Files"/>
 
 For feature context and implementation details, review:
 
@@ -320,19 +320,19 @@ For feature context and implementation details, review:
 - [`prisma/schema.prisma`](./prisma/schema.prisma)
 - `README.md` files in adjacent product folders when working across the wider DataDose workspace
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## Contributing
 
-<img src="./assets/headers/contributors.svg" width="100%" alt="Contributing"/>
+<img src="../assets/headers/contributors.svg" width="100%" alt="Contributing"/>
 
 Contributions are welcome. Please open an issue to discuss significant changes before submitting a pull request, and ensure `npm run lint` and the Playwright test suite pass locally.
 
-<img src="./assets/headers/divider.svg" width="100%" alt="divider"/>
+<img src="../assets/headers/divider.svg" width="100%" alt="divider"/>
 
 ## License
 
-<img src="./assets/headers/license.svg" width="100%" alt="License"/>
+<img src="../assets/headers/license.svg" width="100%" alt="License"/>
 
 This repository does not currently declare a formal license in this file. Add one (e.g., MIT, Apache 2.0) if the project is intended for external distribution.
 
