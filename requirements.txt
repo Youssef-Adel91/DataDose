@@ -1,21 +1,16 @@
-# Core Framework
+# ─── Core Framework ───────────────────────────────────────────────────────────
 fastapi
 uvicorn
 pydantic
 python-dotenv
 python-multipart
 
-# External APIs
+# ─── External APIs ────────────────────────────────────────────────────────────
 groq
 requests
 
-# Graph and warehouse integrations
+# ─── Graph Database ───────────────────────────────────────────────────────────
 neo4j
-snowflake-connector-python
 
-# Kafka streaming
-kafka-python
-
-# Data wrangling
-numpy
-pandas
+# ─── Removed heavy unused packages (see backend/requirements.txt for details) ─
+# snowflake-connector-python, kafka-python, numpy, pandas

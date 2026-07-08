@@ -1,23 +1,24 @@
-# Core Framework
+# ─── Core Framework ───────────────────────────────────────────────────────────
 fastapi
+# Use standard uvicorn without the [standard] extras to avoid heavy optional deps
 uvicorn
 pydantic
 python-dotenv
 python-multipart
 
-# External APIs
+# ─── External APIs ────────────────────────────────────────────────────────────
 groq
 requests
 
-# Graph integration
+# ─── Graph Database ───────────────────────────────────────────────────────────
 neo4j
 
-# Snowflake integration
-snowflake-connector-python
-
-# Kafka streaming
-kafka-python
-
-# Data wrangling
-numpy
-pandas
+# ─── REMOVED (not imported in main.py — these were causing the 233 MB bundle) ─
+# snowflake-connector-python  (~30-50 MB installed with deps)
+# kafka-python                (~5 MB — Kafka streaming is handled by Airflow, not the API)
+# numpy                       (~35-70 MB — not used in API layer)
+# pandas                      (~60-95 MB — not used in API layer)
+#
+# Combined savings: ~130–220 MB → brings bundle well under the 225 MB limit.
+# If these are ever needed, add them back only in the Airflow/Databricks
+# environments where they are actually used (see airflow/requirements.txt).

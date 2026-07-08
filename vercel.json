@@ -3,7 +3,56 @@
   "builds": [
     {
       "src": "backend/main.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": [
+          "DataDose_website-main/**",
+          "DataDose_website-main/node_modules/**",
+          "DataDose_website-main/.next/**",
+          "DataDose_website-main/public/**",
+          "DataDose_website-main/app/**",
+          "DataDose_website-main/components/**",
+          "DataDose_website-main/lib/**",
+          "DataDose_website-main/prisma/**",
+          "DataDose_website-main/.env*",
+          "DataDose_website-main/playwright-report/**",
+          "DataDose_website-main/test-results/**",
+          "Airflow/**",
+          "Kafka/**",
+          "SnowFlake/**",
+          "Databricks_Pyspark/**",
+          "Neo4j/**",
+          "Data/**",
+          "Documents/**",
+          "Power Bi/**",
+          "Pipline Diagram/**",
+          "Cleaning Code/**",
+          "assets/**",
+          "neo4j_data/**",
+          "backend/venv/**",
+          "backend/__pycache__/**",
+          "backend/get-pip.py",
+          "backend/start_backend.bat",
+          "**/__pycache__/**",
+          "**/*.pyc",
+          "**/*.pyo",
+          "**/.pytest_cache/**",
+          "**/*.egg-info/**",
+          "**/*.dist-info/RECORD",
+          "**/*.dist-info/WHEEL",
+          "**/*.dist-info/top_level.txt",
+          "**/*.dist-info/METADATA",
+          "**/tests/**",
+          "**/test/**",
+          "**/*.md",
+          "**/*.pdf",
+          "**/*.txt",
+          "**/.git/**",
+          "docker-compose.yml",
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      }
     }
   ],
   "routes": [

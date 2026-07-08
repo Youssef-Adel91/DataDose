@@ -12,10 +12,8 @@ dependencies = [
     "groq",
     "requests",
     "neo4j",
-    "snowflake-connector-python",
-    "kafka-python",
-    "numpy",
-    "pandas"
+    # snowflake-connector-python, kafka-python, numpy, pandas removed —
+    # not used in the API layer; were causing Vercel 225 MB bundle limit breach.
 ]
 
 [tool.vercel]
