@@ -13,6 +13,7 @@ import {
   Bell,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useFdaAlerts } from '@/app/hooks/useFdaAlerts';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,6 +35,11 @@ export default function DashboardLayout({
   const { user, logout, isLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  // Mount the Kafka SSE FDA Alerts stream
+  const { alerts, connected, unreadCount, markAllRead } = useFdaAlerts({
+    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
+  });
 
   // Redirect to login if not authenticated
   React.useEffect(() => {
@@ -92,16 +98,55 @@ export default function DashboardLayout({
             {/* Notifications */}
             <div className="relative">
               <button
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                onClick={() => {
+                  setNotificationsOpen(!notificationsOpen);
+                  if (!notificationsOpen && unreadCount > 0) markAllRead();
+                }}
                 className="p-2 hover:bg-slate-100 rounded-lg transition relative"
               >
                 <Bell className="w-4.5 h-4.5 text-slate-500" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 flex items-center justify-center w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full border-2 border-white">
+                    {unreadCount}
+                  </span>
+                )}
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg p-3 shadow-lg z-50">
-                  <h3 className="font-semibold text-slate-900 text-sm mb-2">Notifications</h3>
-                  <p className="text-xs text-slate-400 py-4 text-center">No new notifications</p>
+                <div className="absolute right-0 mt-1 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                  <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50">
+                    <h3 className="font-semibold text-slate-900 text-sm flex items-center gap-1.5">
+                      FDA Safety Alerts
+                      {connected && <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse" title="Live SSE Connected" />}
+                    </h3>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-[10px] text-teal-600 font-medium hover:text-teal-700">Mark all read</button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {alerts.length === 0 ? (
+                      <p className="text-xs text-slate-400 py-6 text-center">No active alerts</p>
+                    ) : (
+                      <ul className="divide-y divide-slate-100">
+                        {alerts.map((alert) => (
+                          <li key={alert.id} className={`p-3 hover:bg-slate-50 transition ${!alert.read ? 'bg-blue-50/30' : ''}`}>
+                            <div className="flex items-start gap-2.5">
+                              <span className="text-sm mt-0.5">
+                                {alert.severity === 'critical' ? '🚨' : alert.severity === 'major' ? '⚠️' : '💊'}
+                              </span>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-900">{alert.drug}</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-2 leading-tight">{alert.warning}</p>
+                                <p className="text-[8px] text-slate-400 mt-1">
+                                  {new Date(alert.receivedAt).toLocaleTimeString()}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
