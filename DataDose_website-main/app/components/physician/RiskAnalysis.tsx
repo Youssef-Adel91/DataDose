@@ -1,11 +1,14 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, TrendingUp, CheckCircle, ShieldAlert, User, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, CheckCircle, ShieldAlert, User, CheckCircle2, Brain, Loader2 } from 'lucide-react';
 
 interface RiskAnalysisProps {
   dynamicRisks?: any[] | null;
   selectedPatient?: any;
+  /** Score (0–10) returned by the Databricks ML model. Pass `null` while loading. */
+  databricksScore?: number | null;
 }
 
 interface RiskItem {
@@ -27,7 +30,68 @@ const severityConfig = {
   high: { bg: 'bg-red-50/50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-800' },
 };
 
-export default function RiskAnalysis({ dynamicRisks, selectedPatient }: RiskAnalysisProps) {
+/** Skeleton card — pulsing placeholder shown while Databricks ML job is running */
+function DatabricksSkeletonCard() {
+  return (
+    <div className="bg-white border-2 border-dashed border-purple-200 rounded-lg p-4 shadow-sm text-left animate-pulse relative overflow-hidden">
+      {/* shimmer overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-50/60 to-transparent -translate-x-full animate-[shimmer_1.6s_infinite]" />
+      <div className="flex items-center gap-2 mb-2">
+        <Brain className="w-3.5 h-3.5 text-purple-400" />
+        <p className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Databricks ML Risk Prediction</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <Loader2 className="w-4 h-4 text-purple-300 animate-spin" />
+        <div className="h-5 bg-purple-100 rounded w-24" />
+      </div>
+      <p className="text-[9px] text-purple-300 mt-2 leading-relaxed">
+        Predictive ML model processing patient history via Databricks…
+      </p>
+    </div>
+  );
+}
+
+/** Animated score card shown once the Databricks result arrives */
+function DatabricksScoreCard({ score }: { score: number }) {
+  const [displayed, setDisplayed] = useState(0);
+
+  // Count-up animation from 0 to score over 1.2 s
+  useEffect(() => {
+    let frame: number;
+    const start = performance.now();
+    const duration = 1200;
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      setDisplayed(parseFloat((t * score).toFixed(1)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [score]);
+
+  const color =
+    score >= 7.0 ? 'text-red-600' : score >= 4.0 ? 'text-amber-600' : 'text-purple-700';
+  const borderColor =
+    score >= 7.0 ? 'border-red-200 bg-red-50/40' : score >= 4.0 ? 'border-amber-200 bg-amber-50/40' : 'border-purple-200 bg-purple-50/40';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      className={`border-2 rounded-lg p-4 shadow-sm text-left ${borderColor}`}
+    >
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <Brain className="w-3.5 h-3.5 text-purple-500" />
+        <p className="text-[10px] text-purple-500 font-bold uppercase tracking-wider">Databricks ML Risk Prediction</p>
+      </div>
+      <p className={`text-lg font-black ${color} mt-0.5`}>{displayed.toFixed(1)}/10</p>
+      <p className="text-[9px] text-slate-400 mt-1">Machine-learning estimate · powered by Databricks</p>
+    </motion.div>
+  );
+}
+
+export default function RiskAnalysis({ dynamicRisks, selectedPatient, databricksScore = null }: RiskAnalysisProps) {
   // Generate dynamic clinical risks if we have a selected patient
   let calculatedRisks: RiskItem[] = [];
   let score = 1.5;
@@ -123,6 +187,24 @@ export default function RiskAnalysis({ dynamicRisks, selectedPatient }: RiskAnal
   const severityLevel = finalScore >= 7.0 ? 'CRITICAL' : (finalScore >= 4.0 ? 'MODERATE' : 'SAFE');
   const hasHighRisk = severityLevel === 'CRITICAL' || displayRisks.some(r => r.severity === 'high');
 
+  const ruleBasedCards = [
+    { 
+      label: 'Clinical Risk Score', 
+      value: `${finalScore}/10`, 
+      color: finalScore >= 7.0 ? 'text-red-600' : (finalScore >= 4.0 ? 'text-amber-600' : 'text-green-700') 
+    },
+    { 
+      label: 'System Assessment', 
+      value: severityLevel, 
+      color: severityLevel === 'CRITICAL' ? 'text-red-600' : (severityLevel === 'MODERATE' ? 'text-amber-600' : 'text-green-700') 
+    },
+    { 
+      label: 'Required Clearance Action', 
+      value: hasHighRisk ? 'Override Required' : 'Physician Sign-off', 
+      color: 'text-indigo-600' 
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -150,30 +232,21 @@ export default function RiskAnalysis({ dynamicRisks, selectedPatient }: RiskAnal
         )}
       </div>
 
-      {/* Grid Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {[
-          { 
-            label: 'Clinical Risk Score', 
-            value: `${finalScore}/10`, 
-            color: finalScore >= 7.0 ? 'text-red-600' : (finalScore >= 4.0 ? 'text-amber-600' : 'text-green-700') 
-          },
-          { 
-            label: 'System Assessment', 
-            value: severityLevel, 
-            color: severityLevel === 'CRITICAL' ? 'text-red-600' : (severityLevel === 'MODERATE' ? 'text-amber-600' : 'text-green-700') 
-          },
-          { 
-            label: 'Required Clearance Action', 
-            value: hasHighRisk ? 'Override Required' : 'Physician Sign-off', 
-            color: 'text-indigo-600' 
-          },
-        ].map((item, i) => (
+      {/* Grid Indicators — 3 rule-based cards + 1 Databricks ML card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        {ruleBasedCards.map((item, i) => (
           <div key={i} className="bg-white border rounded-lg p-4 shadow-sm text-left">
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
             <p className={`text-lg font-black ${item.color} mt-1.5`}>{item.value}</p>
           </div>
         ))}
+
+        {/* Databricks ML card — skeleton while loading, animated score when ready */}
+        {databricksScore === null ? (
+          <DatabricksSkeletonCard />
+        ) : (
+          <DatabricksScoreCard score={databricksScore} />
+        )}
       </div>
 
       {/* Main content grid */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BarChart3, Activity, ShieldCheck, Stethoscope } from "lucide-react";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend,
@@ -26,14 +26,8 @@ function Counter({ value, formatContext = "" }: { value: number; formatContext?:
   return <motion.span>{rounded}</motion.span>;
 }
 
-const stats = [
-  { icon: BarChart3, label: "Prescriptions Analyzed", value: 124847, color: "text-teal-600", bg: "bg-teal-50" },
-  { icon: ShieldCheck, label: "Errors Prevented", value: 9284, color: "text-emerald-600", bg: "bg-emerald-50" },
-  { icon: Activity, label: "Overall Safety Score", value: 985, isPercentage: true, color: "text-blue-600", bg: "bg-blue-50" },
-  { icon: Stethoscope, label: "Active Clinicians", value: 3621, color: "text-indigo-600", bg: "bg-indigo-50" },
-];
-
-const barData = {
+// ── Default mock datasets (used as fallback when Snowflake API unavailable) ──
+const MOCK_BAR_DATA = {
   labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   datasets: [
     { label: "Prescriptions Scanned", data: [1200, 1900, 1500, 2200, 1800, 800, 500], backgroundColor: "#14b8a6", borderRadius: 4 },
@@ -41,7 +35,7 @@ const barData = {
   ],
 };
 
-const doughnutData = {
+const MOCK_DOUGHNUT_DATA = {
   labels: ["Safe (Green)", "Warning (Yellow)", "Danger (Red)", "Critical (Purple)"],
   datasets: [{
     data: [82, 12, 4, 2],
@@ -51,7 +45,47 @@ const doughnutData = {
   }],
 };
 
+const MOCK_STATS = [
+  { icon: BarChart3, label: "Prescriptions Analyzed", value: 124847, color: "text-teal-600", bg: "bg-teal-50" },
+  { icon: ShieldCheck, label: "Errors Prevented", value: 9284, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { icon: Activity, label: "Overall Safety Score", value: 985, isPercentage: true, color: "text-blue-600", bg: "bg-blue-50" },
+  { icon: Stethoscope, label: "Active Clinicians", value: 3621, color: "text-indigo-600", bg: "bg-indigo-50" },
+];
+
 export default function Analytics() {
+  const [barData, setBarData] = useState(MOCK_BAR_DATA);
+  const [doughnutData, setDoughnutData] = useState(MOCK_DOUGHNUT_DATA);
+  const [stats, setStats] = useState(MOCK_STATS);
+  const [dataSource, setDataSource] = useState<'live' | 'mock'>('mock');
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    // Fetch bar chart (weekly prescription trends)
+    fetch('/api/snowflake/weekly-trends', { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (data?.barData) setBarData(data.barData);
+        if (data?.doughnutData) setDoughnutData(data.doughnutData);
+        if (data?.stats) {
+          // Merge icon/color config from MOCK_STATS with live values
+          setStats((prev) =>
+            prev.map((s, i) => ({ ...s, value: data.stats[i]?.value ?? s.value }))
+          );
+        }
+        setDataSource('live');
+      })
+      .catch(() => {
+        // Snowflake API not yet connected — silently keep mock data
+        setDataSource('mock');
+      });
+
+    return () => controller.abort();
+  }, []);
+
   return (
     <section id="analytics" className="py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -63,6 +97,16 @@ export default function Analytics() {
           <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
             DataDose actively monitors patient safety across thousands of clinical touchpoints continuously. 
           </p>
+          {/* Data source badge */}
+          <span
+            className={`inline-block mt-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+              dataSource === 'live'
+                ? 'bg-teal-50 text-teal-700 border-teal-200'
+                : 'bg-slate-50 text-slate-400 border-slate-200'
+            }`}
+          >
+            {dataSource === 'live' ? '● Live data · Snowflake' : '○ Demo data'}
+          </span>
         </div>
 
         {/* Counter Stats */}
@@ -110,7 +154,9 @@ export default function Analytics() {
             <h3 className="text-sm font-bold text-slate-700 mb-4">Risk Stratification Breakdown</h3>
             <div className="h-72 flex items-center justify-center relative">
               <div className="absolute inset-0 flex items-center justify-center flex-col text-center mt-6">
-                <span className="text-3xl font-bold text-emerald-500">82%</span>
+                <span className="text-3xl font-bold text-emerald-500">
+                  {doughnutData.datasets[0].data[0]}%
+                </span>
                 <span className="text-xs text-slate-400 font-semibold uppercase">Perfectly Safe</span>
               </div>
               <Doughnut data={doughnutData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }} />
