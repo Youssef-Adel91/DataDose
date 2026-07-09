@@ -50,7 +50,19 @@
           "**/.git/**",
           "docker-compose.yml",
           "pyproject.toml",
-          "requirements.txt"
+          "requirements.txt",
+          "**/*.pptx",
+          "**/*.xlsx",
+          "**/*.mp4",
+          "**/*.mkv",
+          "**/*.avi",
+          "**/*.mov",
+          "**/*.crdownload",
+          "**/*.zip",
+          "**/*.tar",
+          "**/*.gz",
+          "**/*.whl",
+          "**/*.ipynb"
         ]
       }
     }
