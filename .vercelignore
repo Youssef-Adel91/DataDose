@@ -1,23 +1,21 @@
 # ============================================================
-# .vercelignore  —  DataDose Python backend deployment
+# .vercelignore  —  DataDose monorepo (global, both projects)
 # ============================================================
-# This file works like .gitignore but for Vercel uploads.
-# Files listed here are NEVER sent to Vercel, keeping the
-# Python serverless function well under the 225 MB hard limit.
+# This file is applied GLOBALLY by Vercel before any builder runs.
+# It affects BOTH the Python backend AND the Next.js frontend.
 #
-# CRITICAL: Do NOT add *.txt or backend/requirements.txt here.
-# Vercel's @vercel/python builder REQUIRES backend/requirements.txt
-# to know which packages to install. Excluding it causes
-# ModuleNotFoundError for every import at runtime.
+# ⚠ RULES:
+#   1. Do NOT put DataDose_website-main/ here — the Next.js Vercel
+#      project needs those files to build. Frontend exclusions from
+#      the Python bundle belong in vercel.json → excludeFiles only.
+#   2. Do NOT put *.txt or backend/requirements.txt here — the
+#      @vercel/python builder requires that file to install packages.
 # ============================================================
 
-# ── Next.js frontend (deployed separately) ─────────────────
-DataDose_website-main/
-
-# ── Binary / media files that bloat the bundle ─────────────
+# ── Binary / media files (safe to ignore for ALL projects) ──
+# These files are never needed by either the Python or Next.js builds.
 Documents/
 *.pptx
-*.pdf
 *.mp4
 *.mkv
 *.avi
@@ -29,11 +27,10 @@ Documents/
 *.tar
 *.gz
 *.whl
-*.ipynb
 *.mp3
 *.wav
 
-# ── Data engineering modules (not used by the API) ─────────
+# ── Data engineering modules (not part of any deployment) ───
 Airflow/
 Kafka/
 SnowFlake/
@@ -45,10 +42,10 @@ Pipline Diagram/
 Cleaning Code/
 assets/
 
-# ── Databases / local runtime state ────────────────────────
+# ── Databases / local runtime state ─────────────────────────
 neo4j_data/
 
-# ── Python build artifacts ──────────────────────────────────
+# ── Python build artifacts ───────────────────────────────────
 backend/venv/
 backend/__pycache__/
 backend/get-pip.py
@@ -59,16 +56,10 @@ backend/start_backend.bat
 **/*.egg-info/
 **/.pytest_cache/
 
-# ── Git ─────────────────────────────────────────────────────
+# ── Git internals ────────────────────────────────────────────
 .git/
 
-# ── Misc project files (safe to exclude — not needed by runtime) ─
+# ── Misc project-level files (not needed by any runtime) ────
 docker-compose.yml
 pyproject.toml
-# Root-level requirements.txt (not the one in backend/)
 /requirements.txt
-*.md
-
-# Specific .txt files that are safe to exclude
-DataDose_website-main/test_output.txt
-Airflow/requirements.txt
