@@ -4,6 +4,11 @@
 # This file works like .gitignore but for Vercel uploads.
 # Files listed here are NEVER sent to Vercel, keeping the
 # Python serverless function well under the 225 MB hard limit.
+#
+# CRITICAL: Do NOT add *.txt or backend/requirements.txt here.
+# Vercel's @vercel/python builder REQUIRES backend/requirements.txt
+# to know which packages to install. Excluding it causes
+# ModuleNotFoundError for every import at runtime.
 # ============================================================
 
 # ── Next.js frontend (deployed separately) ─────────────────
@@ -57,9 +62,13 @@ backend/start_backend.bat
 # ── Git ─────────────────────────────────────────────────────
 .git/
 
-# ── Misc ────────────────────────────────────────────────────
+# ── Misc project files (safe to exclude — not needed by runtime) ─
 docker-compose.yml
 pyproject.toml
-requirements.txt
+# Root-level requirements.txt (not the one in backend/)
+/requirements.txt
 *.md
-*.txt
+
+# Specific .txt files that are safe to exclude
+DataDose_website-main/test_output.txt
+Airflow/requirements.txt
