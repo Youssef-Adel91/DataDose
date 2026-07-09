@@ -23,14 +23,19 @@ export async function POST(req: Request) {
     }
 
     let ehrContext: any = {};
+    // Top-level allergy list — populated from EHR and forwarded to the
+    // FastAPI DAI (Drug-Allergy Interaction) safety check phase.
+    let patientAllergies: string[] = [];
+
     if (body.patientEmail) {
       const patient = await prisma.user.findUnique({
         where: { email: body.patientEmail },
         include: { PatientEHR: true },
       });
       if (patient?.PatientEHR) {
+        patientAllergies = patient.PatientEHR.allergies ?? [];
         ehrContext = {
-          allergies: patient.PatientEHR.allergies,
+          allergies: patientAllergies,
           chronicConditions: patient.PatientEHR.chronicConditions,
         };
       }
@@ -38,6 +43,9 @@ export async function POST(req: Request) {
 
     const payload = {
       ...body,
+      // DAI fix: allergies as a first-class field so FastAPI iterates them
+      // in the CAUSES_REACTION allergy-safety loop (Phase 2 of /api/scan).
+      allergies: patientAllergies,
       ehr: ehrContext,
       analysisInstruction:
         'Cross-reference proposed medications against patient allergies and chronic conditions, not only drug-drug interactions.',
@@ -107,6 +115,8 @@ export async function POST(req: Request) {
     const reqDrugs = body.drugs || [];
 
     // Map interactions to Frontend expected format
+    // NOTE: ALLERGY severity is mapped to "allergy" — a new tier rendered
+    //       as an urgent banner in PolypharmacyScan.tsx.
     const mappedInteractions = backendData.map((item: any) => ({
       pair: `${item.drug1} + ${item.drug2}`,
       drug1: item.drug1,
@@ -116,7 +126,8 @@ export async function POST(req: Request) {
       recommendation: item.effect || "Consider alternative therapies or strict monitoring.",
     }));
 
-    const fatalSevere = mappedInteractions.filter((i: any) => i.severity === 'fatal' || i.severity === 'severe').length;
+    const allergyAlerts = mappedInteractions.filter((i: any) => i.severity === 'allergy').length;
+    const fatalSevere = mappedInteractions.filter((i: any) => i.severity === 'fatal' || i.severity === 'severe' || i.severity === 'allergy').length;
     const major = mappedInteractions.filter((i: any) => i.severity === 'major').length;
     
     let overallRisk = "LOW";
@@ -132,6 +143,7 @@ export async function POST(req: Request) {
       summary: {
         totalInteractions: mappedInteractions.length,
         fatalSevere,
+        allergyAlerts,
         major,
         safe: safePairs,
         overallRisk

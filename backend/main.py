@@ -83,6 +83,10 @@ class ChatResponse(BaseModel):
 
 class ScanRequest(BaseModel):
     drugs: List[str]
+    # ── Drug-Allergy Interaction (DAI) fix ───────────────────────────────────
+    # Populated from the patient's EHR allergy list forwarded by the Next.js
+    # proxy layer.  Defaults to an empty list so existing callers are unaffected.
+    allergies: List[str] = []
     ehr: Optional[Dict[str, Any]] = None
     conditions: Optional[List[str]] = None
     analysisInstruction: Optional[str] = None
@@ -187,16 +191,23 @@ async def health():
     return {"status": "ok" if db_ok else "degraded", "database": "connected" if db_ok else "disconnected"}
 
 
-@app.post("/api/scan", response_model=List[InteractionResponse], summary="Polypharmacy DDI Scanner")
+@app.post("/api/scan", summary="Polypharmacy DDI + Drug-Allergy Scanner")
 async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
     """
-    Match all existing INTERACTS_WITH relationships strictly between the provided list of drugs.
-    Returns inter-drug reactions sorted by severity (Fatal first).
+    Two-phase safety scan:
+      Phase 1 — DDI: Matches INTERACTS_WITH relationships between every pair of
+                prescribed drugs, sorted by severity (Fatal first).
+      Phase 2 — DAI: For every (drug, allergy) pair supplied in req.allergies,
+                queries CAUSES_REACTION to detect whether a prescribed drug
+                could trigger the patient's known allergy.  Flagged as ALLERGY
+                severity so the frontend highlights them distinctly.
+    Returns a combined list: DDI interactions followed by allergy alerts.
     """
     if not req.drugs or len(req.drugs) < 2:
         return []
-    
-    query = """
+
+    # ── Phase 1: Drug-Drug Interaction (DDI) ──────────────────────────────────
+    ddi_query = """
     WITH [x IN $drugs | toLower(x)] AS lower_drugs
     MATCH (d1:Drug)-[r:INTERACTS_WITH]-(d2:Drug)
     WHERE toLower(d1.name) IN lower_drugs
@@ -205,33 +216,86 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
     RETURN d1.name AS drug1, d2.name AS drug2, r.severity AS severity,
            r.effect AS effect, r.mechanism AS mechanism
     """
-    
-    severity_rank = {"Fatal": 1, "Severe": 2, "Major": 3, "Minor": 4}
+
+    severity_rank = {"FATAL": 1, "SEVERE": 2, "MAJOR": 3, "MINOR": 4, "ALLERGY": 0}
 
     try:
-        result = await session.run(query, drugs=req.drugs)
-        records = await result.data()
-        
+        ddi_result = await session.run(ddi_query, drugs=req.drugs)
+        ddi_records = await ddi_result.data()
+
         interactions: List[InteractionResponse] = []
-        for rec in records:
+        for rec in ddi_records:
             severity_raw = str(rec.get("severity", "Unknown")).strip().lower()
             severity = {
                 "fatal": "FATAL",
                 "severe": "SEVERE",
                 "major": "MAJOR",
-                "minor": "MINOR"
+                "minor": "MINOR",
             }.get(severity_raw, "UNKNOWN")
             interactions.append(InteractionResponse(
                 drug1=rec["drug1"],
                 drug2=rec["drug2"],
                 severity=severity,
                 effect=rec.get("effect"),
-                mechanism=rec.get("mechanism")
+                mechanism=rec.get("mechanism"),
             ))
-            
-        # Sort by severity (Fatal->Severe->Major->Minor)
+
+        # ── Phase 2: Drug-Allergy Interaction (DAI) ───────────────────────────
+        # Critical safety check: iterate every (prescribed_drug, known_allergy)
+        # pair and query the graph for a matching CAUSES_REACTION path.  This
+        # catches cases where the graph models the allergen as part of a drug
+        # node name (e.g. "Penicillin" node matched by allergy term "penicillin").
+        dai_query = """
+        WITH $drug AS prescribed_drug, $allergy AS patient_allergy
+        MATCH (d)
+        WHERE toLower(d.name) CONTAINS toLower(prescribed_drug)
+          AND toLower(d.name) CONTAINS toLower(patient_allergy)
+        MATCH (d)-[r:CAUSES_REACTION]->(s)
+        RETURN d.name AS matched_node, s.name AS reaction
+        """
+
+        allergy_seen: set = set()  # deduplicate identical alerts
+        for prescribed_drug in req.drugs:
+            for patient_allergy in req.allergies:
+                if not patient_allergy.strip():
+                    continue
+                try:
+                    dai_result = await session.run(
+                        dai_query,
+                        drug=prescribed_drug.strip(),
+                        allergy=patient_allergy.strip(),
+                    )
+                    dai_records = await dai_result.data()
+                    for rec in dai_records:
+                        alert_key = (rec["matched_node"], patient_allergy.strip().lower())
+                        if alert_key in allergy_seen:
+                            continue
+                        allergy_seen.add(alert_key)
+                        print(
+                            f"[SAFETY][DAI] ALLERGY ALERT — "
+                            f"Drug '{rec['matched_node']}' matched allergy '{patient_allergy}' "
+                            f"→ Reaction: {rec.get('reaction')}"
+                        )
+                        interactions.append(InteractionResponse(
+                            drug1=rec["matched_node"],
+                            drug2=f"ALLERGY: {patient_allergy}",
+                            severity="ALLERGY",
+                            effect=rec.get("reaction"),
+                            mechanism=(
+                                f"Patient has a documented allergy to '{patient_allergy}'. "
+                                f"The prescribed drug '{rec['matched_node']}' may trigger a "
+                                f"hypersensitivity/allergic reaction ({rec.get('reaction', 'unknown reaction')}). "
+                                "Contraindicated — do not dispense without specialist review."
+                            ),
+                        ))
+                except Exception as dai_err:
+                    # Non-fatal: log the failure but don't abort the whole scan
+                    print(f"[WARN][DAI] Allergy check failed for '{prescribed_drug}' / '{patient_allergy}': {dai_err}")
+
+        # Sort: ALLERGY (0) → FATAL (1) → SEVERE (2) → MAJOR (3) → MINOR (4)
         interactions.sort(key=lambda x: severity_rank.get(x.severity, 99))
         return interactions
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
