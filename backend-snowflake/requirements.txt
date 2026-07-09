@@ -1,0 +1,11 @@
+# ─── Core Framework ───────────────────────────────────────────────────────────
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+# ─── Snowflake Connector ──────────────────────────────────────────────────────
+# This package (~50 MB installed) is the sole reason this lives as a
+# separate microservice and NOT inside backend/ (which must stay under
+# Vercel's 225 MB serverless bundle limit).
+snowflake-connector-python

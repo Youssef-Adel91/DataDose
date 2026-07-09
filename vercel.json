@@ -63,7 +63,8 @@
           "**/*.tar",
           "**/*.gz",
           "**/*.whl",
-          "**/*.ipynb"
+          "**/*.ipynb",
+          "backend-snowflake/**"
         ]
       }
     }

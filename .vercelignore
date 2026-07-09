@@ -56,6 +56,12 @@ backend/start_backend.bat
 **/*.egg-info/
 **/.pytest_cache/
 
+# ─── Snowflake microservice (Sprint 3) ─────────────────────────────────────
+# This directory is deployed separately to Railway/Render.
+# It must NOT be bundled into the Vercel Python function — snowflake-connector-
+# python alone is ~50 MB and would breach the 225 MB serverless limit.
+backend-snowflake/
+
 # ── Git internals ────────────────────────────────────────────
 .git/
 

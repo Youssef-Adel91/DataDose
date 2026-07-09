@@ -46,6 +46,10 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+# Snowflake microservice local venv (Sprint 3)
+backend-snowflake/venv/
+backend-snowflake/__pycache__/
+
 # Neo4j Database & Sensitive files
 neo4j_data/
 neo4jpassword.txt
