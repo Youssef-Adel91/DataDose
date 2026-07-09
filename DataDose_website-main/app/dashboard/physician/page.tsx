@@ -107,9 +107,16 @@ export default function PhysicianDashboard() {
         setRisks(null);
         return { ok: response.ok, hasCriticalRisk: false };
       }
-    } catch {
+    } catch (err: any) {
+      // Log the actual network/parse error so it shows in the browser console
+      console.error('[handleCheckInteractions] Unexpected client-side error:', err);
       setRisks([]);
-      return { ok: false, message: 'Interaction check failed. Please retry.' };
+      setScanError(
+        err?.message
+          ? `Interaction check failed: ${err.message}`
+          : 'Interaction check failed. Please retry.'
+      );
+      return { ok: false, message: err?.message || 'Interaction check failed. Please retry.' };
     } finally {
       setIsCheckingInteractions(false);
     }

@@ -67,11 +67,31 @@ export async function POST(req: Request) {
       }
       backendData = await backendRes.json();
     } catch (backendError: any) {
-      console.error('[SCAN_BACKEND_UNAVAILABLE]', backendError?.message || backendError);
+      // ── Diagnostic logging: expose the real transport-level failure ──────────
+      // Common root causes:
+      //   • AbortError  → the 8-second fetch timeout fired (backend too slow)
+      //   • TypeError: fetch failed → CORS preflight rejected OR backend is down
+      //   • ECONNREFUSED / ENOTFOUND → backend process is not running
+      const targetUrl = `${BACKEND_URL}/api/scan`;
+      console.error('[SCAN_BACKEND_UNAVAILABLE] ─────────────────────────────────');
+      console.error('  Target URL  :', targetUrl);
+      console.error('  Error name  :', backendError?.name);
+      console.error('  Error msg   :', backendError?.message);
+      console.error('  Error cause :', backendError?.cause ?? '(none)');
+      console.error('  Full error  :', backendError);
+      console.error('────────────────────────────────────────────────────────────');
+
+      const debugDetail =
+        `[${backendError?.name ?? 'Error'}] ${backendError?.message ?? 'Unknown error'}` +
+        (backendError?.cause ? ` | cause: ${backendError.cause}` : '');
+
       return NextResponse.json(
         {
           error: 'AI_GRAPH_ENGINE_OFFLINE',
           message: 'Clinical analysis engine is offline. Please contact IT support.',
+          // debug field is safe — only visible in server-side API responses,
+          // never rendered to end-users unless you explicitly display it.
+          debug: debugDetail,
         },
         { status: 503 }
       );
