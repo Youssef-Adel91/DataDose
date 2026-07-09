@@ -13,12 +13,13 @@ requests
 # ─── Graph Database ───────────────────────────────────────────────────────────
 neo4j
 
-# ─── REMOVED (not imported in main.py — these were causing the 233 MB bundle) ─
-# snowflake-connector-python  (~30-50 MB installed with deps)
-# kafka-python                (~5 MB — Kafka streaming is handled by Airflow, not the API)
-# numpy                       (~35-70 MB — not used in API layer)
-# pandas                      (~60-95 MB — not used in API layer)
-#
-# Combined savings: ~130–220 MB → brings bundle well under the 225 MB limit.
-# If these are ever needed, add them back only in the Airflow/Databricks
-# environments where they are actually used (see airflow/requirements.txt).
+# ─── Streaming (Sprint 2) ─────────────────────────────────────────────────────
+# kafka-python is ~5 MB installed — safe for the Vercel 225 MB bundle limit.
+# Used for the real-time /api/fda-alerts/stream SSE endpoint.
+kafka-python
+
+# ─── EXCLUDED — exceeds Vercel 225 MB bundle limit ───────────────────────────
+# snowflake-connector-python  (~50 MB) → deploy as separate Railway microservice
+# numpy                       (~35-70 MB) → not used in API layer
+# pandas                      (~60-95 MB) → not used in API layer
+

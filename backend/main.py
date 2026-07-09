@@ -4,8 +4,9 @@ import asyncio
 from urllib.parse import urlparse
 import requests
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Depends, File, UploadFile
+from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional, Any, Dict
 from neo4j import AsyncGraphDatabase
@@ -118,6 +119,23 @@ class GraphRAGResponse(BaseModel):
     graph_context: List[Dict[str, Any]]
     extracted_entities: List[str]
     source: str  # "graph+llm" | "llm_only"
+
+# ── Sprint 2: Databricks ML Risk Scoring ─────────────────────────────────────
+
+class RiskScoreRequest(BaseModel):
+    patient_id: Optional[str] = None
+    drugs: List[str]
+    age: Optional[int] = None
+    conditions: Optional[List[str]] = None
+    # Databricks Job ID to trigger — set via env var so it can be changed
+    # without a code deploy (defaults to placeholder until real job is created)
+    job_id: Optional[int] = None
+
+class RiskScoreResponse(BaseModel):
+    run_id: str
+    status: str          # "queued" | "running" | "SUCCESS" | "FAILED"
+    number_in_job: Optional[int] = None
+    score: Optional[float] = None  # populated when status == "SUCCESS"
 
 class GraphRequest(BaseModel):
     drugs: List[str]
@@ -1142,6 +1160,275 @@ async def health_check():
     }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+# =============================================================================
+# SPRINT 2 — REAL-TIME KAFKA FDA ALERTS (Server-Sent Events)
+# =============================================================================
+
+@app.get("/api/fda-alerts/stream", summary="Real-Time FDA Alerts via Kafka SSE")
+async def stream_fda_alerts(request: Request):
+    """
+    Opens a persistent Server-Sent Events (SSE) stream to Aiven Kafka.
+    The client receives one JSON event per FDA alert published to the
+    'fda-alerts' topic.  The stream is automatically closed when the
+    browser disconnects, releasing the Kafka consumer cleanly.
+
+    SSE format per message:
+        data: {"drug": "...", "warning": "...", "severity": "..."}
+
+    Required env vars (same as /api/health Kafka ping):
+        KAFKA_BOOTSTRAP_SERVERS, KAFKA_SECURITY_PROTOCOL,
+        KAFKA_SASL_MECHANISM, KAFKA_SASL_USERNAME, KAFKA_SASL_PASSWORD
+    """
+    servers  = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "")
+    if not servers:
+        raise HTTPException(
+            status_code=503,
+            detail="Kafka not configured. Set KAFKA_BOOTSTRAP_SERVERS."
+        )
+
+    async def event_generator():
+        """
+        Runs the blocking KafkaConsumer in a thread pool so it never blocks
+        FastAPI's async event loop.  Yields SSE-formatted strings.
+        """
+        import queue as _queue
+        msg_queue: _queue.Queue = _queue.Queue(maxsize=100)
+        stop_event = asyncio.Event()
+
+        def _consume():
+            """Blocking consumer — runs in asyncio.to_thread."""
+            from kafka import KafkaConsumer  # lazy import — not loaded at boot
+            consumer = KafkaConsumer(
+                "fda-alerts",
+                bootstrap_servers=servers,
+                security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "SASL_SSL"),
+                sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-256"),
+                sasl_plain_username=os.getenv("KAFKA_SASL_USERNAME", ""),
+                sasl_plain_password=os.getenv("KAFKA_SASL_PASSWORD", ""),
+                auto_offset_reset="latest",     # only future messages
+                enable_auto_commit=True,
+                consumer_timeout_ms=1000,       # poll loop: check stop_event every 1 s
+                value_deserializer=lambda v: v, # keep raw bytes; decode in generator
+            )
+            try:
+                while not stop_event.is_set():
+                    for message in consumer:
+                        if stop_event.is_set():
+                            break
+                        msg_queue.put(message.value)
+            finally:
+                consumer.close()
+
+        # Start the blocking consumer in a worker thread
+        consumer_task = asyncio.get_event_loop().run_in_executor(None, _consume)
+
+        try:
+            # Send an initial keep-alive comment so the browser knows the
+            # connection is established before any real messages arrive.
+            yield ": connected\n\n"
+
+            while True:
+                # Check for client disconnect every 0.5 s
+                if await request.is_disconnected():
+                    break
+
+                try:
+                    raw: bytes = msg_queue.get_nowait()
+                    # Decode and forward as SSE data line
+                    payload = raw.decode("utf-8", errors="replace")
+                    yield f"data: {payload}\n\n"
+                except Exception:
+                    # Queue empty — yield a keep-alive ping every 0.5 s
+                    yield ": ping\n\n"
+
+                await asyncio.sleep(0.5)
+        finally:
+            stop_event.set()  # signal the consumer thread to shut down cleanly
+            try:
+                await asyncio.wait_for(consumer_task, timeout=5.0)
+            except asyncio.TimeoutError:
+                pass
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # disable Nginx buffering for SSE
+            "Connection": "keep-alive",
+        },
+    )
+
+
+# =============================================================================
+# SPRINT 2 — DATABRICKS ML RISK SCORING (REST API — no SDK needed)
+# =============================================================================
+
+# Databricks REST API 2.1 — Job Run endpoints
+# Docs: https://docs.databricks.com/api/workspace/jobs/runnow
+DATABRICKS_HOST  = os.getenv("DATABRICKS_HOST", "").rstrip("/")
+DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN", "")
+# The numeric ID of the Databricks Job that runs the drug-risk ML notebook.
+# Set this env var once the job is created in the Databricks UI.
+DATABRICKS_JOB_ID = int(os.getenv("DATABRICKS_RISK_JOB_ID", "0"))
+
+
+def _databricks_headers() -> dict:
+    """Build auth headers for every Databricks REST call."""
+    if not DATABRICKS_HOST or not DATABRICKS_TOKEN:
+        raise HTTPException(
+            status_code=503,
+            detail="Databricks not configured. Set DATABRICKS_HOST and DATABRICKS_TOKEN."
+        )
+    return {"Authorization": f"Bearer {DATABRICKS_TOKEN}"}
+
+
+@app.post(
+    "/api/risk-score",
+    response_model=RiskScoreResponse,
+    summary="Trigger Databricks ML Risk Score Job"
+)
+async def trigger_risk_score(req: RiskScoreRequest):
+    """
+    Submits an async Databricks Job Run that scores a patient's drug regimen
+    using the trained XGBoost risk model.  Returns immediately with a run_id;
+    the client should poll GET /api/risk-score/{run_id} for the result.
+
+    Databricks Job parameters passed as notebook parameters:
+        patient_id, drugs (JSON array), age, conditions (JSON array)
+
+    Required env vars:
+        DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_RISK_JOB_ID
+    """
+    headers = _databricks_headers()
+    job_id  = req.job_id or DATABRICKS_JOB_ID
+
+    if not job_id:
+        raise HTTPException(
+            status_code=503,
+            detail="DATABRICKS_RISK_JOB_ID not configured. Create the ML job first."
+        )
+
+    payload = {
+        "job_id": job_id,
+        "notebook_params": {
+            "patient_id":  req.patient_id or "unknown",
+            "drugs":       json.dumps(req.drugs),
+            "age":         str(req.age or ""),
+            "conditions":  json.dumps(req.conditions or []),
+        },
+    }
+
+    def _run_now():
+        resp = requests.post(
+            f"{DATABRICKS_HOST}/api/2.1/jobs/run-now",
+            headers=headers,
+            json=payload,
+            timeout=10.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    try:
+        result = await asyncio.to_thread(_run_now)
+    except requests.HTTPError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Databricks API error: {e.response.status_code} — {e.response.text}"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Databricks unreachable: {e}")
+
+    return RiskScoreResponse(
+        run_id=str(result["run_id"]),
+        status="queued",
+        number_in_job=result.get("number_in_job"),
+    )
+
+
+@app.get(
+    "/api/risk-score/{run_id}",
+    response_model=RiskScoreResponse,
+    summary="Poll Databricks ML Risk Score Result"
+)
+async def get_risk_score_result(run_id: str):
+    """
+    Polls the Databricks Job Run for completion and extracts the risk score
+    from the notebook output once the run state reaches TERMINATED (SUCCESS).
+
+    Frontend polling pattern:
+        const poll = setInterval(async () => {
+            const res = await fetch(`/api/risk-score/${runId}`);
+            const data = await res.json();
+            if (data.status === 'SUCCESS') {
+                setDatabricksScore(data.score);
+                clearInterval(poll);
+            }
+        }, 5000);
+
+    Databricks run lifecycle states:
+        PENDING → RUNNING → TERMINATING → TERMINATED (result_state: SUCCESS | FAILED)
+    """
+    headers = _databricks_headers()
+
+    def _get_run():
+        resp = requests.get(
+            f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get",
+            headers=headers,
+            params={"run_id": run_id},
+            timeout=10.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    try:
+        run = await asyncio.to_thread(_get_run)
+    except requests.HTTPError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Databricks API error: {e.response.status_code} — {e.response.text}"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Databricks unreachable: {e}")
+
+    state         = run.get("state", {})
+    life_cycle    = state.get("life_cycle_state", "PENDING")   # PENDING|RUNNING|TERMINATED
+    result_state  = state.get("result_state", "")              # SUCCESS|FAILED|CANCELED
+
+    # Map Databricks lifecycle to a simple status string for the frontend
+    if life_cycle in ("PENDING", "RUNNING", "TERMINATING"):
+        status = "running"
+    elif life_cycle == "TERMINATED" and result_state == "SUCCESS":
+        status = "SUCCESS"
+    elif life_cycle == "TERMINATED":
+        status = "FAILED"
+    else:
+        status = life_cycle.lower()
+
+    # Extract the ML risk score from the notebook output
+    # Convention: the notebook sets a widget/output named 'risk_score' (0.0–10.0)
+    score: Optional[float] = None
+    if status == "SUCCESS":
+        try:
+            output_resp = await asyncio.to_thread(
+                lambda: requests.get(
+                    f"{DATABRICKS_HOST}/api/2.1/jobs/runs/get-output",
+                    headers=headers,
+                    params={"run_id": run_id},
+                    timeout=10.0,
+                ).json()
+            )
+            notebook_result = output_resp.get("notebook_output", {})
+            result_str = notebook_result.get("result", "")
+            # Expect notebook to dbutils.notebook.exit(json.dumps({"risk_score": 7.2}))
+            score = float(json.loads(result_str).get("risk_score", 0.0))
+        except Exception:
+            score = None  # score unavailable but run succeeded
+
+    return RiskScoreResponse(
+        run_id=run_id,
+        status=status,
+        score=score,
+    )
+
+
