@@ -1,0 +1,65 @@
+# ============================================================
+# .vercelignore  —  DataDose Python backend deployment
+# ============================================================
+# This file works like .gitignore but for Vercel uploads.
+# Files listed here are NEVER sent to Vercel, keeping the
+# Python serverless function well under the 225 MB hard limit.
+# ============================================================
+
+# ── Next.js frontend (deployed separately) ─────────────────
+DataDose_website-main/
+
+# ── Binary / media files that bloat the bundle ─────────────
+Documents/
+*.pptx
+*.pdf
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.crdownload
+*.xlsx
+*.xls
+*.zip
+*.tar
+*.gz
+*.whl
+*.ipynb
+*.mp3
+*.wav
+
+# ── Data engineering modules (not used by the API) ─────────
+Airflow/
+Kafka/
+SnowFlake/
+Databricks_Pyspark/
+Neo4j/
+Data/
+Power Bi/
+Pipline Diagram/
+Cleaning Code/
+assets/
+
+# ── Databases / local runtime state ────────────────────────
+neo4j_data/
+
+# ── Python build artifacts ──────────────────────────────────
+backend/venv/
+backend/__pycache__/
+backend/get-pip.py
+backend/start_backend.bat
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.egg-info/
+**/.pytest_cache/
+
+# ── Git ─────────────────────────────────────────────────────
+.git/
+
+# ── Misc ────────────────────────────────────────────────────
+docker-compose.yml
+pyproject.toml
+requirements.txt
+*.md
+*.txt

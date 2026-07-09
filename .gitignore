@@ -50,3 +50,15 @@ __pycache__/
 neo4j_data/
 neo4jpassword.txt
 Neo4j-*.txt
+
+# Large binary / media files — must NOT be in git (causes Vercel 225 MB bundle limit breach)
+# Store these in cloud storage (Google Drive, S3, etc.) instead.
+Documents/*.mp4
+Documents/*.mkv
+Documents/*.avi
+Documents/*.mov
+Documents/*.pptx
+Documents/*.xlsx
+Documents/*.xls
+Documents/*.crdownload
+*.crdownload
