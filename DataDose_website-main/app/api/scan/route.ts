@@ -57,10 +57,18 @@ export async function POST(req: Request) {
 
       if (!backendRes.ok) {
         const backendError = await backendRes.text();
+        // Log the exact HTTP status and body so the root cause is visible
+        // in the Next.js server terminal without needing Python backend logs.
+        console.error('[SCAN_BACKEND_HTTP_ERROR] ──────────────────────────────────');
+        console.error('  HTTP Status :', backendRes.status, backendRes.statusText);
+        console.error('  Target URL  :', `${BACKEND_URL}/api/scan`);
+        console.error('  Response    :', backendError);
+        console.error('────────────────────────────────────────────────────────────');
         return NextResponse.json(
           {
             error: 'AI_GRAPH_ENGINE_ERROR',
             message: `Clinical analysis engine error: ${backendError || `HTTP ${backendRes.status}`}`,
+            debug: `HTTP ${backendRes.status} ${backendRes.statusText} — ${backendError}`,
           },
           { status: 502 }
         );
