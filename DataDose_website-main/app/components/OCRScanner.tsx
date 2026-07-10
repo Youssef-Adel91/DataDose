@@ -243,10 +243,26 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
         return;
       }
 
-      // Convert flat strings to structured objects
-      const structuredList = meds.map((m: string) => {
-        const parts = m.split(" ");
-        const name = parts[0] || m;
+      // Convert flat strings to structured objects (or handle pre-structured JSON objects from the strict LLM prompt)
+      const structuredList = meds.map((m: any) => {
+        if (typeof m === 'object' && m !== null) {
+          const name = m.name || "Unknown";
+          let activeIngredient = name;
+          if (name.toLowerCase().includes("amox")) activeIngredient = "Beta-lactam Antibiotic";
+          else if (name.toLowerCase().includes("metfor")) activeIngredient = "Biguanide";
+          else if (name.toLowerCase().includes("lisin")) activeIngredient = "ACE Inhibitor";
+          
+          return {
+            name: name,
+            activeIngredient: activeIngredient,
+            dose: m.dosage || m.dose || "Not specified",
+            frequency: m.frequency || "1x daily"
+          };
+        }
+        
+        const mStr = String(m);
+        const parts = mStr.split(" ");
+        const name = parts[0] || mStr;
         const dose = parts[1] || "500mg";
         const frequency = parts.slice(2).join(" ") || "2x daily";
         let activeIngredient = name;

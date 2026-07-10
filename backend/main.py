@@ -911,11 +911,28 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
         base64_image = base64.b64encode(image_bytes).decode('utf-8')
         
         vision_prompt = (
-            "You are a medical OCR assistant. Read this prescription image. Extract ONLY the names of the medications. "
-            "Ignore dosages, patient names, and doctor notes. Return the result STRICTLY as a JSON array of strings, "
-            "e.g., [\"Aspirin\", \"Warfarin\"]. "
-            "You must output ONLY raw, valid JSON. Do not include markdown formatting like ```json or ```. "
-            "Do not include any conversational text before or after the JSON."
+            "You are an expert Clinical Vision AI. Carefully read the handwritten prescription. \n"
+            "CRITICAL RULES:\n"
+            "1. Look for NUMBERED LISTS (e.g., circled 1, 2, 3, 4, 5). You MUST extract EVERY SINGLE medication listed. Do not stop early.\n"
+            "2. If handwriting is messy, infer the most likely psychiatric or cardiac medication name (e.g., Sizodon, Qutipin, Ativan, Rivotril, Serta).\n"
+            "3. Extract the patient name and age at the top.\n"
+            "4. Extract the diagnosis on the right side.\n"
+            "5. You MUST return ONLY a valid JSON object matching this exact schema:\n"
+            "{\n"
+            "  \"patient\": {\n"
+            "    \"name\": \"string\",\n"
+            "    \"age\": \"string\"\n"
+            "  },\n"
+            "  \"diagnosis\": [\"string\"],\n"
+            "  \"medications\": [\n"
+            "    {\n"
+            "      \"name\": \"string\",\n"
+            "      \"dosage\": \"string\",\n"
+            "      \"frequency\": \"string\"\n"
+            "    }\n"
+            "  ]\n"
+            "}\n"
+            "Do not include any text outside this JSON."
         )
         
         try:
@@ -961,22 +978,17 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
             
         import json
         extracted = json.loads(raw_json_str)
-        # Handle both array and object responses from the model
+        # Directly return the structured JSON object (patient, diagnosis, medications)
+        # to match the Next.js frontend expectations
+        if isinstance(extracted, dict) and "medications" in extracted:
+            return extracted
+        
+        # Fallback for old array format
         if isinstance(extracted, list):
             extracted = [str(d).title() for d in extracted]
-        elif isinstance(extracted, dict):
-            # Try common keys the model might use when returning an object
-            for key in ("medications", "drugs", "extracted_drugs", "items", "medicines"):
-                if isinstance(extracted.get(key), list):
-                    extracted = [str(d).title() for d in extracted[key]]
-                    break
-            else:
-                print("WARNING: JSON object received but no known drug list key found:", extracted)
-                extracted = []
-        else:
-            extracted = []
+            return {"medications": extracted}
             
-        return {"extracted_drugs": extracted}
+        return {"medications": []}
 
     except Exception as e:
         # Fallback error mechanism
