@@ -70,26 +70,24 @@ BATCH_UPSERT_QUERY = """
 UNWIND $batch AS row
 
 // Step 1: Upsert Drug node (always)
-MERGE (d:Drug {name_lower: toLower(trim(row.drug))})
-  ON CREATE SET d.name       = trim(row.drug),
-                d.name_lower = toLower(trim(row.drug)),
+MERGE (d:Drug {name: trim(row.drug)})
+  ON CREATE SET d.name_lower = toLower(trim(row.drug)),
                 d.source     = 'enriched_drugs_etl'
-  ON MATCH  SET d.source     = 'enriched_drugs_etl'
+  ON MATCH  SET d.name_lower = toLower(trim(row.drug)),
+                d.source     = 'enriched_drugs_etl'
 
 // Step 2: Conditionally create Ingredient node + CONTAINS_INGREDIENT edge
 FOREACH (_ IN CASE WHEN row.ingredient IS NOT NULL THEN [1] ELSE [] END |
-  MERGE (i:Ingredient {name_lower: toLower(trim(row.ingredient))})
-    ON CREATE SET i.name       = trim(row.ingredient),
-                  i.name_lower = toLower(trim(row.ingredient))
+  MERGE (i:Ingredient {name: trim(row.ingredient)})
+    ON CREATE SET i.name_lower = toLower(trim(row.ingredient))
   MERGE (d)-[:CONTAINS_INGREDIENT]->(i)
 )
 
 // Step 3: Conditionally create AllergyClass + BELONGS_TO_CLASS edge
 FOREACH (_ IN CASE WHEN row.ingredient IS NOT NULL AND row.allergy_class IS NOT NULL THEN [1] ELSE [] END |
-  MERGE (i2:Ingredient {name_lower: toLower(trim(row.ingredient))})
-  MERGE (a:AllergyClass {name_lower: toLower(trim(row.allergy_class))})
-    ON CREATE SET a.name       = trim(row.allergy_class),
-                  a.name_lower = toLower(trim(row.allergy_class))
+  MERGE (i2:Ingredient {name: trim(row.ingredient)})
+  MERGE (a:AllergyClass {name: trim(row.allergy_class)})
+    ON CREATE SET a.name_lower = toLower(trim(row.allergy_class))
   MERGE (i2)-[:BELONGS_TO_CLASS]->(a)
 )
 """
