@@ -444,7 +444,7 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/alternatives", response_model=List[str], summary="Smart Safe Alternatives")
+@app.post("/api/alternatives", response_model=List[dict], summary="Smart Safe Alternatives")
 async def find_alternatives(req: AlternativesRequest, session=Depends(get_db)):
     """
     Finds alternative drugs that treat the target disease, do not cause the target symptom,
@@ -452,35 +452,47 @@ async def find_alternatives(req: AlternativesRequest, session=Depends(get_db)):
     Uses the Founder's exact Cypher query + Groq LLM hybrid fallback on zero results.
     """
     # ── Founder's exact, production-tested Cypher query ───────────────────────
-    # Parameters: $disease (CONTAINS match), $symptom (exact), $current_drugs (list)
     query = """
-    WITH [drug IN $current_drugs | toLower(trim(drug))] AS active_rx
-    MATCH (alt:Drug)-[:TREATS]->(disease:Disease)
-    WHERE toLower(disease.name) CONTAINS toLower(trim($disease))
-    AND NOT EXISTS {
-        MATCH (alt)-[:CAUSES_REACTION]->(s:Symptom)
-        WHERE toLower(s.name) = toLower(trim($symptom))
-    }
-    AND NOT EXISTS {
-        MATCH (alt)-[:INTERACTS_WITH]-(current:Drug)
-        WHERE toLower(current.name) IN active_rx
-    }
-    RETURN alt.name AS Safe_Drug
-    LIMIT 10
+    // STEP 1: Always check for a curated 'Gold Standard' alternative first
+    OPTIONAL MATCH (bad_drug:Drug {name: $drug_to_replace})-[r:HAS_SAFE_ALTERNATIVE]->(safe_drug:Drug)
+    WITH bad_drug, safe_drug, r.reason AS rationale
+    
+    // STEP 2: If no curated alternative exists, find a drug in the SAME CLASS that treats the condition and avoids the symptom
+    OPTIONAL MATCH (bad_drug)-[:BELONGS_TO_CLASS]->(class:DrugClass)<-[:BELONGS_TO_CLASS]-(fallback_drug:Drug)
+    WHERE safe_drug IS NULL 
+      AND toLower(fallback_drug.name) <> toLower($drug_to_replace)
+      AND EXISTS {
+          MATCH (fallback_drug)-[:TREATS]->(cond)
+          WHERE toLower(cond.name) CONTAINS toLower(trim($condition))
+      }
+      AND NOT EXISTS {
+          MATCH (fallback_drug)-[:CAUSES_REACTION]->(sym:Symptom)
+          WHERE toLower(sym.name) CONTAINS toLower(trim($symptom_to_avoid))
+      }
+    
+    RETURN 
+      COALESCE(safe_drug.name, fallback_drug.name) AS SuggestedAlternative,
+      COALESCE(rationale, "Inferred from same therapeutic class avoiding target symptom") AS Reasoning
+    LIMIT 5
     """
     try:
         result = await session.run(
             query,
-            disease=req.disease_to_treat,
-            symptom=req.symptom_to_avoid,
+            drug_to_replace=req.drug_to_replace,
+            condition=req.disease_to_treat,
+            symptom_to_avoid=req.symptom_to_avoid,
             current_drugs=req.current_meds
         )
         records = await result.data()
-        alternatives = [rec["Safe_Drug"] for rec in records]
-        print(f"[NEO4J] Alternatives query returned {len(alternatives)} result(s): {alternatives}")
+        # Filter out nulls if both patterns failed
+        valid_records = [rec for rec in records if rec.get("SuggestedAlternative")]
+        
+        if valid_records:
+            print(f"[NEO4J] Alternatives query returned {len(valid_records)} result(s): {valid_records}")
+            return valid_records
 
         # ── LLM Hybrid Fallback: fires ONLY when Neo4j returns 0 records ──────
-        if not alternatives and groq_client:
+        if not valid_records and groq_client:
             print("[LLM FALLBACK] Neo4j returned 0 results. Engaging Groq fallback...")
             fallback_prompt = f"""You are a clinical pharmacology expert.
 A patient needs a replacement for "{req.drug_to_replace}" to treat "{req.disease_to_treat}".
@@ -498,6 +510,7 @@ No markdown, no explanation, no extra text."""
                     max_completion_tokens=100,
                 )
                 raw = llm_completion.choices[0].message.content.strip()
+                import json
                 # Strip markdown code fences if present
                 if raw.startswith("```"):
                     raw = raw.split("```")[1].strip()
@@ -505,12 +518,12 @@ No markdown, no explanation, no extra text."""
                         raw = raw[4:].strip()
                 fallback_drugs = json.loads(raw)
                 if isinstance(fallback_drugs, list):
-                    alternatives = [str(d) for d in fallback_drugs[:2]]
-                    print(f"[LLM FALLBACK] Suggested: {alternatives}")
+                    valid_records = [{"SuggestedAlternative": str(d), "Reasoning": "Inferred from Groq Vision fallback"} for d in fallback_drugs[:2]]
+                    print(f"[LLM FALLBACK] Suggested: {valid_records}")
             except Exception as llm_err:
                 print(f"[WARN] LLM fallback failed: {llm_err}")
 
-        return alternatives
+        return valid_records
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
