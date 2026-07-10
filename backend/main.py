@@ -258,8 +258,10 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
         dai_graph_query = """
         // STRATEGY 1: Drug -> Ingredient -> AllergyClass (enriched ontology from ETL)
         MATCH (d:Drug)-[:CONTAINS_INGREDIENT]->(i:Ingredient)-[:BELONGS_TO_CLASS]->(a:AllergyClass)
-        WHERE toLower(d.name)   CONTAINS toLower($drug)
-          AND toLower(a.name)   CONTAINS toLower($allergy)
+        WHERE toLower(d.name) CONTAINS toLower($drug)
+          // FIX: The patient's EHR allergy field (e.g., "Sulfa Drugs (mild hives)") 
+          // must contain the strict class name from Neo4j (e.g., "Sulfa Drugs")
+          AND toLower($allergy) CONTAINS toLower(a.name)
         OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
         RETURN d.name AS matched_drug,
                i.name AS matched_ingredient,
@@ -269,10 +271,10 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
 
         UNION
 
-        // STRATEGY 2: Direct drug name contains allergy term (simple name overlap)
+        // STRATEGY 2: Direct drug name overlap
         MATCH (d:Drug)
         WHERE toLower(d.name) CONTAINS toLower($drug)
-          AND toLower(d.name) CONTAINS toLower($allergy)
+          AND toLower($allergy) CONTAINS toLower(d.name)
         OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
         RETURN d.name AS matched_drug,
                d.name AS matched_ingredient,
@@ -282,12 +284,12 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
 
         UNION
 
-        // STRATEGY 3: Drug node properties (drug_class, ingredient) overlap allergy
+        // STRATEGY 3: Drug node properties overlap allergy
         MATCH (d:Drug)
         WHERE toLower(d.name) CONTAINS toLower($drug)
           AND (
-            (d.drug_class IS NOT NULL AND toLower(d.drug_class) CONTAINS toLower($allergy))
-            OR (d.class IS NOT NULL   AND toLower(d.class)      CONTAINS toLower($allergy))
+            (d.drug_class IS NOT NULL AND toLower($allergy) CONTAINS toLower(d.drug_class))
+            OR (d.class IS NOT NULL   AND toLower($allergy) CONTAINS toLower(d.class))
           )
         OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
         RETURN d.name AS matched_drug,
@@ -296,6 +298,7 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
                coalesce(s.name, 'Class-based Allergic Reaction') AS reaction
         LIMIT 3
         """
+
 
         # ── Fallback: keyword table (runs only when graph returns 0 rows) ─────
         # This table is a superset of enriched_drugs.json and covers edge cases.
@@ -370,6 +373,10 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
 
                 # ── Primary graph traversal ───────────────────────────────────
                 try:
+                    print(f"--- [DEBUG] DAI Cypher Execution ---")
+                    print(f"Drug: {prescribed_drug.strip()} | Allergy Field: {patient_allergy.strip()}")
+                    print(f"Query: MATCH (d)-[...]->(a:AllergyClass) WHERE toLower('{patient_allergy.strip()}') CONTAINS toLower(a.name)")
+                    
                     dai_result = await session.run(
                         dai_graph_query,
                         drug=prescribed_drug.strip(),
