@@ -30,8 +30,12 @@ import { toast } from 'sonner';
 
 export interface FdaAlert {
   id: string;
-  drug: string;
-  warning: string;
+  // Actual Kafka payload fields (from kafka_test_producer.py)
+  title: string;    // e.g. "FDA Recall Alert"
+  body: string;     // e.g. "Immediate recall for..."
+  // Legacy/alternative field names (for backward compatibility)
+  drug?: string;
+  warning?: string;
   severity: 'critical' | 'major' | 'minor' | 'info';
   receivedAt: string;
   read: boolean;
@@ -114,7 +118,7 @@ export function useFdaAlerts({
         // fires for "data:" lines).
         if (!event.data || event.data.trim() === '') return;
 
-        let payload: Partial<FdaAlert>;
+        let payload: Record<string, unknown>;
         try {
           payload = JSON.parse(event.data);
         } catch {
@@ -123,21 +127,24 @@ export function useFdaAlerts({
         }
 
         const severity = (payload.severity ?? 'info') as FdaAlert['severity'];
-        const drug     = payload.drug    ?? 'Unknown Drug';
-        const warning  = payload.warning ?? 'FDA safety alert received';
+        // Support both payload shapes:
+        //   New shape  → { title, body }   (from kafka_test_producer.py)
+        //   Legacy     → { drug, warning } (original FdaAlert contract)
+        const title   = (payload.title   ?? payload.drug    ?? 'FDA Alert')          as string;
+        const body    = (payload.body    ?? payload.warning ?? 'Safety alert received') as string;
 
         // Fire sonner toast
         const cfg = TOAST_CONFIG[severity] ?? TOAST_CONFIG.info;
-        cfg.fn(`${cfg.icon} FDA Alert — ${drug}`, {
-          description: warning,
+        cfg.fn(`${cfg.icon} ${title}`, {
+          description: body,
           duration: cfg.duration,
         });
 
         // Append to local alert list (newest first, capped at maxAlerts)
         const newAlert: FdaAlert = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          drug,
-          warning,
+          id: (payload.id as string) ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          title,
+          body,
           severity,
           receivedAt: new Date().toISOString(),
           read: false,

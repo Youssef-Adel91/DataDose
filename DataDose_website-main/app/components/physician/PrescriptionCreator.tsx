@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pill, ShieldAlert, CheckCircle2, ChevronRight, ChevronLeft, Shield, AlertTriangle, ArrowRight, Activity, HelpCircle, User } from 'lucide-react';
+import { Plus, X, Pill, ShieldAlert, CheckCircle2, ChevronRight, ChevronLeft, Shield, AlertTriangle, ArrowRight, Activity, HelpCircle, User, ScanLine } from 'lucide-react';
 import { patients } from './PatientEHR';
 
 interface MedicationItem {
@@ -103,103 +103,136 @@ export default function PrescriptionCreator({
     setDrugs(drugs.filter((d) => d.id !== id));
   };
 
-  // Run Safety Checks (Step 3 to 4 transition)
-  const runSafetyChecks = () => {
+  // Helper to execute the safety scan using explicit arrays (needed for instant OCR scans)
+  const executeScan = async (scanDrugs: MedicationItem[], scanAllergies: string[]) => {
     setStep(3);
     setWizardMessage('');
     setOverrideConfirmed(false);
     setOverrideReason('');
 
-    // Simulate scanning knowledge graph
-    setTimeout(() => {
-      const issues: Array<{ type: string; level: "high" | "medium" | "low"; text: string; action: string }> = [];
-      let score = 2.0;
+    const drugNames = scanDrugs.map((d) => d.name.trim()).filter(Boolean);
 
-      // 1. Allergy Check (Sara Patient has penicillin allergy)
-      const hasPenicillinAllergy = patient.allergies.toLowerCase().includes('penicillin');
-      const prescribingPenicillin = drugs.some(
-        (d) => d.name.toLowerCase().includes('penic') || 
-               d.name.toLowerCase().includes('amoxic') || 
-               d.activeIngredient.toLowerCase().includes('beta-lact')
-      );
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drugs: drugNames, allergies: scanAllergies }),
+        cache: 'no-store',   // never serve a cached safety report
+      });
 
-      if (hasPenicillinAllergy && prescribingPenicillin) {
+      const data = await res.json();
+
+      // Map backend interactions to the issues array the UI expects
+      const issues: Array<{ type: string; level: 'high' | 'medium' | 'low'; text: string; action: string }> = [];
+
+      const interactions: any[] = data.interactions ?? [];
+      const summary = data.summary ?? {};
+
+      const allergyAlerts: number = summary.allergyAlerts ?? 0;
+      const fatalSevere: number   = summary.fatalSevere   ?? 0;
+      const majorCount: number    = summary.major         ?? 0;
+
+      for (const item of interactions) {
+        const sev = (item.severity ?? '').toLowerCase();
+        const level: 'high' | 'medium' | 'low' =
+          sev === 'fatal' || sev === 'severe' || sev === 'allergy' ? 'high'
+          : sev === 'major' ? 'medium'
+          : 'low';
+
+        const typeLabel =
+          sev === 'allergy' ? 'Drug-Allergy Contraindication'
+          : sev === 'fatal' || sev === 'severe' ? 'Drug-Drug Interaction (Critical)'
+          : 'Drug-Drug Interaction';
+
         issues.push({
-          type: 'Drug-Allergy Contraindication',
-          level: 'high',
-          text: `Critical: Patient has a documented Penicillin allergy. Prescribing beta-lactam class medication can cause anaphylaxis.`,
-          action: 'Immediately replace with non-beta-lactam alternative (e.g. Macrolides).'
+          type: typeLabel,
+          level,
+          text: item.mechanism ?? `${item.drug1} + ${item.drug2}: interaction detected.`,
+          action: item.recommendation ?? item.effect ?? 'Consult prescribing physician before dispensing.',
         });
-        score += 4.5;
       }
 
-      // 2. Drug-Disease checks
-      const hasCKD = patient.condition.toLowerCase().includes('ckd') || patient.chronicDiseases.toLowerCase().includes('kidney');
-      const prescribingMetformin = drugs.some((d) => d.name.toLowerCase().includes('metformin'));
+      // Derive a 10-point Safety Score (10 = perfectly safe, 0 = highly dangerous)
+      let score = 10.0;
+      score -= allergyAlerts * 8.0;
+      score -= fatalSevere  * 7.0;
+      score -= majorCount   * 3.0;
+      score = Math.max(0, parseFloat(score.toFixed(1)));
 
-      if (hasCKD && prescribingMetformin) {
-        issues.push({
-          type: 'Drug-Disease Warning',
-          level: 'medium',
-          text: `Warning: Metformin is cleared renally. Patient has documented Stage 3 CKD (eGFR 42). Risk of lactic acidosis accumulation.`,
-          action: 'Limit Metformin dosage to 500mg daily. Monitor renal panel closely.'
-        });
-        score += 2.0;
-      }
-
-      // 3. Drug-Drug Interactions
-      const drugNames = drugs.map((d) => d.name.toLowerCase());
-      const hasSimvastatin = drugNames.includes('simvastatin');
-      const hasAmiodarone = drugNames.includes('amiodarone');
-      if (hasSimvastatin && hasAmiodarone) {
-        issues.push({
-          type: 'Drug-Drug Interaction',
-          level: 'high',
-          text: 'Critical DDI: Simvastatin + Amiodarone increases risk of Simvastatin toxicity and myopathy/rhabdomyolysis.',
-          action: 'Replace Simvastatin with Atorvastatin or Rosuvastatin; or reduce Simvastatin dose to max 20mg.'
-        });
-        score += 3.5;
-      }
-
-      const hasLisinopril = drugNames.includes('lisinopril');
-      const hasAspirin = drugNames.includes('aspirin');
-      if (hasLisinopril && hasAspirin) {
-        issues.push({
-          type: 'Drug-Drug Interaction',
-          level: 'medium',
-          text: 'Interaction DDI: Aspirin may decrease the vasodilatory effect of Lisinopril. Co-administration increases risk of renal function degradation.',
-          action: 'Monitor blood pressure regularly. Check serum creatinine in 7 days.'
-        });
-        score += 1.0;
-      }
-
-      // 4. Duplicate Ingredient Check
-      const ingredients = drugs.map((d) => d.activeIngredient.toLowerCase().trim());
-      const duplicates = ingredients.filter((item, index) => ingredients.indexOf(item) !== index);
-      if (duplicates.length > 0) {
-        issues.push({
-          type: 'Duplicate Active Ingredient',
-          level: 'high',
-          text: `Critical: Duplication of active ingredient "${duplicates[0]}" detected across prescribed medications.`,
-          action: 'Remove duplicate therapy prescription lines.'
-        });
-        score += 3.0;
-      }
-
-      // Age warning
-      if (patient.age > 65) {
-        score += 1.0;
-      }
-
-      // Cap score
-      score = Math.min(10, parseFloat(score.toFixed(1)));
+      // Assessment:
+      // - 'critical' when ANY allergy alert, fatal/severe DDI, or score < 7
+      // - 'warning'  when major DDI or score < 9
+      // - 'safe'     only when perfect or near-perfect (10)
       let severity: 'safe' | 'warning' | 'critical' = 'safe';
-      if (score >= 4.0) severity = 'warning';
-      if (score >= 7.0 || issues.some(i => i.level === 'high')) severity = 'critical';
+      if (majorCount > 0 || score < 9.0) severity = 'warning';
+      if (allergyAlerts > 0 || fatalSevere > 0 || score < 7.0 || issues.some((i) => i.level === 'high')) {
+        severity = 'critical';
+      }
+
 
       setSafetyReport({ severity, score, issues });
       setStep(4);
-    }, 1500);
+    } catch (err: any) {
+      // Fallback: show a generic critical alert so we never silently pass a broken check
+      setSafetyReport({
+        severity: 'critical',
+        score: 0,
+        issues: [{
+          type: 'Safety Check Error',
+          level: 'high',
+          text: `Safety check engine returned an error: ${err?.message ?? 'Unknown error'}. DO NOT dispense until resolved.`,
+          action: 'Contact IT support or retry. Do not proceed without a confirmed safety report.',
+        }],
+      });
+      setStep(4);
+    }
+  };
+
+
+  // Run Safety Checks using current component state (Step 3 to 4 transition)
+  const runSafetyChecks = () => {
+    const allergyList = patient.allergies
+      ? patient.allergies.split(/[,;]+/).map((a: string) => a.trim()).filter(Boolean)
+      : [];
+    executeScan(drugs, allergyList);
+  };
+
+  // Import JSON from OCR Scanner
+  const importFromOCR = (jsonData: any) => {
+    try {
+      // 1. Map patient data
+      const newPatient = {
+        ...patient,
+        name: jsonData.patient?.name || patient.name,
+        age: jsonData.patient?.age || patient.age,
+        condition: jsonData.diagnosis ? jsonData.diagnosis.join(', ') : patient.condition,
+      };
+      setPatient(newPatient);
+
+      // 2. Map medications gracefully
+      const startId = Math.max(...drugs.map((d) => d.id), 0) + 1;
+      const newMeds: MedicationItem[] = (jsonData.medications || []).map((med: any, idx: number) => ({
+        id: startId + idx,
+        name: med.name || 'Unknown',
+        activeIngredient: med.name || 'Unknown',
+        dose: med.dosage && med.dosage !== 'Not specified' ? med.dosage : '1 pill',
+        frequency: med.frequency || '1x daily',
+        duration: '30 days',
+        instructions: 'Take as directed (Imported from OCR)'
+      }));
+
+      const allDrugs = [...drugs, ...newMeds];
+      setDrugs(allDrugs);
+
+      // 3. Extract allergy list and trigger immediate scan
+      const allergyList = newPatient.allergies
+        ? newPatient.allergies.split(/[,;]+/).map((a: string) => a.trim()).filter(Boolean)
+        : [];
+      executeScan(allDrugs, allergyList);
+    } catch (err) {
+      console.error("Failed to import OCR JSON", err);
+      setWizardMessage("Invalid OCR format.");
+    }
   };
 
   const handleVerifySubmit = async () => {
@@ -242,7 +275,25 @@ export default function PrescriptionCreator({
           <h2 className="text-2xl font-bold text-slate-900">Create Prescription</h2>
           <p className="text-xs text-slate-500 mt-1">Multi-step safety checked prescription creator</p>
         </div>
-        <Pill className="w-6 h-6 text-teal-600" />
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              const input = prompt("Paste OCR JSON output here:");
+              if (input) {
+                try {
+                  const json = JSON.parse(input);
+                  importFromOCR(json);
+                } catch (e) {
+                  alert("Invalid JSON format");
+                }
+              }
+            }}
+            className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition"
+          >
+            <ScanLine className="w-3.5 h-3.5" /> Import OCR
+          </button>
+          <Pill className="w-6 h-6 text-teal-600" />
+        </div>
       </div>
 
       {/* Step Tracker Indicator */}

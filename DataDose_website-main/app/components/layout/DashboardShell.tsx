@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import Topbar from './Topbar';
 import Sidebar, { MenuItem } from './Sidebar';
+import { useFdaAlerts } from '@/app/hooks/useFdaAlerts';
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -24,6 +25,22 @@ export default function DashboardShell({
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // ── Kafka SSE: real-time FDA safety alerts ───────────────────────────────
+  // Mounted here so all role dashboards (physician, pharmacist, admin…)
+  // automatically get the live notification bell without each page needing
+  // to wire it up individually.
+  const { alerts, connected } = useFdaAlerts({
+    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
+  });
+
+  // Map FdaAlert → Topbar notification shape
+  const notifications = alerts.map((a) => ({
+    id: a.id,
+    title: a.title,   // "FDA Recall Alert"
+    body: a.body,     // "Immediate recall for Amoxicillin..."
+    read: a.read,
+  }));
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -62,6 +79,7 @@ export default function DashboardShell({
         onLogout={handleLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
+        notifications={notifications}
       />
 
       <div className="flex flex-1 h-[calc(100vh-3.5rem)] overflow-hidden relative">

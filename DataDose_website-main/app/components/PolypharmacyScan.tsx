@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Network, Plus, X, Loader2, AlertTriangle, Shield, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 
-type Severity = "fatal" | "severe" | "major" | "safe";
+type Severity = "fatal" | "severe" | "major" | "safe" | "allergy";
 
 interface Interaction {
   pair: string;
@@ -22,6 +22,7 @@ interface ScanResult {
   summary: {
     totalInteractions: number;
     fatalSevere: number;
+    allergyAlerts: number;
     major: number;
     safe: number;
     overallRisk: "HIGH" | "MODERATE" | "LOW";
@@ -44,6 +45,15 @@ const severityConfig = {
     badge: "bg-red-500 text-white",
     icon: "🔴",
     label: "SEVERE",
+  },
+  // ── Drug-Allergy Interaction (DAI) — critical, always rendered first ──────
+  allergy: {
+    bg: "bg-purple-50",
+    border: "border-purple-400",
+    text: "text-purple-900",
+    badge: "bg-purple-600 text-white",
+    icon: "🚫",
+    label: "ALLERGY ALERT",
   },
   major: {
     bg: "bg-orange-50",
@@ -350,6 +360,12 @@ export default function PolypharmacyScan({ onScanComplete, forceScanning = false
 
                 {/* Stat Pills */}
                 <div className="flex gap-2 flex-wrap">
+                  {/* Allergy alert pill — shown only when DAI alerts exist */}
+                  {(result.summary.allergyAlerts ?? 0) > 0 && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-800 border border-purple-300 rounded-full text-xs font-bold animate-pulse">
+                      🚫 Allergy Alerts: {result.summary.allergyAlerts}
+                    </span>
+                  )}
                   <span className="px-3 py-1 bg-zinc-100 text-zinc-700 rounded-full text-xs font-bold">⬛ Fatal/Severe: {result.summary.fatalSevere}</span>
                   <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">🟠 Major: {result.summary.major}</span>
                   <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">🟢 Safe pairs: {result.drugs.length * (result.drugs.length - 1) / 2 - result.summary.totalInteractions}</span>
@@ -361,6 +377,14 @@ export default function PolypharmacyScan({ onScanComplete, forceScanning = false
                     <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
                       <CheckCircle className="w-5 h-5 text-green-600" />
                       <p className="text-green-800 font-semibold text-sm">No significant interactions detected. Safe to dispense.</p>
+                    </div>
+                  ) : result.summary.allergyAlerts > 0 ? (
+                    <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-500 rounded-xl">
+                      <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                      <div>
+                        <p className="text-red-800 font-bold text-sm">PRESCRIPTION BLOCKED — Allergy Contraindication Detected</p>
+                        <p className="text-red-700 text-xs mt-0.5">This prescription contains a drug the patient is allergic to. Review the alerts below and DO NOT DISPENSE.</p>
+                      </div>
                     </div>
                   ) : (
                     result.interactions.map((interaction, i) => {

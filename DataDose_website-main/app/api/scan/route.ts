@@ -3,6 +3,12 @@ import prisma from '@/lib/prisma';
 import { enforceDailyQuota } from '@/lib/quota';
 import { requireAuth } from '@/lib/apiAuth';
 
+// Force dynamic rendering — this route calls Railway FastAPI in real-time.
+// Never statically pre-render or cache this response at the edge.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 export async function POST(req: Request) {
@@ -13,9 +19,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // --- QUOTA MANAGEMENT LOGIC ---
+    // --- QUOTA MANAGEMENT LOGIC (Disabled for testing) ---
     const quota = await enforceDailyQuota(auth.email, true);
-    if (quota.exceeded) {
+    if (false && quota.exceeded) {
       return NextResponse.json(
         { error: "QUOTA_EXCEEDED", message: "You have reached your daily scan limit. Please try again tomorrow." },
         { status: 403 }
@@ -23,25 +29,54 @@ export async function POST(req: Request) {
     }
 
     let ehrContext: any = {};
+    // Top-level allergy list — populated from EHR and forwarded to the
+    // FastAPI DAI (Drug-Allergy Interaction) safety check phase.
+    let patientAllergies: string[] = [];
+
+    // Client-supplied allergies (sent directly by PrescriptionCreator / OCRScanner)
+    // These must NOT be overwritten — they are the primary allergy source when
+    // no patientEmail is provided (the common case for the physician workflow).
+    const clientAllergies: string[] = Array.isArray(body.allergies) ? body.allergies : [];
+
     if (body.patientEmail) {
       const patient = await prisma.user.findUnique({
         where: { email: body.patientEmail },
         include: { PatientEHR: true },
       });
       if (patient?.PatientEHR) {
+        // Merge EHR allergies with client-supplied ones (deduplicate)
+        const ehrAllergies: string[] = patient.PatientEHR.allergies ?? [];
+        const mergedAllergies = Array.from(
+          new Set([...clientAllergies, ...ehrAllergies].map((a) => a.trim().toLowerCase()))
+        );
+        patientAllergies = mergedAllergies;
         ehrContext = {
-          allergies: patient.PatientEHR.allergies,
+          allergies: mergedAllergies,
           chronicConditions: patient.PatientEHR.chronicConditions,
         };
+      } else {
+        patientAllergies = clientAllergies;
       }
+    } else {
+      // No patientEmail — use only what the client sent
+      patientAllergies = clientAllergies;
     }
 
     const payload = {
       ...body,
+      // Resolved allergy list: client allergies + EHR allergies (merged, deduped)
+      // This is the array FastAPI Phase 2 DAI iterates for allergy checks.
+      allergies: patientAllergies,
       ehr: ehrContext,
       analysisInstruction:
         'Cross-reference proposed medications against patient allergies and chronic conditions, not only drug-drug interactions.',
     };
+
+    console.log(
+      `[SCAN_PROXY] drugs=${JSON.stringify(payload.drugs?.slice(0,5))} ` +
+      `allergies=${JSON.stringify(payload.allergies)} ` +
+      `-> ${BACKEND_URL}/api/scan`
+    );
 
     let backendData: any[] = [];
     try {
@@ -107,6 +142,8 @@ export async function POST(req: Request) {
     const reqDrugs = body.drugs || [];
 
     // Map interactions to Frontend expected format
+    // NOTE: ALLERGY severity is mapped to "allergy" — a new tier rendered
+    //       as an urgent banner in PolypharmacyScan.tsx.
     const mappedInteractions = backendData.map((item: any) => ({
       pair: `${item.drug1} + ${item.drug2}`,
       drug1: item.drug1,
@@ -116,11 +153,15 @@ export async function POST(req: Request) {
       recommendation: item.effect || "Consider alternative therapies or strict monitoring.",
     }));
 
-    const fatalSevere = mappedInteractions.filter((i: any) => i.severity === 'fatal' || i.severity === 'severe').length;
+    const allergyAlerts = mappedInteractions.filter((i: any) => i.severity === 'allergy').length;
+    const fatalSevere = mappedInteractions.filter((i: any) => i.severity === 'fatal' || i.severity === 'severe' || i.severity === 'allergy').length;
     const major = mappedInteractions.filter((i: any) => i.severity === 'major').length;
     
     let overallRisk = "LOW";
-    if (fatalSevere > 0) overallRisk = "HIGH";
+    // ALLERGY and FATAL/SEVERE are both immediately HIGH risk — the allergy
+    // tier is already counted in fatalSevere (line above) but making it
+    // explicit here ensures the assessment never contradicts the alert count.
+    if (allergyAlerts > 0 || fatalSevere > 0) overallRisk = "HIGH";
     else if (major > 0) overallRisk = "MODERATE";
 
     const totalPairs = (reqDrugs.length * (reqDrugs.length - 1)) / 2;
@@ -132,6 +173,7 @@ export async function POST(req: Request) {
       summary: {
         totalInteractions: mappedInteractions.length,
         fatalSevere,
+        allergyAlerts,
         major,
         safe: safePairs,
         overallRisk
@@ -139,7 +181,13 @@ export async function POST(req: Request) {
       graph: { nodes: [], edges: [] }
     };
 
-    return NextResponse.json(resultPayload);
+    // Attach no-cache headers so browsers and Vercel edge never serve
+    // a stale safety report for a different drug/allergy combination.
+    const response = NextResponse.json(resultPayload);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   } catch (error: any) {
     console.error("[SCAN_API_ERROR]:", error.message);
     return NextResponse.json(

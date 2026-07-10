@@ -48,14 +48,29 @@ export async function POST(req: NextRequest) {
     }
 
     // Format response to match what the frontend expects
-    const formattedAlternatives = data.map((altDrugName: string) => ({
-      name: altDrugName,
-      mechanism: 'Graph-verified safe alternative',
-      safeFor: [],
-      avoids: [symptomToAvoid || ''],
-      ddiRisk: 'none',
-      note: 'Verified against current medications and target symptoms'
-    }));
+    const formattedAlternatives = data.map((alt: any) => {
+      // Handle the new dictionary format from the 2-step hierarchy backend
+      if (typeof alt === 'object' && alt !== null) {
+        return {
+          name: alt.SuggestedAlternative || 'Unknown Drug',
+          mechanism: alt.Reasoning || 'Graph-verified safe alternative',
+          safeFor: [],
+          avoids: [symptomToAvoid || ''],
+          ddiRisk: 'none',
+          note: 'Verified against current medications and target symptoms'
+        };
+      }
+      
+      // Fallback for legacy string format
+      return {
+        name: typeof alt === 'string' ? alt : String(alt),
+        mechanism: 'Graph-verified safe alternative',
+        safeFor: [],
+        avoids: [symptomToAvoid || ''],
+        ddiRisk: 'none',
+        note: 'Verified against current medications and target symptoms'
+      };
+    });
 
     return NextResponse.json({
       success: true,
