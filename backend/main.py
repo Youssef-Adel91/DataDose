@@ -42,17 +42,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="DataDose Neo4j API", version="1.0.0", lifespan=lifespan)
 
-# CORS configuration — allow localhost in dev and any Vercel deployment in production
-APP_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
-
+# CORS configuration — Permissive to avoid browser preflight drops
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=APP_ORIGINS,
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -907,6 +901,8 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
     """
     Accepts a prescription image and extracts drug names using the Groq Vision LLM.
     """
+    print("🚨 RECEIVED OCR REQUEST! Processing image payload...")
+    
     if not groq_client:
         raise HTTPException(status_code=500, detail="Groq API key not configured")
         
