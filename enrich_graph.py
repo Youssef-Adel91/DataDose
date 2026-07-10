@@ -41,7 +41,7 @@ from neo4j import GraphDatabase, exceptions as neo4j_exc
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-DEFAULT_JSON  = "enriched_drugs.json"
+DEFAULT_JSON  = "critical_allergy_classes.json"
 DEFAULT_BATCH = 500
 
 
