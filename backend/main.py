@@ -914,7 +914,13 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
         image_bytes = await file.read()
         base64_image = base64.b64encode(image_bytes).decode('utf-8')
         
-        vision_prompt = "You are a medical OCR assistant. Read this prescription image. Extract ONLY the names of the medications. Ignore dosages, patient names, and doctor notes. Return the result STRICTLY as a JSON array of strings, e.g., [\"Aspirin\", \"Warfarin\"]. Do not include markdown formatting or any other text."
+        vision_prompt = (
+            "You are a medical OCR assistant. Read this prescription image. Extract ONLY the names of the medications. "
+            "Ignore dosages, patient names, and doctor notes. Return the result STRICTLY as a JSON array of strings, "
+            "e.g., [\"Aspirin\", \"Warfarin\"]. "
+            "You must output ONLY raw, valid JSON. Do not include markdown formatting like ```json or ```. "
+            "Do not include any conversational text before or after the JSON."
+        )
         
         completion = await groq_client.chat.completions.create(
             model="llama-3.2-11b-vision-preview",
@@ -936,11 +942,14 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
         )
         
         raw_json_str = completion.choices[0].message.content.strip()
-        # Clean markdown if present
-        if raw_json_str.startswith("```json"):
-            raw_json_str = raw_json_str[7:-3].strip()
-        elif raw_json_str.startswith("```"):
-            raw_json_str = raw_json_str[3:-3].strip()
+        print("Raw LLM Output:", raw_json_str)
+        
+        # Regex sanitization to strip out markdown/conversational text
+        import re
+        # Since we requested an array, find the first [ and last ]
+        match = re.search(r'\[.*\]', raw_json_str, re.DOTALL)
+        if match:
+            raw_json_str = match.group(0)
             
         import json
         extracted = json.loads(raw_json_str)
