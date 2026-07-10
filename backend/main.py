@@ -1195,71 +1195,68 @@ async def graphrag_assistant(req: GraphRAGRequest, session=Depends(get_db)):
     Step C — Augmented Generation: Groq llama3-8b-8192 with graph context
               injected into the system prompt (strict hallucination guard).
     """
-    if not groq_client:
-        raise HTTPException(status_code=503, detail="Groq API key not configured.")
-
-    # ── Step A: Entity Extraction ─────────────────────────────────────────────
-    extracted_entities = _extract_entities(req.message, req.currentMedications)
-    drug_entities = [e for e in extracted_entities if e in _DRUG_VOCAB or
-                     any(e.lower() == m.lower() for m in req.currentMedications)]
-
-    # ── Step B: Graph Retrieval ───────────────────────────────────────────────
-    graph_context: List[Dict[str, Any]] = []
-
-    if drug_entities:
-        cypher = """
-        MATCH (d:Drug)-[r]-(n)
-        WHERE toLower(d.name) IN $extracted_drugs
-        RETURN
-            d.name          AS entity,
-            type(r)         AS relationship,
-            n.name          AS related_node,
-            labels(n)[0]    AS node_type,
-            r.severity      AS severity,
-            r.effect        AS effect,
-            r.mechanism     AS mechanism
-        LIMIT 30
-        """
-        try:
-            result = await session.run(cypher, extracted_drugs=drug_entities)
-            graph_context = await result.data()
-            print(f"[GRAPHRAG] Graph retrieval: {len(graph_context)} rows for entities {drug_entities}")
-        except Exception as neo_err:
-            print(f"[GRAPHRAG][WARN] Neo4j query failed: {neo_err}")
-            graph_context = []
-
-    # ── Step C: Augmented Generation ─────────────────────────────────────────
-
-    # Format graph rows into a compact, LLM-readable evidence block
-    if graph_context:
-        evidence_lines = []
-        for row in graph_context:
-            parts = [
-                f"- {row.get('entity')} --[{row.get('relationship')}]--> {row.get('related_node')} ({row.get('node_type')})"
-            ]
-            if row.get("severity"):
-                parts.append(f"  Severity: {row['severity']}")
-            if row.get("effect"):
-                parts.append(f"  Effect: {row['effect']}")
-            if row.get("mechanism"):
-                parts.append(f"  Mechanism: {row['mechanism']}")
-            evidence_lines.append("\n".join(parts))
-        graph_context_str = "\n".join(evidence_lines)
-        source = "graph+llm"
-    else:
-        graph_context_str = "No relevant data found in the Neo4j Knowledge Graph for the entities in this query."
-        source = "llm_only"
-
-    # Build conversation history for multi-turn context
-    history_msgs = []
-    for h in req.history[-6:]:  # Keep last 6 turns to stay within token budget
-        history_msgs.append({"role": h.role, "content": h.content})
-
-    system_prompt = f"""You are DataDose Clinical AI — a specialist Clinical Decision Support System powered by a Neo4j pharmacological Knowledge Graph.
-
+    try:
+        if not groq_client:
+            raise HTTPException(status_code=503, detail="Groq API key not configured.")
+    
+        # ── Step A: Entity Extraction ─────────────────────────────────────────────
+        extracted_entities = _extract_entities(req.message, req.currentMedications)
+        drug_entities = [e for e in extracted_entities if e in _DRUG_VOCAB or
+                         any(e.lower() == m.lower() for m in req.currentMedications)]
+    
+        # ── Step B: Graph Retrieval ───────────────────────────────────────────────
+        graph_context: List[Dict[str, Any]] = []
+        if drug_entities:
+            cypher = """
+            MATCH (d:Drug)-[r]-(n)
+            WHERE toLower(d.name) IN $extracted_drugs
+            RETURN
+                d.name          AS entity,
+                type(r)         AS relationship,
+                n.name          AS related_node,
+                labels(n)[0]    AS node_type,
+                r.severity      AS severity,
+                r.effect        AS effect,
+                r.mechanism     AS mechanism
+            LIMIT 30
+            """
+            try:
+                result = await session.run(cypher, extracted_drugs=drug_entities)
+                graph_context = await result.data()
+                print(f"[GRAPHRAG] Graph retrieval: {len(graph_context)} rows for entities {drug_entities}")
+            except Exception as neo_err:
+                print(f"[GRAPHRAG][WARN] Neo4j query failed! Raw error: {getattr(neo_err, 'message', str(neo_err))}")
+                graph_context = []
+    
+        # ── Step C: Augmented Generation ─────────────────────────────────────────
+        if graph_context:
+            evidence_lines = []
+            for row in graph_context:
+                parts = [
+                    f"- {row.get('entity')} --[{row.get('relationship')}]--> {row.get('related_node')} ({row.get('node_type')})"
+                ]
+                if row.get("severity"):
+                    parts.append(f"  Severity: {row['severity']}")
+                if row.get("effect"):
+                    parts.append(f"  Effect: {row['effect']}")
+                if row.get("mechanism"):
+                    parts.append(f"  Mechanism: {row['mechanism']}")
+                evidence_lines.append("\n".join(parts))
+            graph_context_str = "\n".join(evidence_lines)
+            source = "graph+llm"
+        else:
+            graph_context_str = "No relevant data found in the Neo4j Knowledge Graph for the entities in this query."
+            source = "llm_only"
+    
+        history_msgs = []
+        for h in req.history[-6:]:  # Keep last 6 turns to stay within token budget
+            history_msgs.append({"role": h.role, "content": h.content})
+    
+        system_prompt = f"""You are DataDose Clinical AI — a specialist Clinical Decision Support System powered by a Neo4j pharmacological Knowledge Graph.
+    
 GRAPH DATABASE CONTEXT (retrieved for this query):
 {graph_context_str}
-
+    
 STRICT RULES:
 1. Answer using ONLY the Graph Database Context above.
 2. If the context contains relevant data, cite it explicitly (mention drug names, severity, mechanisms).
@@ -1267,34 +1264,51 @@ STRICT RULES:
 4. Do NOT hallucinate drug interactions, dosages, or clinical facts not present in the context.
 5. Format your response with markdown: use **bold** for drug names, ## for section headers when needed, and bullet points for lists.
 6. End every response with a clinical safety disclaimer in italics."""
-
-    messages_payload = [
-        {"role": "system", "content": system_prompt},
-        *history_msgs,
-        {"role": "user", "content": req.message},
-    ]
-
-    try:
-        completion = await groq_client.chat.completions.create(
-            messages=messages_payload,
-            model="llama3-8b-8192",
-            temperature=0.1,
-            max_completion_tokens=600,
+    
+        messages_payload = [
+            {"role": "system", "content": system_prompt},
+            *history_msgs,
+            {"role": "user", "content": req.message},
+        ]
+    
+        try:
+            completion = await groq_client.chat.completions.create(
+                messages=messages_payload,
+                model="llama3-8b-8192",
+                temperature=0.1,
+                max_completion_tokens=600,
+            )
+            final_answer = completion.choices[0].message.content.strip()
+            is_deterministic = len(graph_context) > 0
+        except Exception as llm_err:
+            import traceback
+            raw_err = getattr(llm_err, 'response', str(llm_err))
+            print(f"[GRAPHRAG][ERROR] LLM generation failed. Raw response: {raw_err}")
+            traceback.print_exc()
+            final_answer = "I encountered an error generating the clinical response. Please retry or consult a pharmacist directly."
+            is_deterministic = False
+    
+        return GraphRAGResponse(
+            response=final_answer,
+            is_deterministic=is_deterministic,
+            graph_context=graph_context,
+            extracted_entities=extracted_entities,
+            source=source,
         )
-        final_answer = completion.choices[0].message.content.strip()
-        is_deterministic = len(graph_context) > 0
-    except Exception as llm_err:
-        print(f"[GRAPHRAG][ERROR] LLM generation failed: {llm_err}")
-        final_answer = "I encountered an error generating the clinical response. Please retry or consult a pharmacist directly."
-        is_deterministic = False
 
-    return GraphRAGResponse(
-        response=final_answer,
-        is_deterministic=is_deterministic,
-        graph_context=graph_context,
-        extracted_entities=extracted_entities,
-        source=source,
-    )
+    except Exception as e:
+        import traceback
+        print(f"🚨 GraphRAG FATAL ERROR: {str(e)}")
+        traceback.print_exc()
+        
+        # We must return a valid GraphRAGResponse so the frontend doesn't crash entirely with a 500 error mapping
+        return GraphRAGResponse(
+            response="I encountered an error generating the clinical response. Please retry or consult a pharmacist directly.",
+            is_deterministic=False,
+            graph_context=[],
+            extracted_entities=[],
+            source="error"
+        )
 
 # ==========================================
 # HEALTH CHECK ENDPOINT
