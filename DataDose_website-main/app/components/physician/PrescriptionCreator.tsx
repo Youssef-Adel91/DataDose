@@ -103,104 +103,93 @@ export default function PrescriptionCreator({
     setDrugs(drugs.filter((d) => d.id !== id));
   };
 
-  // Run Safety Checks (Step 3 to 4 transition)
-  const runSafetyChecks = () => {
+  // Run Safety Checks (Step 3 to 4 transition) — calls real FastAPI /api/scan
+  const runSafetyChecks = async () => {
     setStep(3);
     setWizardMessage('');
     setOverrideConfirmed(false);
     setOverrideReason('');
 
-    // Simulate scanning knowledge graph
-    setTimeout(() => {
-      const issues: Array<{ type: string; level: "high" | "medium" | "low"; text: string; action: string }> = [];
-      let score = 2.0;
+    const drugNames = drugs.map((d) => d.name.trim()).filter(Boolean);
+    const allergyList = patient.allergies
+      ? patient.allergies.split(/[,;]+/).map((a: string) => a.trim()).filter(Boolean)
+      : [];
 
-      // 1. Allergy Check (Sara Patient has penicillin allergy)
-      const hasPenicillinAllergy = patient.allergies.toLowerCase().includes('penicillin');
-      const prescribingPenicillin = drugs.some(
-        (d) => d.name.toLowerCase().includes('penic') || 
-               d.name.toLowerCase().includes('amoxic') || 
-               d.activeIngredient.toLowerCase().includes('beta-lact')
-      );
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drugs: drugNames, allergies: allergyList }),
+      });
 
-      if (hasPenicillinAllergy && prescribingPenicillin) {
+      const data = await res.json();
+
+      // Map backend interactions to the issues array the UI expects
+      const issues: Array<{ type: string; level: 'high' | 'medium' | 'low'; text: string; action: string }> = [];
+
+      const interactions: any[] = data.interactions ?? [];
+      const summary = data.summary ?? {};
+
+      const allergyAlerts: number = summary.allergyAlerts ?? 0;
+      const fatalSevere: number   = summary.fatalSevere   ?? 0;
+      const majorCount: number    = summary.major         ?? 0;
+
+      for (const item of interactions) {
+        const sev = (item.severity ?? '').toLowerCase();
+        const level: 'high' | 'medium' | 'low' =
+          sev === 'fatal' || sev === 'severe' || sev === 'allergy' ? 'high'
+          : sev === 'major' ? 'medium'
+          : 'low';
+
+        const typeLabel =
+          sev === 'allergy' ? 'Drug-Allergy Contraindication'
+          : sev === 'fatal' || sev === 'severe' ? 'Drug-Drug Interaction (Critical)'
+          : 'Drug-Drug Interaction';
+
         issues.push({
-          type: 'Drug-Allergy Contraindication',
-          level: 'high',
-          text: `Critical: Patient has a documented Penicillin allergy. Prescribing beta-lactam class medication can cause anaphylaxis.`,
-          action: 'Immediately replace with non-beta-lactam alternative (e.g. Macrolides).'
+          type: typeLabel,
+          level,
+          text: item.mechanism ?? `${item.drug1} + ${item.drug2}: interaction detected.`,
+          action: item.recommendation ?? item.effect ?? 'Consult prescribing physician before dispensing.',
         });
-        score += 4.5;
       }
 
-      // 2. Drug-Disease checks
-      const hasCKD = patient.condition.toLowerCase().includes('ckd') || patient.chronicDiseases.toLowerCase().includes('kidney');
-      const prescribingMetformin = drugs.some((d) => d.name.toLowerCase().includes('metformin'));
-
-      if (hasCKD && prescribingMetformin) {
-        issues.push({
-          type: 'Drug-Disease Warning',
-          level: 'medium',
-          text: `Warning: Metformin is cleared renally. Patient has documented Stage 3 CKD (eGFR 42). Risk of lactic acidosis accumulation.`,
-          action: 'Limit Metformin dosage to 500mg daily. Monitor renal panel closely.'
-        });
-        score += 2.0;
-      }
-
-      // 3. Drug-Drug Interactions
-      const drugNames = drugs.map((d) => d.name.toLowerCase());
-      const hasSimvastatin = drugNames.includes('simvastatin');
-      const hasAmiodarone = drugNames.includes('amiodarone');
-      if (hasSimvastatin && hasAmiodarone) {
-        issues.push({
-          type: 'Drug-Drug Interaction',
-          level: 'high',
-          text: 'Critical DDI: Simvastatin + Amiodarone increases risk of Simvastatin toxicity and myopathy/rhabdomyolysis.',
-          action: 'Replace Simvastatin with Atorvastatin or Rosuvastatin; or reduce Simvastatin dose to max 20mg.'
-        });
-        score += 3.5;
-      }
-
-      const hasLisinopril = drugNames.includes('lisinopril');
-      const hasAspirin = drugNames.includes('aspirin');
-      if (hasLisinopril && hasAspirin) {
-        issues.push({
-          type: 'Drug-Drug Interaction',
-          level: 'medium',
-          text: 'Interaction DDI: Aspirin may decrease the vasodilatory effect of Lisinopril. Co-administration increases risk of renal function degradation.',
-          action: 'Monitor blood pressure regularly. Check serum creatinine in 7 days.'
-        });
-        score += 1.0;
-      }
-
-      // 4. Duplicate Ingredient Check
-      const ingredients = drugs.map((d) => d.activeIngredient.toLowerCase().trim());
-      const duplicates = ingredients.filter((item, index) => ingredients.indexOf(item) !== index);
-      if (duplicates.length > 0) {
-        issues.push({
-          type: 'Duplicate Active Ingredient',
-          level: 'high',
-          text: `Critical: Duplication of active ingredient "${duplicates[0]}" detected across prescribed medications.`,
-          action: 'Remove duplicate therapy prescription lines.'
-        });
-        score += 3.0;
-      }
-
-      // Age warning
-      if (patient.age > 65) {
-        score += 1.0;
-      }
-
-      // Cap score
+      // Derive a 1–10 safety score from the interaction severity weights
+      // Lower score = safer (inverted scale, matches existing component convention)
+      let score = 2.0;  // base "all clear" score
+      score += allergyAlerts * 4.5;
+      score += fatalSevere  * 3.5;
+      score += majorCount   * 2.0;
       score = Math.min(10, parseFloat(score.toFixed(1)));
+
+      // Assessment:
+      // - 'critical' when ANY allergy alert, fatal/severe DDI, or score >= 7
+      // - 'warning'  when major DDI or score >= 4
+      // - 'safe'     only when no interactions at all
       let severity: 'safe' | 'warning' | 'critical' = 'safe';
-      if (score >= 4.0) severity = 'warning';
-      if (score >= 7.0 || issues.some(i => i.level === 'high')) severity = 'critical';
+      if (majorCount > 0 || score >= 4.0) severity = 'warning';
+      if (allergyAlerts > 0 || fatalSevere > 0 || score >= 7.0 || issues.some((i) => i.level === 'high')) {
+        severity = 'critical';
+      }
 
       setSafetyReport({ severity, score, issues });
       setStep(4);
-    }, 1500);
+    } catch (err: any) {
+      // Fallback: show a generic critical alert so we never silently pass a broken check
+      setSafetyReport({
+        severity: 'critical',
+        score: 0,
+        issues: [{
+          type: 'Safety Check Error',
+          level: 'high',
+          text: `Safety check engine returned an error: ${err?.message ?? 'Unknown error'}. DO NOT dispense until resolved.`,
+          action: 'Contact IT support or retry. Do not proceed without a confirmed safety report.',
+        }],
+      });
+      setStep(4);
+    }
   };
+
 
   const handleVerifySubmit = async () => {
     if (!onSubmit || drugs.length === 0 || quotaExceeded) return;

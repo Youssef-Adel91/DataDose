@@ -291,94 +291,90 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
     }
   };
 
-  // Run Safety Checks inline against selected patient
-  const runSafetyChecks = () => {
+  // Run Safety Checks inline against selected patient — calls real FastAPI /api/scan
+  const runSafetyChecks = async () => {
     if (!selectedPatient) {
-      setErrorMsg("Please select a patient in Patient Records first to run safety checks.");
+      setErrorMsg('Please select a patient in Patient Records first to run safety checks.');
       return;
     }
     setIsCheckingSafety(true);
     setOverrideConfirmed(false);
-    setOverrideReason("");
+    setOverrideReason('');
 
-    setTimeout(() => {
-      const issues: Array<{ type: string; level: "high" | "medium" | "low"; text: string; action: string }> = [];
+    const drugNames = structuredMeds.map((d) => d.name.trim()).filter(Boolean);
+    const allergyList = (selectedPatient.allergies ?? '')
+      .split(/[,;]+/)
+      .map((a: string) => a.trim())
+      .filter(Boolean);
+
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drugs: drugNames, allergies: allergyList }),
+      });
+
+      const data = await res.json();
+
+      const issues: Array<{ type: string; level: 'high' | 'medium' | 'low'; text: string; action: string }> = [];
+      const interactions: any[] = data.interactions ?? [];
+      const summary = data.summary ?? {};
+
+      const allergyAlerts: number = summary.allergyAlerts ?? 0;
+      const fatalSevere: number   = summary.fatalSevere   ?? 0;
+      const majorCount: number    = summary.major         ?? 0;
+
+      for (const item of interactions) {
+        const sev = (item.severity ?? '').toLowerCase();
+        const level: 'high' | 'medium' | 'low' =
+          sev === 'fatal' || sev === 'severe' || sev === 'allergy' ? 'high'
+          : sev === 'major' ? 'medium'
+          : 'low';
+
+        const typeLabel =
+          sev === 'allergy' ? 'Drug-Allergy Contraindication'
+          : sev === 'fatal' || sev === 'severe' ? 'Drug-Drug Interaction (Critical)'
+          : 'Drug-Drug Interaction';
+
+        issues.push({
+          type: typeLabel,
+          level,
+          text: item.mechanism ?? `${item.drug1} + ${item.drug2}: interaction detected.`,
+          action: item.recommendation ?? item.effect ?? 'Consult prescribing physician before dispensing.',
+        });
+      }
+
+      // Score: starts at 2.0 (safe baseline), weighted by severity counts
       let score = 2.0;
-
-      const patientAllergies = selectedPatient.allergies || "";
-      const patientConditions = selectedPatient.condition || "";
-      const patientChronic = selectedPatient.chronicDiseases || "";
-
-      // 1. Allergy check (Sara Patient -> Penicillin)
-      const hasPenicillinAllergy = patientAllergies.toLowerCase().includes("penicillin");
-      const prescribingPenicillin = structuredMeds.some(
-        (d) =>
-          d.name.toLowerCase().includes("penic") ||
-          d.name.toLowerCase().includes("amoxic") ||
-          d.activeIngredient.toLowerCase().includes("beta-lact")
-      );
-
-      if (hasPenicillinAllergy && prescribingPenicillin) {
-        issues.push({
-          type: "Drug-Allergy Contraindication",
-          level: "high",
-          text: `Critical: Patient has documented Penicillin allergy. Scanned Amoxicillin/Penicillin triggers severe cross-reactivity.`,
-          action: "Replace with non-beta-lactam alternative such as Clarithromycin or Azithromycin.",
-        });
-        score += 5.0;
-      }
-
-      // 2. Drug-Disease check (Michael Chen -> CKD)
-      const hasCKD = patientConditions.toLowerCase().includes("ckd") || patientChronic.toLowerCase().includes("kidney");
-      const prescribingMetformin = structuredMeds.some((d) => d.name.toLowerCase().includes("metformin"));
-
-      if (hasCKD && prescribingMetformin) {
-        issues.push({
-          type: "Drug-Disease Warning",
-          level: "medium",
-          text: `Warning: Metformin is renally cleared. Patient has documented Stage 3 Chronic Kidney Disease. Risk of lactic acidosis accumulation.`,
-          action: "Limit Metformin dosage to 500mg daily. Repeat serum creatinine in 7 days.",
-        });
-        score += 2.0;
-      }
-
-      // 3. Drug-Drug Interactions (Lisinopril + Aspirin)
-      const names = structuredMeds.map((d) => d.name.toLowerCase());
-      const hasLisinopril = names.includes("lisinopril");
-      const hasAspirin = names.includes("aspirin");
-      if (hasLisinopril && hasAspirin) {
-        issues.push({
-          type: "Drug-Drug Interaction",
-          level: "medium",
-          text: "Interaction: Aspirin co-administration may decrease Lisinopril's therapeutic antihypertensive efficiency.",
-          action: "Monitor blood pressure regularly. Adjust doses as needed.",
-        });
-        score += 1.0;
-      }
-
-      // 4. Duplicate Ingredients Check
-      const ingredients = structuredMeds.map((d) => d.activeIngredient.toLowerCase().trim());
-      const duplicates = ingredients.filter((item, index) => ingredients.indexOf(item) !== index);
-      if (duplicates.length > 0) {
-        issues.push({
-          type: "Duplicate Active Ingredient",
-          level: "high",
-          text: `Critical Warning: Duplicated active ingredient "${duplicates[0]}" identified in extracted script.`,
-          action: "Discontinue duplicate prescription line before sending to pharmacy.",
-        });
-        score += 3.5;
-      }
-
-      // Cap safety score at 10.0
+      score += allergyAlerts * 4.5;
+      score += fatalSevere  * 3.5;
+      score += majorCount   * 2.0;
       score = Math.min(10, parseFloat(score.toFixed(1)));
-      let severity: "safe" | "warning" | "critical" = "safe";
-      if (score >= 4.0) severity = "warning";
-      if (score >= 7.0 || issues.some((i) => i.level === "high")) severity = "critical";
+
+      // Assessment: 'critical' when any allergy or fatal/severe alert exists
+      let severity: 'safe' | 'warning' | 'critical' = 'safe';
+      if (majorCount > 0 || score >= 4.0) severity = 'warning';
+      if (allergyAlerts > 0 || fatalSevere > 0 || score >= 7.0 || issues.some((i) => i.level === 'high')) {
+        severity = 'critical';
+      }
 
       setSafetyReport({ severity, score, issues });
+    } catch (err: any) {
+      setSafetyReport({
+        severity: 'critical',
+        score: 0,
+        issues: [{
+          type: 'Safety Check Error',
+          level: 'high',
+          text: `Safety engine error: ${err?.message ?? 'Unknown'}. DO NOT dispense until resolved.`,
+          action: 'Contact IT support or retry. Do not proceed without a confirmed safety report.',
+        }],
+      });
+    } finally {
       setIsCheckingSafety(false);
-    }, 1000);
+    }
   };
+
 
   // ── Send to scanner ──
   const handleSendToScanner = () => {
