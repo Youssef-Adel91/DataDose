@@ -19,9 +19,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // --- QUOTA MANAGEMENT LOGIC ---
+    // --- QUOTA MANAGEMENT LOGIC (Disabled for testing) ---
     const quota = await enforceDailyQuota(auth.email, true);
-    if (quota.exceeded) {
+    if (false && quota.exceeded) {
       return NextResponse.json(
         { error: "QUOTA_EXCEEDED", message: "You have reached your daily scan limit. Please try again tomorrow." },
         { status: 403 }

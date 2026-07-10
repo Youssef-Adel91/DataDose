@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     const quota = await enforceDailyQuota(auth.email, false);
-    if (quota.exceeded) {
+    if (false && quota.exceeded) {
       return NextResponse.json(
         { error: 'QUOTA_EXCEEDED', message: 'Daily prescription limit reached. Please try again tomorrow.' },
         { status: 403 }
