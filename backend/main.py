@@ -241,83 +241,117 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
             ))
 
         # ── Phase 2: Drug-Allergy Interaction (DAI) ───────────────────────────
-        # Three-strategy Cypher UNION + keyword safety net.
+        # PRIMARY: Graph ontology traversal (populated by enrich_graph.py ETL).
+        # Traverses:
+        #   (Drug)-[:CONTAINS_INGREDIENT]->(Ingredient)-[:BELONGS_TO_CLASS]->(AllergyClass)
+        # Matches when the prescribed drug's ingredient belongs to the patient's
+        # documented allergy class.  Handles class-based allergies like
+        # "Sulfa Drugs" -> Sulfamethoxazole -> Bactrim without any hardcoded lists.
         #
-        # ROOT CAUSE OF THE CLINICAL BUG:
-        #   Old query: WHERE d.name CONTAINS drug AND d.name CONTAINS allergy
-        #   This fails for class-based allergies because "Bactrim" does not
-        #   contain "Sulfa Drugs" — the two strings never overlap in one node.
+        # FALLBACK: keyword lookup table — fires ONLY when the graph returns 0 rows
+        # (i.e., drug not yet enriched in Neo4j).  Keeps legacy coverage intact.
         #
-        # Strategy A: drug node properties (drug_class, ingredient) overlap allergy
-        # Strategy B: follow class/ingredient edges to an allergy-class node
-        # Strategy C: explicit allergy relationship edges in the graph
-        # Strategy D: authoritative keyword lookup table (graph-independent)
-        dai_query = """
-        MATCH (d)
+        # Query returns up to 5 rows per pair to avoid flooding the result list
+        # with duplicate class hits across multiple ingredient paths.
+
+        # ── Primary: enriched ontology traversal ─────────────────────────────
+        dai_graph_query = """
+        // STRATEGY 1: Drug -> Ingredient -> AllergyClass (enriched ontology from ETL)
+        MATCH (d:Drug)-[:CONTAINS_INGREDIENT]->(i:Ingredient)-[:BELONGS_TO_CLASS]->(a:AllergyClass)
+        WHERE toLower(d.name)   CONTAINS toLower($drug)
+          AND toLower(a.name)   CONTAINS toLower($allergy)
+        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
+        RETURN d.name AS matched_drug,
+               i.name AS matched_ingredient,
+               a.name AS matched_class,
+               coalesce(s.name, 'Hypersensitivity / Allergic Reaction') AS reaction
+        LIMIT 5
+
+        UNION
+
+        // STRATEGY 2: Direct drug name contains allergy term (simple name overlap)
+        MATCH (d:Drug)
+        WHERE toLower(d.name) CONTAINS toLower($drug)
+          AND toLower(d.name) CONTAINS toLower($allergy)
+        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
+        RETURN d.name AS matched_drug,
+               d.name AS matched_ingredient,
+               $allergy AS matched_class,
+               coalesce(s.name, 'Allergic Reaction') AS reaction
+        LIMIT 3
+
+        UNION
+
+        // STRATEGY 3: Drug node properties (drug_class, ingredient) overlap allergy
+        MATCH (d:Drug)
         WHERE toLower(d.name) CONTAINS toLower($drug)
           AND (
-            toLower(d.name)       CONTAINS toLower($allergy)
-            OR (d.drug_class  IS NOT NULL AND toLower(d.drug_class)  CONTAINS toLower($allergy))
-            OR (d.class       IS NOT NULL AND toLower(d.class)       CONTAINS toLower($allergy))
-            OR (d.ingredient  IS NOT NULL AND toLower(d.ingredient)  CONTAINS toLower($allergy))
+            (d.drug_class IS NOT NULL AND toLower(d.drug_class) CONTAINS toLower($allergy))
+            OR (d.class IS NOT NULL   AND toLower(d.class)      CONTAINS toLower($allergy))
           )
         OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
-        RETURN d.name AS matched_node,
-               coalesce(s.name, 'Hypersensitivity / Allergic Reaction') AS reaction
-
-        UNION
-
-        MATCH (d)
-        WHERE toLower(d.name) CONTAINS toLower($drug)
-        MATCH (d)-[:BELONGS_TO|HAS_CLASS|CONTAINS_INGREDIENT*1..2]->(cls)
-        WHERE toLower(cls.name) CONTAINS toLower($allergy)
-        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
-        RETURN d.name AS matched_node,
-               coalesce(s.name, 'Class Allergy Reaction') AS reaction
-
-        UNION
-
-        MATCH (d)-[:ALLERGIC_TO|CONTRAINDICATED_IN|MAY_CAUSE_ALLERGY]->(allergen)
-        WHERE toLower(d.name) CONTAINS toLower($drug)
-          AND toLower(allergen.name) CONTAINS toLower($allergy)
-        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
-        RETURN d.name AS matched_node,
-               coalesce(s.name, 'Documented allergy contraindication') AS reaction
+        RETURN d.name AS matched_drug,
+               d.name AS matched_ingredient,
+               coalesce(d.drug_class, d.class, $allergy) AS matched_class,
+               coalesce(s.name, 'Class-based Allergic Reaction') AS reaction
+        LIMIT 3
         """
 
-        # Strategy D: Authoritative ingredient-to-class lookup table.
-        # Catches class allergy terms (e.g. "Sulfa Drugs") that can never match
-        # a drug name substring. This is graph-independent and always runs.
+        # ── Fallback: keyword table (runs only when graph returns 0 rows) ─────
+        # This table is a superset of enriched_drugs.json and covers edge cases.
+        # It should be updated whenever the ETL data changes significantly.
         ALLERGY_CLASS_INGREDIENTS: dict = {
-            "sulfa drugs":      ["sulfamethoxazole", "sulfadiazine", "sulfasalazine",
-                                 "sulfacetamide", "bactrim", "co-trimoxazole", "septra"],
-            "sulfonamides":     ["sulfamethoxazole", "sulfadiazine", "sulfasalazine", "bactrim"],
-            "penicillin":       ["amoxicillin", "ampicillin", "piperacillin", "nafcillin",
-                                 "oxacillin", "cloxacillin", "flucloxacillin", "amoxil"],
-            "cephalosporins":   ["cephalexin", "cefazolin", "ceftriaxone", "cefuroxime",
-                                 "cefixime", "cefpodoxime", "cefdinir", "cefepime"],
-            "nsaids":           ["ibuprofen", "naproxen", "diclofenac", "indomethacin",
-                                 "ketorolac", "celecoxib", "aspirin", "meloxicam"],
-            "statins":          ["atorvastatin", "simvastatin", "rosuvastatin", "lovastatin",
-                                 "pravastatin", "fluvastatin", "pitavastatin"],
-            "fluoroquinolones": ["ciprofloxacin", "levofloxacin", "moxifloxacin",
-                                 "ofloxacin", "norfloxacin", "gemifloxacin"],
-            "macrolides":       ["azithromycin", "clarithromycin", "erythromycin"],
-            "tetracyclines":    ["doxycycline", "tetracycline", "minocycline", "tigecycline"],
-            "ace inhibitors":   ["lisinopril", "enalapril", "ramipril", "captopril",
-                                 "perindopril", "benazepril"],
-            "beta blockers":    ["metoprolol", "atenolol", "carvedilol", "propranolol",
-                                 "bisoprolol", "labetalol"],
-            "opioids":          ["morphine", "oxycodone", "hydrocodone", "codeine",
-                                 "fentanyl", "tramadol", "buprenorphine"],
-            "aspirin":          ["aspirin", "acetylsalicylic acid"],
+            "sulfa drugs":              ["sulfamethoxazole", "sulfadiazine", "sulfasalazine",
+                                         "sulfacetamide", "bactrim", "co-trimoxazole", "septra",
+                                         "trimethoprim-sulfamethoxazole"],
+            "sulfonamides":             ["sulfamethoxazole", "sulfadiazine", "sulfasalazine", "bactrim"],
+            "penicillins":              ["amoxicillin", "ampicillin", "piperacillin", "nafcillin",
+                                         "oxacillin", "cloxacillin", "flucloxacillin", "amoxil",
+                                         "dicloxacillin", "benzylpenicillin"],
+            "cephalosporins":           ["cephalexin", "cefazolin", "ceftriaxone", "cefuroxime",
+                                         "cefixime", "cefpodoxime", "cefdinir", "cefepime",
+                                         "cefadroxil", "cefprozil", "cefalexin", "cefoperazone"],
+            "nsaids":                   ["ibuprofen", "naproxen", "diclofenac", "indomethacin",
+                                         "ketorolac", "celecoxib", "aspirin", "meloxicam",
+                                         "piroxicam", "etodolac", "sulindac"],
+            "salicylates":              ["aspirin", "acetylsalicylic acid", "salsalate", "diflunisal"],
+            "corticosteroids":          ["prednisone", "prednisolone", "dexamethasone", "hydrocortisone",
+                                         "methylprednisolone", "betamethasone", "budesonide"],
+            "statins":                  ["atorvastatin", "simvastatin", "rosuvastatin", "lovastatin",
+                                         "pravastatin", "fluvastatin", "pitavastatin"],
+            "fluoroquinolones":         ["ciprofloxacin", "levofloxacin", "moxifloxacin",
+                                         "ofloxacin", "norfloxacin", "gemifloxacin"],
+            "macrolides":               ["azithromycin", "clarithromycin", "erythromycin", "roxithromycin"],
+            "tetracyclines":            ["doxycycline", "tetracycline", "minocycline", "tigecycline",
+                                         "demeclocycline"],
+            "ace inhibitors":           ["lisinopril", "enalapril", "ramipril", "captopril",
+                                         "perindopril", "benazepril", "quinapril"],
+            "beta blockers":            ["metoprolol", "atenolol", "carvedilol", "propranolol",
+                                         "bisoprolol", "labetalol", "nadolol"],
+            "antihistamines":           ["diphenhydramine", "loratadine", "cetirizine", "fexofenadine",
+                                         "chlorpheniramine", "hydroxyzine", "promethazine"],
+            "benzodiazepines":          ["diazepam", "lorazepam", "alprazolam", "clonazepam",
+                                         "midazolam", "temazepam", "oxazepam"],
+            "opioids":                  ["morphine", "oxycodone", "hydrocodone", "codeine",
+                                         "fentanyl", "tramadol", "buprenorphine", "hydromorphone"],
+            "azole antifungals":        ["fluconazole", "itraconazole", "ketoconazole", "voriconazole",
+                                         "clotrimazole", "miconazole", "posaconazole"],
+            "monoclonal antibodies":    ["rituximab", "bevacizumab", "trastuzumab", "adalimumab",
+                                         "infliximab", "etanercept", "pembrolizumab"],
+            "calcium channel blockers": ["amlodipine", "nifedipine", "diltiazem", "verapamil",
+                                         "felodipine", "nicardipine", "isradipine"],
+            "insulins":                 ["insulin", "glargine", "detemir", "lispro", "aspart",
+                                         "glulisine", "nph insulin", "regular insulin"],
+            "aspirin":                  ["aspirin", "acetylsalicylic acid"],
         }
 
         def _keyword_match(drug_name: str, allergy_term: str):
             dn = drug_name.strip().lower()
             at = allergy_term.strip().lower()
+            # Direct name overlap
             if at in dn or dn in at:
                 return f"Direct name match: '{drug_name}' overlaps allergy term '{allergy_term}'"
+            # Class membership lookup
             for ingredient in ALLERGY_CLASS_INGREDIENTS.get(at, []):
                 if ingredient in dn or dn in ingredient:
                     return (
@@ -332,62 +366,75 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
                 if not patient_allergy.strip():
                     continue
 
-                # Graph query (Strategies A, B, C)
+                graph_hit = False   # tracks whether primary graph query matched
+
+                # ── Primary graph traversal ───────────────────────────────────
                 try:
                     dai_result = await session.run(
-                        dai_query,
+                        dai_graph_query,
                         drug=prescribed_drug.strip(),
                         allergy=patient_allergy.strip(),
                     )
                     dai_records = await dai_result.data()
                     for rec in dai_records:
-                        alert_key = (rec["matched_node"], patient_allergy.strip().lower())
+                        alert_key = (rec["matched_drug"], patient_allergy.strip().lower())
                         if alert_key in allergy_seen:
                             continue
                         allergy_seen.add(alert_key)
+                        graph_hit = True
+                        ingredient_info = rec.get("matched_ingredient", "")
+                        class_info      = rec.get("matched_class", patient_allergy)
                         print(
-                            f"[SAFETY][DAI][GRAPH] ALLERGY ALERT — "
-                            f"Drug '{rec['matched_node']}' matched allergy '{patient_allergy}' "
+                            f"[SAFETY][DAI][GRAPH] ALLERGY ALERT -- "
+                            f"Drug '{rec['matched_drug']}' (ingredient: {ingredient_info}) "
+                            f"belongs to class '{class_info}' "
+                            f"-> Patient allergy: '{patient_allergy}' "
                             f"-> Reaction: {rec.get('reaction')}"
                         )
                         interactions.append(InteractionResponse(
-                            drug1=rec["matched_node"],
+                            drug1=rec["matched_drug"],
                             drug2=f"ALLERGY CONTRAINDICATION: {patient_allergy}",
                             severity="ALLERGY",
                             effect=rec.get("reaction"),
                             mechanism=(
                                 f"CLINICAL SAFETY ALERT: Patient has a documented allergy to "
-                                f"'{patient_allergy}'. The prescribed drug '{rec['matched_node']}' "
-                                f"is contraindicated and may trigger a severe hypersensitivity reaction "
-                                f"({rec.get('reaction', 'type unspecified')}). "
+                                f"'{patient_allergy}' ({class_info}). "
+                                f"The prescribed drug '{rec['matched_drug']}' contains the active "
+                                f"ingredient '{ingredient_info}' which belongs to this allergy class. "
+                                f"This combination is CONTRAINDICATED and may trigger a severe "
+                                f"hypersensitivity or anaphylactic reaction. "
                                 f"DO NOT DISPENSE without explicit specialist authorisation."
                             ),
                         ))
                 except Exception as dai_err:
                     print(f"[WARN][DAI][GRAPH] Query failed for '{prescribed_drug}' / '{patient_allergy}': {dai_err}")
 
-                # Strategy D: keyword safety net — always runs regardless of graph result
-                keyword_reaction = _keyword_match(prescribed_drug.strip(), patient_allergy.strip())
-                safety_net_key = (prescribed_drug.strip().lower(), patient_allergy.strip().lower(), "kw")
-                if keyword_reaction and safety_net_key not in allergy_seen:
-                    allergy_seen.add(safety_net_key)
-                    print(
-                        f"[SAFETY][DAI][KEYWORD] ALLERGY ALERT — "
-                        f"'{prescribed_drug}' matched class '{patient_allergy}' via ingredient table"
-                    )
-                    interactions.append(InteractionResponse(
-                        drug1=prescribed_drug.strip(),
-                        drug2=f"ALLERGY CONTRAINDICATION: {patient_allergy}",
-                        severity="ALLERGY",
-                        effect=keyword_reaction,
-                        mechanism=(
-                            f"CLINICAL SAFETY ALERT — CLASS ALLERGY DETECTED: "
-                            f"'{prescribed_drug}' belongs to the '{patient_allergy}' drug class "
-                            f"or contains a '{patient_allergy}' active ingredient. "
-                            f"Patient has a documented allergy to this class. "
-                            f"CONTRAINDICATED — DO NOT DISPENSE. Consult specialist immediately."
-                        ),
-                    ))
+                # ── Fallback: keyword table (only when graph returned 0 rows) ─
+                # This ensures coverage for drugs that exist in the KG but were
+                # not yet enriched by the ETL (e.g., brand names not in JSON).
+                if not graph_hit:
+                    keyword_reaction = _keyword_match(prescribed_drug.strip(), patient_allergy.strip())
+                    safety_net_key = (prescribed_drug.strip().lower(), patient_allergy.strip().lower(), "kw")
+                    if keyword_reaction and safety_net_key not in allergy_seen:
+                        allergy_seen.add(safety_net_key)
+                        print(
+                            f"[SAFETY][DAI][KEYWORD-FALLBACK] ALLERGY ALERT -- "
+                            f"'{prescribed_drug}' matched class '{patient_allergy}' via keyword table "
+                            f"(drug not yet in enriched graph)"
+                        )
+                        interactions.append(InteractionResponse(
+                            drug1=prescribed_drug.strip(),
+                            drug2=f"ALLERGY CONTRAINDICATION: {patient_allergy}",
+                            severity="ALLERGY",
+                            effect=keyword_reaction,
+                            mechanism=(
+                                f"CLINICAL SAFETY ALERT -- CLASS ALLERGY DETECTED: "
+                                f"'{prescribed_drug}' belongs to the '{patient_allergy}' drug class "
+                                f"or contains a '{patient_allergy}' active ingredient. "
+                                f"Patient has a documented allergy to this class. "
+                                f"CONTRAINDICATED -- DO NOT DISPENSE. Consult specialist immediately."
+                            ),
+                        ))
 
         # Sort: ALLERGY (0) → FATAL (1) → SEVERE (2) → MAJOR (3) → MINOR (4)
         interactions.sort(key=lambda x: severity_rank.get(x.severity, 99))
