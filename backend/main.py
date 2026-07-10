@@ -922,24 +922,32 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
             "Do not include any conversational text before or after the JSON."
         )
         
-        completion = await groq_client.chat.completions.create(
-            model="llama-3.2-11b-vision-preview",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": vision_prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{file.content_type};base64,{base64_image}"
+        try:
+            # Fallback to a standard image mime type if the provided one is weird
+            mime_type = file.content_type if file.content_type and file.content_type.startswith("image/") else "image/jpeg"
+            
+            completion = await groq_client.chat.completions.create(
+                model="llama-3.2-11b-vision-preview",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": vision_prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime_type};base64,{base64_image}"
+                                }
                             }
-                        }
-                    ]
-                }
-            ],
-            temperature=0.0
-        )
+                        ]
+                    }
+                ],
+                temperature=0.0
+            )
+        except Exception as api_err:
+            print("Groq API Raw Error:", str(api_err))
+            raise ValueError(f"Groq API call failed: {str(api_err)}")
+            
         
         raw_json_str = completion.choices[0].message.content.strip()
         print("Raw LLM Output:", raw_json_str)
