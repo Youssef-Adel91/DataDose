@@ -3,6 +3,12 @@ import prisma from '@/lib/prisma';
 import { enforceDailyQuota } from '@/lib/quota';
 import { requireAuth } from '@/lib/apiAuth';
 
+// Force dynamic rendering — this route calls Railway FastAPI in real-time.
+// Never statically pre-render or cache this response at the edge.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 export async function POST(req: Request) {
@@ -175,7 +181,13 @@ export async function POST(req: Request) {
       graph: { nodes: [], edges: [] }
     };
 
-    return NextResponse.json(resultPayload);
+    // Attach no-cache headers so browsers and Vercel edge never serve
+    // a stale safety report for a different drug/allergy combination.
+    const response = NextResponse.json(resultPayload);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   } catch (error: any) {
     console.error("[SCAN_API_ERROR]:", error.message);
     return NextResponse.json(

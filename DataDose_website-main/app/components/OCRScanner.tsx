@@ -312,6 +312,7 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ drugs: drugNames, allergies: allergyList }),
+        cache: 'no-store',   // never serve a cached safety report
       });
 
       const data = await res.json();
