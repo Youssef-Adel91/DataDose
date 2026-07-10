@@ -256,6 +256,7 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
       setStructuredMeds(structuredList);
       setPhase("success");
     } catch (err: any) {
+      console.error("OCR Upload Network Error:", err);
       setPhase("error");
       setErrorMsg(err.message ?? "Extraction failed. Please retry.");
     }
