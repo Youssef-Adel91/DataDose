@@ -218,6 +218,7 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
     form.append("file", file);
 
     try {
+      console.log("🚀 Firing request to: /api/ocr");
       const res = await fetch("/api/ocr", { method: "POST", body: form });
       const data = await res.json();
 
@@ -256,7 +257,7 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
       setStructuredMeds(structuredList);
       setPhase("success");
     } catch (err: any) {
-      console.error("OCR Upload Network Error:", err);
+      console.error("Next.js Client Error:", err);
       setPhase("error");
       setErrorMsg(err.message ?? "Extraction failed. Please retry.");
     }
