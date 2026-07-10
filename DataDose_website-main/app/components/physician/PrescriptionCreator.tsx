@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pill, ShieldAlert, CheckCircle2, ChevronRight, ChevronLeft, Shield, AlertTriangle, ArrowRight, Activity, HelpCircle, User } from 'lucide-react';
+import { Plus, X, Pill, ShieldAlert, CheckCircle2, ChevronRight, ChevronLeft, Shield, AlertTriangle, ArrowRight, Activity, HelpCircle, User, ScanLine } from 'lucide-react';
 import { patients } from './PatientEHR';
 
 interface MedicationItem {
@@ -103,23 +103,20 @@ export default function PrescriptionCreator({
     setDrugs(drugs.filter((d) => d.id !== id));
   };
 
-  // Run Safety Checks (Step 3 to 4 transition) — calls real FastAPI /api/scan
-  const runSafetyChecks = async () => {
+  // Helper to execute the safety scan using explicit arrays (needed for instant OCR scans)
+  const executeScan = async (scanDrugs: MedicationItem[], scanAllergies: string[]) => {
     setStep(3);
     setWizardMessage('');
     setOverrideConfirmed(false);
     setOverrideReason('');
 
-    const drugNames = drugs.map((d) => d.name.trim()).filter(Boolean);
-    const allergyList = patient.allergies
-      ? patient.allergies.split(/[,;]+/).map((a: string) => a.trim()).filter(Boolean)
-      : [];
+    const drugNames = scanDrugs.map((d) => d.name.trim()).filter(Boolean);
 
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drugs: drugNames, allergies: allergyList }),
+        body: JSON.stringify({ drugs: drugNames, allergies: scanAllergies }),
         cache: 'no-store',   // never serve a cached safety report
       });
 
@@ -192,6 +189,52 @@ export default function PrescriptionCreator({
   };
 
 
+  // Run Safety Checks using current component state (Step 3 to 4 transition)
+  const runSafetyChecks = () => {
+    const allergyList = patient.allergies
+      ? patient.allergies.split(/[,;]+/).map((a: string) => a.trim()).filter(Boolean)
+      : [];
+    executeScan(drugs, allergyList);
+  };
+
+  // Import JSON from OCR Scanner
+  const importFromOCR = (jsonData: any) => {
+    try {
+      // 1. Map patient data
+      const newPatient = {
+        ...patient,
+        name: jsonData.patient?.name || patient.name,
+        age: jsonData.patient?.age || patient.age,
+        condition: jsonData.diagnosis ? jsonData.diagnosis.join(', ') : patient.condition,
+      };
+      setPatient(newPatient);
+
+      // 2. Map medications gracefully
+      const startId = Math.max(...drugs.map((d) => d.id), 0) + 1;
+      const newMeds: MedicationItem[] = (jsonData.medications || []).map((med: any, idx: number) => ({
+        id: startId + idx,
+        name: med.name || 'Unknown',
+        activeIngredient: med.name || 'Unknown',
+        dose: med.dosage && med.dosage !== 'Not specified' ? med.dosage : '1 pill',
+        frequency: med.frequency || '1x daily',
+        duration: '30 days',
+        instructions: 'Take as directed (Imported from OCR)'
+      }));
+
+      const allDrugs = [...drugs, ...newMeds];
+      setDrugs(allDrugs);
+
+      // 3. Extract allergy list and trigger immediate scan
+      const allergyList = newPatient.allergies
+        ? newPatient.allergies.split(/[,;]+/).map((a: string) => a.trim()).filter(Boolean)
+        : [];
+      executeScan(allDrugs, allergyList);
+    } catch (err) {
+      console.error("Failed to import OCR JSON", err);
+      setWizardMessage("Invalid OCR format.");
+    }
+  };
+
   const handleVerifySubmit = async () => {
     if (!onSubmit || drugs.length === 0 || quotaExceeded) return;
     if (safetyReport?.severity === 'critical' && (!overrideConfirmed || !overrideReason.trim())) {
@@ -232,7 +275,25 @@ export default function PrescriptionCreator({
           <h2 className="text-2xl font-bold text-slate-900">Create Prescription</h2>
           <p className="text-xs text-slate-500 mt-1">Multi-step safety checked prescription creator</p>
         </div>
-        <Pill className="w-6 h-6 text-teal-600" />
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              const input = prompt("Paste OCR JSON output here:");
+              if (input) {
+                try {
+                  const json = JSON.parse(input);
+                  importFromOCR(json);
+                } catch (e) {
+                  alert("Invalid JSON format");
+                }
+              }
+            }}
+            className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1.5 px-3 rounded-lg flex items-center gap-1.5 transition"
+          >
+            <ScanLine className="w-3.5 h-3.5" /> Import OCR
+          </button>
+          <Pill className="w-6 h-6 text-teal-600" />
+        </div>
       </div>
 
       {/* Step Tracker Indicator */}
