@@ -944,18 +944,31 @@ async def process_prescription_ocr(file: UploadFile = File(...)):
         raw_json_str = completion.choices[0].message.content.strip()
         print("Raw LLM Output:", raw_json_str)
         
-        # Regex sanitization to strip out markdown/conversational text
+        # Regex sanitization — try JSON array first, then fall back to JSON object
         import re
-        # Since we requested an array, find the first [ and last ]
         match = re.search(r'\[.*\]', raw_json_str, re.DOTALL)
+        if not match:
+            match = re.search(r'\{.*\}', raw_json_str, re.DOTALL)
         if match:
             raw_json_str = match.group(0)
+        else:
+            print("ERROR: Could not locate any JSON structure in Groq output. Full response:", repr(raw_json_str))
+            raise ValueError(f"Groq returned non-JSON content: {repr(raw_json_str)}")
             
         import json
         extracted = json.loads(raw_json_str)
-        # Force capitalization matching or just standard title casing
+        # Handle both array and object responses from the model
         if isinstance(extracted, list):
             extracted = [str(d).title() for d in extracted]
+        elif isinstance(extracted, dict):
+            # Try common keys the model might use when returning an object
+            for key in ("medications", "drugs", "extracted_drugs", "items", "medicines"):
+                if isinstance(extracted.get(key), list):
+                    extracted = [str(d).title() for d in extracted[key]]
+                    break
+            else:
+                print("WARNING: JSON object received but no known drug list key found:", extracted)
+                extracted = []
         else:
             extracted = []
             
