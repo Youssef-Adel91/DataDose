@@ -27,29 +27,50 @@ export async function POST(req: Request) {
     // FastAPI DAI (Drug-Allergy Interaction) safety check phase.
     let patientAllergies: string[] = [];
 
+    // Client-supplied allergies (sent directly by PrescriptionCreator / OCRScanner)
+    // These must NOT be overwritten — they are the primary allergy source when
+    // no patientEmail is provided (the common case for the physician workflow).
+    const clientAllergies: string[] = Array.isArray(body.allergies) ? body.allergies : [];
+
     if (body.patientEmail) {
       const patient = await prisma.user.findUnique({
         where: { email: body.patientEmail },
         include: { PatientEHR: true },
       });
       if (patient?.PatientEHR) {
-        patientAllergies = patient.PatientEHR.allergies ?? [];
+        // Merge EHR allergies with client-supplied ones (deduplicate)
+        const ehrAllergies: string[] = patient.PatientEHR.allergies ?? [];
+        const mergedAllergies = Array.from(
+          new Set([...clientAllergies, ...ehrAllergies].map((a) => a.trim().toLowerCase()))
+        );
+        patientAllergies = mergedAllergies;
         ehrContext = {
-          allergies: patientAllergies,
+          allergies: mergedAllergies,
           chronicConditions: patient.PatientEHR.chronicConditions,
         };
+      } else {
+        patientAllergies = clientAllergies;
       }
+    } else {
+      // No patientEmail — use only what the client sent
+      patientAllergies = clientAllergies;
     }
 
     const payload = {
       ...body,
-      // DAI fix: allergies as a first-class field so FastAPI iterates them
-      // in the CAUSES_REACTION allergy-safety loop (Phase 2 of /api/scan).
+      // Resolved allergy list: client allergies + EHR allergies (merged, deduped)
+      // This is the array FastAPI Phase 2 DAI iterates for allergy checks.
       allergies: patientAllergies,
       ehr: ehrContext,
       analysisInstruction:
         'Cross-reference proposed medications against patient allergies and chronic conditions, not only drug-drug interactions.',
     };
+
+    console.log(
+      `[SCAN_PROXY] drugs=${JSON.stringify(payload.drugs?.slice(0,5))} ` +
+      `allergies=${JSON.stringify(payload.allergies)} ` +
+      `-> ${BACKEND_URL}/api/scan`
+    );
 
     let backendData: any[] = [];
     try {
