@@ -155,23 +155,23 @@ export default function PrescriptionCreator({
         });
       }
 
-      // Derive a 1–10 safety score from the interaction severity weights
-      // Lower score = safer (inverted scale, matches existing component convention)
-      let score = 2.0;  // base "all clear" score
-      score += allergyAlerts * 4.5;
-      score += fatalSevere  * 3.5;
-      score += majorCount   * 2.0;
-      score = Math.min(10, parseFloat(score.toFixed(1)));
+      // Derive a 10-point Safety Score (10 = perfectly safe, 0 = highly dangerous)
+      let score = 10.0;
+      score -= allergyAlerts * 8.0;
+      score -= fatalSevere  * 7.0;
+      score -= majorCount   * 3.0;
+      score = Math.max(0, parseFloat(score.toFixed(1)));
 
       // Assessment:
-      // - 'critical' when ANY allergy alert, fatal/severe DDI, or score >= 7
-      // - 'warning'  when major DDI or score >= 4
-      // - 'safe'     only when no interactions at all
+      // - 'critical' when ANY allergy alert, fatal/severe DDI, or score < 7
+      // - 'warning'  when major DDI or score < 9
+      // - 'safe'     only when perfect or near-perfect (10)
       let severity: 'safe' | 'warning' | 'critical' = 'safe';
-      if (majorCount > 0 || score >= 4.0) severity = 'warning';
-      if (allergyAlerts > 0 || fatalSevere > 0 || score >= 7.0 || issues.some((i) => i.level === 'high')) {
+      if (majorCount > 0 || score < 9.0) severity = 'warning';
+      if (allergyAlerts > 0 || fatalSevere > 0 || score < 7.0 || issues.some((i) => i.level === 'high')) {
         severity = 'critical';
       }
+
 
       setSafetyReport({ severity, score, issues });
       setStep(4);

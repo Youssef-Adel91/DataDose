@@ -345,19 +345,20 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
         });
       }
 
-      // Score: starts at 2.0 (safe baseline), weighted by severity counts
-      let score = 2.0;
-      score += allergyAlerts * 4.5;
-      score += fatalSevere  * 3.5;
-      score += majorCount   * 2.0;
-      score = Math.min(10, parseFloat(score.toFixed(1)));
+      // Score: starts at 10.0 (safe baseline), subtracted based on severity
+      let score = 10.0;
+      score -= allergyAlerts * 8.0;
+      score -= fatalSevere  * 7.0;
+      score -= majorCount   * 3.0;
+      score = Math.max(0, parseFloat(score.toFixed(1)));
 
-      // Assessment: 'critical' when any allergy or fatal/severe alert exists
+      // Assessment: 'critical' when any allergy or fatal/severe alert exists, or score < 7
       let severity: 'safe' | 'warning' | 'critical' = 'safe';
-      if (majorCount > 0 || score >= 4.0) severity = 'warning';
-      if (allergyAlerts > 0 || fatalSevere > 0 || score >= 7.0 || issues.some((i) => i.level === 'high')) {
+      if (majorCount > 0 || score < 9.0) severity = 'warning';
+      if (allergyAlerts > 0 || fatalSevere > 0 || score < 7.0 || issues.some((i) => i.level === 'high')) {
         severity = 'critical';
       }
+
 
       setSafetyReport({ severity, score, issues });
     } catch (err: any) {
