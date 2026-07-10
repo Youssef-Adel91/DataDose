@@ -37,8 +37,8 @@ export default function DashboardShell({
   // Map FdaAlert → Topbar notification shape
   const notifications = alerts.map((a) => ({
     id: a.id,
-    title: a.drug,
-    body: a.warning,
+    title: a.title,   // "FDA Recall Alert"
+    body: a.body,     // "Immediate recall for Amoxicillin..."
     read: a.read,
   }));
 

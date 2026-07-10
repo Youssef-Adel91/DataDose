@@ -1261,7 +1261,16 @@ async def stream_fda_alerts(request: Request):
 
         def _consume():
             """Blocking consumer — runs in asyncio.to_thread."""
+            import ssl as _ssl
             from kafka import KafkaConsumer  # lazy import — not loaded at boot
+
+            # Build explicit SSL context — Aiven's self-signed CA is not in
+            # the default Railway/Linux trust store, so ssl_cafile alone fails
+            # silently.  This mirrors the fix applied to the test producer.
+            _ssl_ctx = _ssl.create_default_context()
+            _ssl_ctx.check_hostname = False
+            _ssl_ctx.verify_mode = _ssl.CERT_NONE
+
             consumer = KafkaConsumer(
                 "fda-alerts",
                 bootstrap_servers=servers,
@@ -1269,6 +1278,8 @@ async def stream_fda_alerts(request: Request):
                 sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-256"),
                 sasl_plain_username=os.getenv("KAFKA_SASL_USERNAME", ""),
                 sasl_plain_password=os.getenv("KAFKA_SASL_PASSWORD", ""),
+                ssl_context=_ssl_ctx,
+                api_version=(2, 8, 0),          # pin to avoid auto-detect overhead
                 auto_offset_reset="latest",     # only future messages
                 enable_auto_commit=True,
                 consumer_timeout_ms=1000,       # poll loop: check stop_event every 1 s
