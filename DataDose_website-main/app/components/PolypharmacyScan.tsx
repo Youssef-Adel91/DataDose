@@ -378,6 +378,14 @@ export default function PolypharmacyScan({ onScanComplete, forceScanning = false
                       <CheckCircle className="w-5 h-5 text-green-600" />
                       <p className="text-green-800 font-semibold text-sm">No significant interactions detected. Safe to dispense.</p>
                     </div>
+                  ) : result.summary.allergyAlerts > 0 ? (
+                    <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-500 rounded-xl">
+                      <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                      <div>
+                        <p className="text-red-800 font-bold text-sm">PRESCRIPTION BLOCKED — Allergy Contraindication Detected</p>
+                        <p className="text-red-700 text-xs mt-0.5">This prescription contains a drug the patient is allergic to. Review the alerts below and DO NOT DISPENSE.</p>
+                      </div>
+                    </div>
                   ) : (
                     result.interactions.map((interaction, i) => {
                       const cfg = severityConfig[interaction.severity] || severityConfig.major;

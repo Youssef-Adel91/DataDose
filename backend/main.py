@@ -241,24 +241,98 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
             ))
 
         # ── Phase 2: Drug-Allergy Interaction (DAI) ───────────────────────────
-        # Critical safety check: iterate every (prescribed_drug, known_allergy)
-        # pair and query the graph for a matching CAUSES_REACTION path.  This
-        # catches cases where the graph models the allergen as part of a drug
-        # node name (e.g. "Penicillin" node matched by allergy term "penicillin").
+        # Three-strategy Cypher UNION + keyword safety net.
+        #
+        # ROOT CAUSE OF THE CLINICAL BUG:
+        #   Old query: WHERE d.name CONTAINS drug AND d.name CONTAINS allergy
+        #   This fails for class-based allergies because "Bactrim" does not
+        #   contain "Sulfa Drugs" — the two strings never overlap in one node.
+        #
+        # Strategy A: drug node properties (drug_class, ingredient) overlap allergy
+        # Strategy B: follow class/ingredient edges to an allergy-class node
+        # Strategy C: explicit allergy relationship edges in the graph
+        # Strategy D: authoritative keyword lookup table (graph-independent)
         dai_query = """
-        WITH $drug AS prescribed_drug, $allergy AS patient_allergy
         MATCH (d)
-        WHERE toLower(d.name) CONTAINS toLower(prescribed_drug)
-          AND toLower(d.name) CONTAINS toLower(patient_allergy)
-        MATCH (d)-[r:CAUSES_REACTION]->(s)
-        RETURN d.name AS matched_node, s.name AS reaction
+        WHERE toLower(d.name) CONTAINS toLower($drug)
+          AND (
+            toLower(d.name)       CONTAINS toLower($allergy)
+            OR (d.drug_class  IS NOT NULL AND toLower(d.drug_class)  CONTAINS toLower($allergy))
+            OR (d.class       IS NOT NULL AND toLower(d.class)       CONTAINS toLower($allergy))
+            OR (d.ingredient  IS NOT NULL AND toLower(d.ingredient)  CONTAINS toLower($allergy))
+          )
+        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
+        RETURN d.name AS matched_node,
+               coalesce(s.name, 'Hypersensitivity / Allergic Reaction') AS reaction
+
+        UNION
+
+        MATCH (d)
+        WHERE toLower(d.name) CONTAINS toLower($drug)
+        MATCH (d)-[:BELONGS_TO|HAS_CLASS|CONTAINS_INGREDIENT*1..2]->(cls)
+        WHERE toLower(cls.name) CONTAINS toLower($allergy)
+        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
+        RETURN d.name AS matched_node,
+               coalesce(s.name, 'Class Allergy Reaction') AS reaction
+
+        UNION
+
+        MATCH (d)-[:ALLERGIC_TO|CONTRAINDICATED_IN|MAY_CAUSE_ALLERGY]->(allergen)
+        WHERE toLower(d.name) CONTAINS toLower($drug)
+          AND toLower(allergen.name) CONTAINS toLower($allergy)
+        OPTIONAL MATCH (d)-[:CAUSES_REACTION]->(s)
+        RETURN d.name AS matched_node,
+               coalesce(s.name, 'Documented allergy contraindication') AS reaction
         """
 
-        allergy_seen: set = set()  # deduplicate identical alerts
+        # Strategy D: Authoritative ingredient-to-class lookup table.
+        # Catches class allergy terms (e.g. "Sulfa Drugs") that can never match
+        # a drug name substring. This is graph-independent and always runs.
+        ALLERGY_CLASS_INGREDIENTS: dict = {
+            "sulfa drugs":      ["sulfamethoxazole", "sulfadiazine", "sulfasalazine",
+                                 "sulfacetamide", "bactrim", "co-trimoxazole", "septra"],
+            "sulfonamides":     ["sulfamethoxazole", "sulfadiazine", "sulfasalazine", "bactrim"],
+            "penicillin":       ["amoxicillin", "ampicillin", "piperacillin", "nafcillin",
+                                 "oxacillin", "cloxacillin", "flucloxacillin", "amoxil"],
+            "cephalosporins":   ["cephalexin", "cefazolin", "ceftriaxone", "cefuroxime",
+                                 "cefixime", "cefpodoxime", "cefdinir", "cefepime"],
+            "nsaids":           ["ibuprofen", "naproxen", "diclofenac", "indomethacin",
+                                 "ketorolac", "celecoxib", "aspirin", "meloxicam"],
+            "statins":          ["atorvastatin", "simvastatin", "rosuvastatin", "lovastatin",
+                                 "pravastatin", "fluvastatin", "pitavastatin"],
+            "fluoroquinolones": ["ciprofloxacin", "levofloxacin", "moxifloxacin",
+                                 "ofloxacin", "norfloxacin", "gemifloxacin"],
+            "macrolides":       ["azithromycin", "clarithromycin", "erythromycin"],
+            "tetracyclines":    ["doxycycline", "tetracycline", "minocycline", "tigecycline"],
+            "ace inhibitors":   ["lisinopril", "enalapril", "ramipril", "captopril",
+                                 "perindopril", "benazepril"],
+            "beta blockers":    ["metoprolol", "atenolol", "carvedilol", "propranolol",
+                                 "bisoprolol", "labetalol"],
+            "opioids":          ["morphine", "oxycodone", "hydrocodone", "codeine",
+                                 "fentanyl", "tramadol", "buprenorphine"],
+            "aspirin":          ["aspirin", "acetylsalicylic acid"],
+        }
+
+        def _keyword_match(drug_name: str, allergy_term: str):
+            dn = drug_name.strip().lower()
+            at = allergy_term.strip().lower()
+            if at in dn or dn in at:
+                return f"Direct name match: '{drug_name}' overlaps allergy term '{allergy_term}'"
+            for ingredient in ALLERGY_CLASS_INGREDIENTS.get(at, []):
+                if ingredient in dn or dn in ingredient:
+                    return (
+                        f"'{drug_name}' contains active ingredient '{ingredient}' "
+                        f"which belongs to the '{allergy_term}' allergy class"
+                    )
+            return None
+
+        allergy_seen: set = set()
         for prescribed_drug in req.drugs:
             for patient_allergy in req.allergies:
                 if not patient_allergy.strip():
                     continue
+
+                # Graph query (Strategies A, B, C)
                 try:
                     dai_result = await session.run(
                         dai_query,
@@ -272,25 +346,48 @@ async def scan_drugs(req: ScanRequest, session=Depends(get_db)):
                             continue
                         allergy_seen.add(alert_key)
                         print(
-                            f"[SAFETY][DAI] ALLERGY ALERT — "
+                            f"[SAFETY][DAI][GRAPH] ALLERGY ALERT — "
                             f"Drug '{rec['matched_node']}' matched allergy '{patient_allergy}' "
-                            f"→ Reaction: {rec.get('reaction')}"
+                            f"-> Reaction: {rec.get('reaction')}"
                         )
                         interactions.append(InteractionResponse(
                             drug1=rec["matched_node"],
-                            drug2=f"ALLERGY: {patient_allergy}",
+                            drug2=f"ALLERGY CONTRAINDICATION: {patient_allergy}",
                             severity="ALLERGY",
                             effect=rec.get("reaction"),
                             mechanism=(
-                                f"Patient has a documented allergy to '{patient_allergy}'. "
-                                f"The prescribed drug '{rec['matched_node']}' may trigger a "
-                                f"hypersensitivity/allergic reaction ({rec.get('reaction', 'unknown reaction')}). "
-                                "Contraindicated — do not dispense without specialist review."
+                                f"CLINICAL SAFETY ALERT: Patient has a documented allergy to "
+                                f"'{patient_allergy}'. The prescribed drug '{rec['matched_node']}' "
+                                f"is contraindicated and may trigger a severe hypersensitivity reaction "
+                                f"({rec.get('reaction', 'type unspecified')}). "
+                                f"DO NOT DISPENSE without explicit specialist authorisation."
                             ),
                         ))
                 except Exception as dai_err:
-                    # Non-fatal: log the failure but don't abort the whole scan
-                    print(f"[WARN][DAI] Allergy check failed for '{prescribed_drug}' / '{patient_allergy}': {dai_err}")
+                    print(f"[WARN][DAI][GRAPH] Query failed for '{prescribed_drug}' / '{patient_allergy}': {dai_err}")
+
+                # Strategy D: keyword safety net — always runs regardless of graph result
+                keyword_reaction = _keyword_match(prescribed_drug.strip(), patient_allergy.strip())
+                safety_net_key = (prescribed_drug.strip().lower(), patient_allergy.strip().lower(), "kw")
+                if keyword_reaction and safety_net_key not in allergy_seen:
+                    allergy_seen.add(safety_net_key)
+                    print(
+                        f"[SAFETY][DAI][KEYWORD] ALLERGY ALERT — "
+                        f"'{prescribed_drug}' matched class '{patient_allergy}' via ingredient table"
+                    )
+                    interactions.append(InteractionResponse(
+                        drug1=prescribed_drug.strip(),
+                        drug2=f"ALLERGY CONTRAINDICATION: {patient_allergy}",
+                        severity="ALLERGY",
+                        effect=keyword_reaction,
+                        mechanism=(
+                            f"CLINICAL SAFETY ALERT — CLASS ALLERGY DETECTED: "
+                            f"'{prescribed_drug}' belongs to the '{patient_allergy}' drug class "
+                            f"or contains a '{patient_allergy}' active ingredient. "
+                            f"Patient has a documented allergy to this class. "
+                            f"CONTRAINDICATED — DO NOT DISPENSE. Consult specialist immediately."
+                        ),
+                    ))
 
         # Sort: ALLERGY (0) → FATAL (1) → SEVERE (2) → MAJOR (3) → MINOR (4)
         interactions.sort(key=lambda x: severity_rank.get(x.severity, 99))

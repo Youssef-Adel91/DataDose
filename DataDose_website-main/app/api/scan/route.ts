@@ -131,7 +131,10 @@ export async function POST(req: Request) {
     const major = mappedInteractions.filter((i: any) => i.severity === 'major').length;
     
     let overallRisk = "LOW";
-    if (fatalSevere > 0) overallRisk = "HIGH";
+    // ALLERGY and FATAL/SEVERE are both immediately HIGH risk — the allergy
+    // tier is already counted in fatalSevere (line above) but making it
+    // explicit here ensures the assessment never contradicts the alert count.
+    if (allergyAlerts > 0 || fatalSevere > 0) overallRisk = "HIGH";
     else if (major > 0) overallRisk = "MODERATE";
 
     const totalPairs = (reqDrugs.length * (reqDrugs.length - 1)) / 2;
