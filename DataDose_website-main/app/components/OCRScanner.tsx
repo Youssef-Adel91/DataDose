@@ -218,8 +218,10 @@ function OCRScannerUI({ selectedPatient, onSendToScanner }: OCRScannerProps) {
     form.append("file", file);
 
     try {
-      console.log("🚀 Firing request to: /api/ocr");
-      const res = await fetch("/api/ocr", { method: "POST", body: form });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/ocr` : 'https://fearless-serenity-datadose.up.railway.app/api/ocr';
+      console.log("🚀 Firing DIRECT request to:", apiUrl);
+      
+      const res = await fetch(apiUrl, { method: "POST", body: form });
       const data = await res.json();
 
       setBackendOnline(data.backendOnline ?? true);
